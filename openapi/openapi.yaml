@@ -1,0 +1,224 @@
+openapi: 3.0.0
+
+info:
+  version: "1.0.0"
+  title: NetPlanner API
+  description: First version of NetPlanner API
+  contact:
+    name: Farzad Mohammadi
+    email: farzad.mohammadi87@gmail.com
+    
+  
+servers:   
+  - url: /v1
+    description: development server of this version
+  
+  
+  - url: /v1-p
+    description: production server of this version
+    
+components:
+  schemas:
+    PhysicalTopology:
+      type: object
+      properties:
+        Nodes:
+          type: array
+          items:
+            type: object
+            properties:
+              Name:
+                type: string
+              lat: 
+                type: number
+                format: float
+              lng:
+                type: number
+                format: float
+              ROADM_type:
+                type: string
+            required: 
+              - Name
+              - lat
+              - lng
+              - ROADM_type
+            
+        Links:
+          type: array
+          items:
+            type: object
+            properties:
+              Source:
+                type: string
+              Destination:
+                type: string
+              Distance:
+                type: number
+                format: float
+              FiberType:
+                type: string
+            required: 
+              - Source
+              - Destination
+              - Distance
+              - FiberType
+    
+  parameters:
+    Id:
+      name: Id
+      in: query
+      required: true
+      schema:
+        type: integer
+        format: int64
+      
+    
+paths:
+  /PhysicalTopology:
+    summary: this path is handeling Physical Topology interactions
+    get:
+      tags: 
+       - Physical Topology
+      summary: Obtaining stored Physical Topology
+      description: With an id you can get a Physical Topology from database
+      operationId: PhysicalTopology.get_PhysicalTopology
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          description: Physical Topology found
+          content:
+            appliation/json:
+              schema:
+                $ref: '#/components/schemas/PhysicalTopology'
+                
+                
+    
+    post:
+      tags: 
+        - Physical Topology
+      summary: Creating New Physical Topology
+      description: This method creates a Physical Topology with given data and answers 
+        with its id
+      operationId: PhysicalTopology.create_PhysicalTopology
+      requestBody:
+        description: providing information for creating new Physical Topology
+        content:
+         application/json:
+          schema:
+            $ref: '#/components/schemas/PhysicalTopology'
+            
+      responses:
+        201:
+          description: A new Physical Topology created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Id:
+                    type: integer
+                required: 
+                  - Id
+    
+    put:
+      tags: 
+        - Physical Topology
+      summary: Updating existing Physical Topology
+      description: this method updates any given node or link in a particular Physical Topology
+      operationId: PhysicalTopology.update_PhysicalTopology
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        description: provide anything that you want to update
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhysicalTopology'
+      responses:
+        200:
+          description: Physical Topology Updated
+    
+    delete:
+      tags: 
+       - Physical Topology
+      summary: Deleting existing Physical Topology
+      description: this method deletes corresponding Physical Topology
+      operationId: PhysicalTopology.delete_PhysicalTopology
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+      responses:
+        200:
+          description: Physical Topology deleted
+          
+          
+          
+  /TrafficMatrix:
+    summary: This path is handling operations related to Traffic Matrix
+    get:
+      tags: 
+        - Traffic Matrix
+      summary: Obtaining stored Traffic Matrix
+      description: Accessing a traffic Matrix using it's id
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+      operationId: TrafficMatrix.get_TrafficMatrix
+      responses:
+        200:
+          description: Requested Traffic Matrix found
+          
+          # content:
+            
+    
+    post:
+      tags: 
+       - Traffic Matrix
+      summary: Creating new Traffic Matrix
+      description: This method creates a Traffic Matrix and returns its id
+      operationId: TrafficMatrix.create_TrafficMatrix
+      # requestBody: 
+      
+      responses:
+        201:
+          description: Traffic Matrix created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Id:
+                    type: integer
+                    format: int64
+                required: 
+                 - Id
+    put:
+      tags: 
+       - Traffic Matrix
+      summary: Updating an existing Traffic Matrix
+      description: This method updates a Traffic Matrix from database
+      operationId: TrafficMatrix.update_TrafficMatrix
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+        
+      # requestBody:
+      
+      responses:
+        200:
+          description: Traffic Matrix updated
+    delete:
+      tags: 
+       - Traffic Matrix
+      summary: Deleting an existing Traffic Matrix
+      description: This method deletes a trafic Matrix from database
+      operationId: TrafficMatrix.delete_TrafficMatrix
+      parameters: 
+       - $ref: '#/components/parameters/Id'
+      
+      responses:
+        200:
+          description: Traffic Matrix deleted
+    
+                    
+                
+        
+        
