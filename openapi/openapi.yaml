@@ -53,8 +53,7 @@ components:
               Destination:
                 type: string
               Distance:
-                type: number
-                format: float
+                type: string
               FiberType:
                 type: string
             required: 
@@ -62,6 +61,50 @@ components:
               - Destination
               - Distance
               - FiberType
+    TrafficMatrix:
+      type: object
+      properties:
+        Demands: 
+          type: array
+          items:
+            type: object
+            properties:
+              Source:
+                type: string
+              Destination:
+                type: string
+              Type:
+                type: string
+              ProtectionType:
+                type: string
+              Services:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Quantity:
+                      type: integer
+                      format: int32
+                    SLA:
+                      type: string
+                    Type:
+                      type: string
+                    Granularity:
+                      type: string
+                    Granularity_vc12:
+                      type: string
+                    Granularity_vc4:
+                      type: string
+                  required: 
+                    - Type
+                    - Quantity
+            required: 
+              - Source
+              - Destination
+              - Type
+              - Services
+              - ProtectionType
+            
     
   parameters:
     Id:
@@ -79,7 +122,7 @@ paths:
     get:
       tags: 
        - Physical Topology
-      summary: Obtaining stored Physical Topology
+      summary: Obtaining stored physical topology
       description: With an id you can get a Physical Topology from database
       operationId: PhysicalTopology.get_PhysicalTopology
       parameters: 
@@ -166,8 +209,10 @@ paths:
       responses:
         200:
           description: Requested Traffic Matrix found
-          
-          # content:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrafficMatrix'
             
     
     post:
@@ -175,8 +220,13 @@ paths:
        - Traffic Matrix
       summary: Creating new Traffic Matrix
       description: This method creates a Traffic Matrix and returns its id
-      operationId: TrafficMatrix.create_TrafficMatrix
-      # requestBody: 
+      
+      requestBody: 
+        description: Providing Traffic Matrix information
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrafficMatrix'
       
       responses:
         201:
@@ -196,11 +246,15 @@ paths:
        - Traffic Matrix
       summary: Updating an existing Traffic Matrix
       description: This method updates a Traffic Matrix from database
-      operationId: TrafficMatrix.update_TrafficMatrix
       parameters: 
         - $ref: '#/components/parameters/Id'
         
-      # requestBody:
+      requestBody:
+        description: Providing information for updating Traffic Matrix
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrafficMatrix'
       
       responses:
         200:
@@ -210,7 +264,6 @@ paths:
        - Traffic Matrix
       summary: Deleting an existing Traffic Matrix
       description: This method deletes a trafic Matrix from database
-      operationId: TrafficMatrix.delete_TrafficMatrix
       parameters: 
        - $ref: '#/components/parameters/Id'
       
