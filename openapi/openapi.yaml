@@ -194,7 +194,34 @@ paths:
         200:
           description: Physical Topology deleted
           
-          
+  /PhyiscalTopology/read_all:
+    summary: Reading all PT's
+    get:
+      tags:
+        - Physical Topology
+      summary: Reading all PT's stored in Database
+      operationId: PhysicalTopology.read_all_PT
+      responses:
+        200:
+          description: Returning back all PT's
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  date:
+                    type: string
+                    format: date
+                  Id:
+                    type: integer
+                    format: int64
+                required:
+                  - Name
+                  - date
+                  - Id
+                
           
   /TrafficMatrix:
     summary: This path is handling operations related to Traffic Matrix
@@ -220,7 +247,7 @@ paths:
        - Traffic Matrix
       summary: Creating new Traffic Matrix
       description: This method creates a Traffic Matrix and returns its id
-      
+      operationId: TrafficMatrix.create_TrafficMatrix
       requestBody: 
         description: Providing Traffic Matrix information
         content:
@@ -248,7 +275,7 @@ paths:
       description: This method updates a Traffic Matrix from database
       parameters: 
         - $ref: '#/components/parameters/Id'
-        
+      operationId: TrafficMatrix.update_TrafficMatrix  
       requestBody:
         description: Providing information for updating Traffic Matrix
         content:
@@ -263,6 +290,7 @@ paths:
       tags: 
        - Traffic Matrix
       summary: Deleting an existing Traffic Matrix
+      operationId: TrafficMatrix.delete_TrafficMatrix
       description: This method deletes a trafic Matrix from database
       parameters: 
        - $ref: '#/components/parameters/Id'
@@ -270,8 +298,206 @@ paths:
       responses:
         200:
           description: Traffic Matrix deleted
-    
-                    
+          
+  /TrafficMatrix/read_all:
+    description: Reading all saved TM's for a user
+    get:
+      tags:
+       - Traffic Matrix
+      summary: Reading all Traffic Matrices
+      
+      operationId: TrafficMatrix.read_all
+      responses:
+        200:
+          description: Returning TM's
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  date:
+                    type: string
+                    format: date
+                  Id:
+                    type: integer
+                    format: int64
+                required:
+                  - Name
+                  - date
+                  - Id
+          
+          
+  /Clustering:
+    summary: This path is handling operations related to Clustering
+    post:
+      operationId: Clustering.create_Cluster
+      summary: Creating clusters
+      tags: 
+        - Clustering
+      description: Creating new cluster in a Physical Topology (use this method if you want to save cluster in database)
+      parameters: 
+        - name: PhysicalTopologyId
+          in: query
+          schema:
+            type: integer
+            format: int64
+          required: true
+      requestBody:
+        description: Providing Gateways and Subnodes
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Gateways:
+                  type: array
+                  items:
+                    type: string
+                Subnodes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: Cluster saved in DataBase
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ClusterId:
+                    type: integer
+                    format: int64
+                required: 
+                  - ClusterId
+  /Project:
+    summary: This path job is to handle projects
+    get:
+      description: Accessing a existing Project
+      summary: Obtaining stored Project
+      tags: 
+        - Project
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+      operationId: Project.read_Project
+      responses:
+        200:
+          description: Sending TM, PT, Clusters, Results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  PhysicalTopology:
+                    $ref: '#/components/schemas/PhysicalTopology'
+                  TrafficMatrix:
+                    $ref: '#/components/schemas/TrafficMatrix'
+                  Clusters:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        Gateways:
+                          type: array
+                          items:
+                            type: string
+                        Subnodes:
+                          type: array
+                          items:
+                            type: string
+                  #results
                 
+    post:
+      description: Creating new project using PT, TM, Cluster Id
+      summary: Creating new Project
+      tags: 
+       - Project
+      parameters: 
+        - name: TM_Id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Traffic Matrix Id
         
+        - name: PT_Id
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Physical Topology Id
         
+        - name: Clusters_Id
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          description: Clusters Id
+      
+      operationId: Project.create_Project
+      responses:
+        201:
+          description: Sending back Project Id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Project_Id:
+                    type: integer
+                    format: int64
+                required: 
+                  - Project_Id
+    
+    put:
+      summary: Updating an existing Project
+      tags: 
+        - Project
+      description: Updating Project Using Project_Id
+      parameters: 
+        - $ref: '#/components/parameters/Id'
+      
+      operationId: Project.update_Project
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                PT_Id:
+                  type: integer
+                  format: int64
+                TM_Id:
+                  type: integer
+                  format: int64
+                Clusters_Id:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+      responses:
+        200:
+          description: Done
+    
+    delete:
+      summary: Deleting an Existing Project
+      tags:
+        - Project
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      operationId: Project.delete_Project
+      
+      responses:
+        200:
+          description: Project deleted
+              
+      
+      
+      
+      

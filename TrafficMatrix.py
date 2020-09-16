@@ -11,3 +11,6 @@ def update_TrafficMatrix(Id):
 
 def delete_TrafficMatrix(Id):
     print("delete method")
+
+def read_all():
+    print("read_all")

@@ -46,3 +46,6 @@ def update_PhysicalTopology(Id):
 
 def delete_PhysicalTopology(Id):
     print("delete method")
+
+def read_all_PT():
+    print("read_all")
