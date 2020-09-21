@@ -1,6 +1,16 @@
 from flask import make_response, abort, request
+from models import PhysicalTopologyModel, PhysicalTopologySchema
 
+"""
+    This module handles /PhysicalTopology Path endpoints
+    Allowed methods:
+        1. GET
+        2. POST
+        3. PUT
+        4. DELETE
+"""
 
+# Sample for Physical Topology
 PHYSICALTOPOLOGY = {
     "Nodes":[
         {
@@ -28,10 +38,19 @@ PHYSICALTOPOLOGY = {
 }
 
 
-
+# This function handles GET method
+# parameters:
+#   1. Physical Topology Id
+# Response:
+#   1. Physical Topology object
 def get_PhysicalTopology(Id):
-    print("get method")
-    return PHYSICALTOPOLOGY
+    PT = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
+    if PT is None:
+        abort(404)
+    else:
+        schema = PhysicalTopologySchema()
+
+        return schema.dump(PT), 200
 
 
 def create_PhysicalTopology():
