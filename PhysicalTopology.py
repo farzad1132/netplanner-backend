@@ -1,5 +1,7 @@
 from flask import make_response, abort, request
 from models import PhysicalTopologyModel, PhysicalTopologySchema
+import json
+from config import db
 
 """
     This module handles /PhysicalTopology Path endpoints
@@ -48,14 +50,19 @@ def get_PhysicalTopology(Id):
     if PT is None:
         abort(404)
     else:
-        schema = PhysicalTopologySchema()
 
-        return schema.dump(PT), 200
+        return PT.data, 200
 
-
-def create_PhysicalTopology():
-    print("Post method")
-    print(request.get_data())
+# This function handles POST method
+# Request Body: Physical Topology
+# Response: 201
+def create_PhysicalTopology(name):
+    PT = json.loads(request.get_data())
+    PT_object = PhysicalTopologyModel(name= name, data= PT)
+    db.session.add(PT_object)
+    db.session.commit()
+    
+    return {"Id": PT_object.id}, 201
 
 
 def update_PhysicalTopology(Id):

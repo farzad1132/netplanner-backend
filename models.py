@@ -10,7 +10,8 @@ class PhysicalTopologyModel(db.Model):
     id = db.Column("id", db.Integer, 
                         primary_key= True)
     name = db.Column("name", db.String, 
-                        nullable= False)
+                        nullable= False,
+                        unique= True)
     data = db.Column("data", JSON, nullable= False)
     projects = db.relationship( "ProjectModel",
                                 back_populates= "PT")
@@ -24,7 +25,9 @@ class TrafficMatrixModel(db.Model):
     id = db.Column( "id", 
                     db.Integer, primary_key= True)
     name = db.Column(   "name", 
-                        db.String, nullable= False)
+                        db.String,
+                        nullable= False,
+                        unique= True)
     data = db.Column(   "data", 
                         JSON, nullable= False)
     projects = db.relationship( "ProjectModel",
@@ -37,9 +40,12 @@ class UserModel(db.Model):
     __tablename__ = "User"
     __table_args__ = {'extend_existing': True}
     id = db.Column( "id", 
-                    db.Integer, primary_key= True)
+                    db.Integer, 
+                    primary_key= True)
     name = db.Column(   "name", 
-                        db.String, nullable= False)
+                        db.String, 
+                        nullable= False,
+                        unique= True)
     projects = db.relationship( "ProjectModel",
                                 back_populates= "user")
     
@@ -50,9 +56,12 @@ class ProjectModel(db.Model):
     __tablename__ = "Project"
     __table_args__ = {'extend_existing': True}
     id = db.Column( "id", 
-                    db.Integer, primary_key= True)
+                    db.Integer, 
+                    primary_key= True)
     name = db.Column(   "name", 
-                        db.String, nullable= False)
+                        db.String, 
+                        nullable= False,
+                        unique= True)
     create_date = db.Column(db.DateTime, 
                             default=datetime.utcnow, 
                             onupdate=datetime.utcnow)

@@ -53,7 +53,8 @@ components:
               Destination:
                 type: string
               Distance:
-                type: string
+                type: number
+                format: float
               FiberType:
                 type: string
             required: 
@@ -113,7 +114,6 @@ components:
       required: true
       schema:
         type: integer
-        format: int64
       
     
 paths:
@@ -144,6 +144,12 @@ paths:
       description: This method creates a Physical Topology with given data and answers 
         with its id
       operationId: PhysicalTopology.create_PhysicalTopology
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
       requestBody:
         description: providing information for creating new Physical Topology
         content:
