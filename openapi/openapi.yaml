@@ -254,6 +254,12 @@ paths:
       summary: Creating new Traffic Matrix
       description: This method creates a Traffic Matrix and returns its id
       operationId: TrafficMatrix.create_TrafficMatrix
+      parameters:
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
       requestBody: 
         description: Providing Traffic Matrix information
         content:
