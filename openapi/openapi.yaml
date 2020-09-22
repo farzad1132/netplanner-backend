@@ -200,7 +200,7 @@ paths:
         200:
           description: Physical Topology deleted
           
-  /PhyiscalTopology/read_all:
+  /PhysicalTopology/read_all:
     summary: Reading all PT's
     get:
       tags:

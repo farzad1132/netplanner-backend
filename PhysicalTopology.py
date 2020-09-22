@@ -1,10 +1,10 @@
-from flask import make_response, abort, request
+from flask import abort, request
 from models import PhysicalTopologyModel, PhysicalTopologySchema
 import json
 from config import db
 
 """
-    This module handles /PhysicalTopology Path endpoints
+    This module handles /PhysicalTopology and /PhysicalTopology/real_all Path endpoints
     Allowed methods:
         1. GET
         2. POST
@@ -40,7 +40,7 @@ PHYSICALTOPOLOGY = {
 }
 
 
-# This function handles GET method
+# This function handles GET method at /PhysicalTopology
 # parameters:
 #   1. Physical Topology Id
 # Response:
@@ -53,7 +53,7 @@ def get_PhysicalTopology(Id):
 
         return PT.data, 200
 
-# This function handles POST method
+# This function handles POST method at /PhysicalTopology
 # Request Body: Physical Topology
 # Response: 201
 def create_PhysicalTopology(name):
@@ -64,14 +64,35 @@ def create_PhysicalTopology(name):
     
     return {"Id": PT_object.id}, 201
 
-
+# This function handles PUT method at /PhysicalTopology
+# parameters:
+#   1. PhysicalTopology Id
+# RequestBody:  PhysicalTopology
+# Response:     200 
 def update_PhysicalTopology(Id):
-    print("put method")
+    PT_new = json.loads(request.get_data())
+    PT_old = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
+    if PT_old is None:
+        return abort(404)
+    else:
+        PT_old.data = PT_new
+        db.session.commit()
+        return 200
 
-
-
+# This function handles DELETE method at /PhysicalTopology
+# parameters:
+#   1. PhysicalTopology Id
+# Response:     200 
 def delete_PhysicalTopology(Id):
-    print("delete method")
+    PT = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
+    if PT is None:
+        abort(404)
+    else:
+        db.session.delete(PT)
+        db.session.commit()
+        return 200
 
+# This function handles GET method at /PhysicalTopology/read_all
+# TODO: complete this after authentication
 def read_all_PT():
     print("read_all")
