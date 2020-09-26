@@ -109,20 +109,23 @@ class ProjectModel(db.Model):
         return f"PROJECT(name= {self.name}, username= {self.user.name}, PT name={self.PT.name}, TM name={self.TM.name})" 
 
 
-class PhysicalTopologySchema(ma.Schema):
+class PhysicalTopologySchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = PhysicalTopologyModel
         sqla_session = db.session
+        include_fk = True
 
-class TrafficMatrixSchema(ma.Schema):
+class TrafficMatrixSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = TrafficMatrixModel
         sqla_session = db.session
+        include_fk = True
 
-class UserSchema(ma.Schema):
+class UserSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = UserModel
         sqla_session = db.session
+        include_fk = True
     
     projects = fields.Nested(   "User_ProjectSchema", 
                                 default=[], many= True)
@@ -135,7 +138,8 @@ class User_ProjectSchema(ma.Schema):
     tm_id = fields.Int()
     pt_id = fields.Int()
 
-class ProjectSchema(ma.Schema):
+class ProjectSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = ProjectModel
         sqla_session = db.session
+        include_fk = True
