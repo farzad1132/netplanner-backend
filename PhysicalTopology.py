@@ -45,18 +45,18 @@ PHYSICALTOPOLOGY = {
 #   1. Physical Topology Id
 # Response:
 #   1. Physical Topology object
-def get_PhysicalTopology(Id):
+def get_PhysicalTopology(Id, UserId):
     PT = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
     if PT is None:
         abort(404)
     else:
-
-        return PT.data, 200
+        schema = PhysicalTopologySchema(only=("id", "name", "data", "create_date"), many= False)
+        return schema.dump(PT), 200
 
 # This function handles POST method at /PhysicalTopology
 # Request Body: Physical Topology
 # Response: 201
-def create_PhysicalTopology(name):
+def create_PhysicalTopology(name, UserId):
     PT = json.loads(request.get_data())
     PT_object = PhysicalTopologyModel(name= name, data= PT)
     db.session.add(PT_object)
@@ -69,7 +69,7 @@ def create_PhysicalTopology(name):
 #   1. PhysicalTopology Id
 # RequestBody:  PhysicalTopology
 # Response:     200 
-def update_PhysicalTopology(Id):
+def update_PhysicalTopology(Id, UserId):
     PT_new = json.loads(request.get_data())
     PT_old = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
     if PT_old is None:
@@ -83,7 +83,7 @@ def update_PhysicalTopology(Id):
 # parameters:
 #   1. PhysicalTopology Id
 # Response:     200 
-def delete_PhysicalTopology(Id):
+def delete_PhysicalTopology(Id, UserId):
     PT = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
     if PT is None:
         abort(404)
@@ -93,6 +93,11 @@ def delete_PhysicalTopology(Id):
         return 200
 
 # This function handles GET method at /PhysicalTopology/read_all
-# TODO: complete this after authentication
-def read_all_PT():
-    print("read_all")
+def read_all_PT(UserId):
+    PTs = TrafficMatrixModel.query.filter_by(user_id= UserId).all()
+    if not PTs:
+        return 404
+    else:
+        schema = PhysicalTopologySchema(only=("id", "name", "data", "create_date"), many= True)
+        PTs = schema.dump(PTs)
+        return PTs

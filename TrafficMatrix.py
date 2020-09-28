@@ -1,7 +1,7 @@
 from flask import abort, request
 import json
 from config import db
-from models import TrafficMatrixModel
+from models import TrafficMatrixModel, TrafficMatrixSchema
 
 """
     This module handles /TrafficMatrix and /TrafficMatrix/real_all Path endpoints
@@ -17,18 +17,18 @@ from models import TrafficMatrixModel
 #   1. TrafficMatrix Id
 # Response:
 #   1. TrafficMatrix object
-def get_TrafficMatrix(Id):
+def get_TrafficMatrix(Id, UserId):
     TM = TrafficMatrixModel.query.filter_by(id= Id).one_or_none()
     if TM is None:
         abort(404)
     else:
-
-        return TM.data, 200
+        schema = TrafficMatrixSchema(only=("id", "name", "data", "create_date"), many= False)
+        return schema.dump(TM), 200
 
 # This function handles POST method at /TrafficMatrix
 # Request Body: TrafficMatrix
 # Response: 201
-def create_TrafficMatrix(name):
+def create_TrafficMatrix(name, UserId):
     TM = json.loads(request.get_data())
     TM_object = TrafficMatrixModel(name= name, data= TM)
     db.session.add(TM_object)
@@ -41,7 +41,7 @@ def create_TrafficMatrix(name):
 #   1. TrafficMatrix Id
 # RequestBody:  TrafficMatrix
 # Response:     200 
-def update_TrafficMatrix(Id):
+def update_TrafficMatrix(Id, UserId):
     TM_new = json.loads(request.get_data())
     TM_old = TrafficMatrixModel.query.filter_by(id= Id).one_or_none()
     if TM_old is None:
@@ -55,7 +55,7 @@ def update_TrafficMatrix(Id):
 # parameters:
 #   1. Trafficmatrix Id
 # Response:     200 
-def delete_TrafficMatrix(Id):
+def delete_TrafficMatrix(Id, UserId):
     TM = TrafficMatrixModel.query.filter_by(id= Id).one_or_none()
     if TM is None:
         abort(404)
@@ -65,6 +65,11 @@ def delete_TrafficMatrix(Id):
         return 200
 
 # This function handles GET method at /TrafficMatrix/read_all
-# TODO: complete this after authentication
-def read_all():
-    print("read_all")
+def read_all(UserId):
+    TMs = TrafficMatrixModel.query.filter_by(user_id= UserId).all()
+    if not TMs:
+        return 404
+    else:
+        schema = TrafficMatrixSchema(only=("id", "name", "data", "create_date"), many= True)
+        TMs = schema.dump(TMs)
+        return TMs

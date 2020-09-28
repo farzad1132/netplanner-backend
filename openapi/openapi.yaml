@@ -114,10 +114,16 @@ components:
       required: true
       schema:
         type: integer
+    UserId:
+      name: UserId
+      in: path
+      required: true
+      schema:
+        type: integer
       
     
 paths:
-  /PhysicalTopology:
+  /PhysicalTopology/{UserId}:
     summary: this path is handeling Physical Topology interactions
     get:
       tags: 
@@ -127,6 +133,7 @@ paths:
       operationId: PhysicalTopology.get_PhysicalTopology
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       responses:
         200:
           description: Physical Topology found
@@ -150,6 +157,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         description: providing information for creating new Physical Topology
         content:
@@ -178,6 +186,7 @@ paths:
       operationId: PhysicalTopology.update_PhysicalTopology
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         description: provide anything that you want to update
         content:
@@ -196,17 +205,20 @@ paths:
       operationId: PhysicalTopology.delete_PhysicalTopology
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       responses:
         200:
           description: Physical Topology deleted
           
-  /PhysicalTopology/read_all:
+  /PhysicalTopology/read_all/{UserId}:
     summary: Reading all PT's
     get:
       tags:
         - Physical Topology
       summary: Reading all PT's stored in Database
       operationId: PhysicalTopology.read_all_PT
+      parameters:
+        - $ref: '#/components/parameters/UserId'
       responses:
         200:
           description: Returning back all PT's
@@ -215,21 +227,25 @@ paths:
               schema:
                 type: object
                 properties:
-                  Name:
+                  name:
                     type: string
                   date:
                     type: string
                     format: date
-                  Id:
+                  id:
                     type: integer
                     format: int64
+                  create_date:
+                    type: string
+                    format: date-time
                 required:
-                  - Name
+                  - name
                   - date
-                  - Id
+                  - id
+                  - create_date
                 
           
-  /TrafficMatrix:
+  /TrafficMatrix/{UserId}:
     summary: This path is handling operations related to Traffic Matrix
     get:
       tags: 
@@ -238,6 +254,7 @@ paths:
       description: Accessing a traffic Matrix using it's id
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       operationId: TrafficMatrix.get_TrafficMatrix
       responses:
         200:
@@ -260,6 +277,7 @@ paths:
           required: true
           schema:
             type: string
+        - $ref: '#/components/parameters/UserId'
       requestBody: 
         description: Providing Traffic Matrix information
         content:
@@ -287,6 +305,7 @@ paths:
       description: This method updates a Traffic Matrix from database
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       operationId: TrafficMatrix.update_TrafficMatrix  
       requestBody:
         description: Providing information for updating Traffic Matrix
@@ -306,18 +325,19 @@ paths:
       description: This method deletes a trafic Matrix from database
       parameters: 
        - $ref: '#/components/parameters/Id'
-      
+       - $ref: '#/components/parameters/UserId'
       responses:
         200:
           description: Traffic Matrix deleted
           
-  /TrafficMatrix/read_all:
+  /TrafficMatrix/read_all/{UserId}:
     description: Reading all saved TM's for a user
     get:
       tags:
        - Traffic Matrix
       summary: Reading all Traffic Matrices
-      
+      parameters:
+        - $ref: '#/components/parameters/UserId'
       operationId: TrafficMatrix.read_all
       responses:
         200:
@@ -327,21 +347,25 @@ paths:
               schema:
                 type: object
                 properties:
-                  Name:
+                  name:
                     type: string
                   date:
                     type: string
                     format: date
-                  Id:
+                  id:
                     type: integer
                     format: int64
+                  create_date:
+                    type: string
+                    format: date-time
                 required:
-                  - Name
+                  - name
                   - date
-                  - Id
+                  - id
+                  - date-time
           
           
-  /Clustering:
+  /Clustering/{UserId}:
     summary: This path is handling operations related to Clustering
     post:
       operationId: Clustering.create_Cluster
@@ -356,6 +380,7 @@ paths:
             type: integer
             format: int64
           required: true
+        - $ref: '#/components/parameters/UserId'
       requestBody:
         description: Providing Gateways and Subnodes
         content:
@@ -384,7 +409,7 @@ paths:
                     format: int64
                 required: 
                   - ClusterId
-  /Project:
+  /Project/{UserId}:
     summary: This path job is to handle projects
     get:
       description: Accessing a existing Project
@@ -393,6 +418,7 @@ paths:
         - Project
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       operationId: Project.read_Project
       responses:
         200:
@@ -451,6 +477,8 @@ paths:
               type: integer
               format: int64
           description: Clusters Id
+        
+        - $ref: '#/components/parameters/UserId'
       
       operationId: Project.create_Project
       responses:
@@ -474,6 +502,7 @@ paths:
       description: Updating Project Using Project_Id
       parameters: 
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       
       operationId: Project.update_Project
       requestBody:
@@ -503,6 +532,7 @@ paths:
         - Project
       parameters:
         - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/UserId'
       operationId: Project.delete_Project
       
       responses:
