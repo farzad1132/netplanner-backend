@@ -1,5 +1,5 @@
 import os
-from config import db
+from config import db, bcrypt
 from models import PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel
 
 
@@ -53,7 +53,8 @@ TRAFFICMATRIX = {
 }
 
 USER = {
-    "name": "Test User",
+    "username": "Test User",
+    "password": "1234"
 }
 
 PROJECTS = {
@@ -72,7 +73,8 @@ if __name__ == "__main__":
     db.session.commit()
     #clear_data(db.session)
     db.create_all()
-    user = UserModel(name= USER["name"])
+    user = UserModel(username= USER["username"],
+                    password= bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
     PT = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY)
     user.PTs.append(PT)
     TM = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX)

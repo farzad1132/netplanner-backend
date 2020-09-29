@@ -58,10 +58,13 @@ class UserModel(db.Model):
     id = db.Column( "id", 
                     db.Integer, 
                     primary_key= True)
-    name = db.Column(   "name", 
+    username = db.Column(   "username", 
                         db.String, 
                         nullable= False,
                         unique= True)
+    password = db.Column(   "password",
+                            db.String,
+                            nullable= False)
     projects = db.relationship( "ProjectModel",
                                 back_populates= "user")
 
@@ -76,7 +79,7 @@ class UserModel(db.Model):
                             onupdate=datetime.utcnow)
     
     def __repr__(self):
-        return f"USER(name= {self.name})"
+        return f"USER(name= {self.username})"
 
 class ProjectModel(db.Model):
     __tablename__ = "Project"

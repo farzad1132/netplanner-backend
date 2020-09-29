@@ -2,6 +2,7 @@ import os
 import connexion
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
+from flask_bcrypt import Bcrypt
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -25,3 +26,5 @@ db = SQLAlchemy(app)
 
 # Initialize Marshmallow
 ma = Marshmallow(app)
+
+bcrypt = Bcrypt(app)

@@ -538,6 +538,37 @@ paths:
       responses:
         200:
           description: Project deleted
+  /login:
+    summary: path for logging in
+    get:
+      summary: Accessing UserId with username and password
+      tags:
+        - User
+      parameters:
+        - name: Username
+          in: query
+          required: true
+          schema:
+            type: string
+        
+        - name: Password
+          in: query
+          required: true
+          schema:
+            type: string
+            format: password
+      operationId: user.login
+      responses:
+        200:
+          description: User Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  UserId:
+                    type: integer
+
               
       
       
