@@ -94,7 +94,7 @@ def delete_PhysicalTopology(Id, UserId):
 
 # This function handles GET method at /PhysicalTopology/read_all
 def read_all_PT(UserId):
-    PTs = TrafficMatrixModel.query.filter_by(user_id= UserId).all()
+    PTs = PhysicalTopologyModel.query.filter_by(user_id= UserId).all()
     if not PTs:
         return 404
     else:
