@@ -229,9 +229,6 @@ paths:
                 properties:
                   name:
                     type: string
-                  date:
-                    type: string
-                    format: date
                   id:
                     type: integer
                     format: int64
@@ -239,8 +236,7 @@ paths:
                     type: string
                     format: date-time
                 required:
-                  - name
-                  - date
+                  - nam
                   - id
                   - create_date
                 
@@ -349,9 +345,6 @@ paths:
                 properties:
                   name:
                     type: string
-                  date:
-                    type: string
-                    format: date
                   id:
                     type: integer
                     format: int64
@@ -360,7 +353,6 @@ paths:
                     format: date-time
                 required:
                   - name
-                  - date
                   - id
                   - date-time
           
