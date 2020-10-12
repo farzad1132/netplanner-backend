@@ -89,8 +89,7 @@ class ProjectModel(db.Model):
                     primary_key= True)
     name = db.Column(   "name", 
                         db.String, 
-                        nullable= False,
-                        unique= True)
+                        nullable= False)
     create_date = db.Column(db.DateTime, 
                             default=datetime.utcnow, 
                             onupdate=datetime.utcnow)

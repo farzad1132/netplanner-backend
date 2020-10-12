@@ -414,30 +414,20 @@ paths:
       operationId: Project.read_Project
       responses:
         200:
-          description: Sending TM, PT, Clusters, Results
+          description: Sending PT_id, TM_id
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  PhysicalTopology:
-                    $ref: '#/components/schemas/PhysicalTopology'
-                  TrafficMatrix:
-                    $ref: '#/components/schemas/TrafficMatrix'
-                  Clusters:
-                    type: array
-                    items: 
-                      type: object
-                      properties:
-                        Gateways:
-                          type: array
-                          items:
-                            type: string
-                        Subnodes:
-                          type: array
-                          items:
-                            type: string
-                  #results
+                  tm_id:
+                    type: integer
+                  pt_id:
+                    type: integer
+                required:
+                  - tm_id
+                  - pt_id
+                  #results list of id's
                 
     post:
       description: Creating new project using PT, TM, Cluster Id
@@ -471,6 +461,12 @@ paths:
           description: Clusters Id
         
         - $ref: '#/components/parameters/UserId'
+
+        - name: Name
+          in: query
+          required: true
+          schema:
+           type: string
       
       operationId: Project.create_Project
       responses:
@@ -486,6 +482,17 @@ paths:
                     format: int64
                 required: 
                   - Project_Id
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
     
     put:
       summary: Updating an existing Project
@@ -495,28 +502,51 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/Id'
         - $ref: '#/components/parameters/UserId'
+
+        - name: TM_Id
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: Traffic Matrix Id
+        
+        - name: PT_Id
+          in: query
+          schema:
+            type: integer
+            format: int64
+          description: Physical Topology Id
+        
+        - name: Clusters_Id
+          in: query
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+          description: Clusters Id
+        
+        - name: Name
+          in: query
+          required: true
+          schema:
+            type: string
       
       operationId: Project.update_Project
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                PT_Id:
-                  type: integer
-                  format: int64
-                TM_Id:
-                  type: integer
-                  format: int64
-                Clusters_Id:
-                  type: array
-                  items:
-                    type: integer
-                    format: int64
       responses:
         200:
           description: Done
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
     
     delete:
       summary: Deleting an Existing Project
