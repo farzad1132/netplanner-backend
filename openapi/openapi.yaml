@@ -140,7 +140,21 @@ paths:
           content:
             appliation/json:
               schema:
-                $ref: '#/components/schemas/PhysicalTopology'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PhysicalTopology'
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
                 
                 
     
@@ -177,6 +191,17 @@ paths:
                     type: integer
                 required: 
                   - Id
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
     
     put:
       tags: 
@@ -196,6 +221,17 @@ paths:
       responses:
         200:
           description: Physical Topology Updated
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
     
     delete:
       tags: 
@@ -209,6 +245,18 @@ paths:
       responses:
         200:
           description: Physical Topology deleted
+        
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
           
   /PhysicalTopology/read_all/{UserId}:
     summary: Reading all PT's
@@ -225,20 +273,33 @@ paths:
           content:
             application/json:
               schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    id:
+                      type: integer
+                      format: int64
+                    create_date:
+                      type: string
+                      format: date-time
+                  required:
+                    - name
+                    - id
+                    - create_date
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  name:
+                  error_msg:
                     type: string
-                  id:
-                    type: integer
-                    format: int64
-                  create_date:
-                    type: string
-                    format: date-time
                 required:
-                  - nam
-                  - id
-                  - create_date
+                  - error_msg
                 
           
   /TrafficMatrix/{UserId}:
@@ -258,7 +319,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TrafficMatrix'
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TrafficMatrix'
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
             
     
     post:
@@ -313,6 +388,18 @@ paths:
       responses:
         200:
           description: Traffic Matrix updated
+
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
     delete:
       tags: 
        - Traffic Matrix
@@ -341,20 +428,33 @@ paths:
           content:
             application/json:
               schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    id:
+                      type: integer
+                      format: int64
+                    create_date:
+                      type: string
+                      format: date-time
+                  required:
+                    - name
+                    - id
+                    - date-time
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  name:
+                  error_msg:
                     type: string
-                  id:
-                    type: integer
-                    format: int64
-                  create_date:
-                    type: string
-                    format: date-time
                 required:
-                  - name
-                  - id
-                  - date-time
+                  - error_msg
           
           
   /Clustering/{UserId}:
@@ -428,6 +528,17 @@ paths:
                   - tm_id
                   - pt_id
                   #results list of id's
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
                 
     post:
       description: Creating new project using PT, TM, Cluster Id
@@ -590,6 +701,50 @@ paths:
                 properties:
                   UserId:
                     type: integer
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
+  
+  /Project/read_all/{UserId}:
+    summary: path for getting all projects associated with UserId
+    get:
+      summary: getting all projects
+      tags:
+        - Project
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      operationId: Project.read_all
+      responses:
+        200:
+          description: Projects found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Id:
+                      type: integer
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
 
               
       

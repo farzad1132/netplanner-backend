@@ -18,11 +18,11 @@ from models import TrafficMatrixModel, TrafficMatrixSchema
 # Response:
 #   1. TrafficMatrix object
 def get_TrafficMatrix(Id, UserId):
-    TM = TrafficMatrixModel.query.filter_by(id= Id).one_or_none()
+    TM = TrafficMatrixModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
     if TM is None:
-        abort(404)
+        return {"error_msg":"no traffic Matrix found"}, 404
     else:
-        schema = TrafficMatrixSchema(only=("id", "name", "data", "create_date"), many= False)
+        schema = TrafficMatrixSchema(only=("data",), many= False)
         return schema.dump(TM), 200
 
 # This function handles POST method at /TrafficMatrix
@@ -43,9 +43,9 @@ def create_TrafficMatrix(name, UserId):
 # Response:     200 
 def update_TrafficMatrix(Id, UserId):
     TM_new = json.loads(request.get_data())
-    TM_old = TrafficMatrixModel.query.filter_by(id= Id).one_or_none()
+    TM_old = TrafficMatrixModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
     if TM_old is None:
-        return abort(404)
+        return {"error_msg":"no traffic Matrix found"}, 404
     else:
         TM_old.data = TM_new
         db.session.commit()
@@ -68,8 +68,7 @@ def delete_TrafficMatrix(Id, UserId):
 def read_all(UserId):
     TMs = TrafficMatrixModel.query.filter_by(user_id= UserId).all()
     if not TMs:
-        return 404
+        return {"error_msg": "no Traffic Matrix found for this user"}, 404
     else:
-        schema = TrafficMatrixSchema(only=("id", "name", "data", "create_date"), many= True)
-        TMs = schema.dump(TMs)
-        return TMs
+        schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many= True)
+        return schema.dump(TMs), 200

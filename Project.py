@@ -14,7 +14,7 @@ from models import ProjectModel, ProjectSchema, PhysicalTopologyModel, TrafficMa
 def read_Project(Id, UserId):
     Proj = ProjectModel.query.filter_by(id= Id).one_or_none()
     if Proj is None:
-        return 404
+        return {"error_msg": "project not found"}, 404
     else:
         schema = ProjectSchema(only=('pt_id', 'tm_id'))
         return schema.dump(Proj), 200
@@ -96,3 +96,12 @@ def update_Project(Id, UserId, TM_Id=None, PT_Id=None, Name=None, Clusters_Id=No
 
 def delete_Project(Id, UserId):
     print("delete method")
+
+
+def read_all(UserId):
+    Projs = ProjectModel.query.filter_by(user_id= UserId).all()
+    if not Projs:
+        return {"error_msg":"No project found for this user"}, 404
+    else:
+        schema = ProjectSchema(only=('id',), many=True)
+        return schema.dump(Projs), 200

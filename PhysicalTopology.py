@@ -46,11 +46,11 @@ PHYSICALTOPOLOGY = {
 # Response:
 #   1. Physical Topology object
 def get_PhysicalTopology(Id, UserId):
-    PT = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
+    PT = PhysicalTopologyModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
     if PT is None:
-        abort(404)
+        return {"error_msg":"Physical Topology not found"}, 404
     else:
-        schema = PhysicalTopologySchema(only=("id", "name", "data", "create_date"), many= False)
+        schema = PhysicalTopologySchema(only=("data", ), many= False)
         return schema.dump(PT), 200
 
 # This function handles POST method at /PhysicalTopology
@@ -71,9 +71,9 @@ def create_PhysicalTopology(name, UserId):
 # Response:     200 
 def update_PhysicalTopology(Id, UserId):
     PT_new = json.loads(request.get_data())
-    PT_old = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
+    PT_old = PhysicalTopologyModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
     if PT_old is None:
-        return abort(404)
+        return {"error_msg": "Physical Topology not found"}, 404
     else:
         PT_old.data = PT_new
         db.session.commit()
@@ -84,9 +84,9 @@ def update_PhysicalTopology(Id, UserId):
 #   1. PhysicalTopology Id
 # Response:     200 
 def delete_PhysicalTopology(Id, UserId):
-    PT = PhysicalTopologyModel.query.filter_by(id= Id).one_or_none()
+    PT = PhysicalTopologyModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
     if PT is None:
-        abort(404)
+        return {"error_msg": "Physical Topology not found"}, 404
     else:
         db.session.delete(PT)
         db.session.commit()
@@ -96,8 +96,7 @@ def delete_PhysicalTopology(Id, UserId):
 def read_all_PT(UserId):
     PTs = PhysicalTopologyModel.query.filter_by(user_id= UserId).all()
     if not PTs:
-        return 404
+        return {"error_msg": "no Physical Topology found"}, 404
     else:
-        schema = PhysicalTopologySchema(only=("id", "name", "data", "create_date"), many= True)
-        PTs = schema.dump(PTs)
-        return PTs
+        schema = PhysicalTopologySchema(only=("id", "name", "create_date"), many= True)
+        return schema.dump(PTs), 200

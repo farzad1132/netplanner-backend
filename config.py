@@ -7,7 +7,8 @@ from flask_bcrypt import Bcrypt
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Create the connexion application instance
-connex_app = connexion.App(__name__, specification_dir=os.path.join(basedir, "openapi"))
+connex_app = connexion.App(__name__,
+                            specification_dir=os.path.join(basedir, "openapi"))
 
 # Get the underlying Flask app instance
 app = connex_app.app
