@@ -8,3 +8,9 @@ services:
       - db.env
     ports:
       - 5432:5432
+  
+  service:
+    image: service_server:v1
+    container_name: service
+    ports: 
+      - 5020:5000
