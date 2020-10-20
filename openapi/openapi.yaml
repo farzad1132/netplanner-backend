@@ -146,7 +146,7 @@ paths:
         200:
           description: Physical Topology found
           content:
-            appliation/json:
+            application/json:
               schema:
                 type: object
                 properties:

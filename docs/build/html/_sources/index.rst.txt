@@ -21,15 +21,17 @@ NetPlanner different parts are:
    This is where we are storing algorithms results, users information and etc.
    here we are using **Postgresql**.
 
-We are going to discus all mentioned parts of backed in separate section
+We are going to discus all mentioned parts of backend in separate section
 
-for **Service**:
+In **Service** part we have below topics:
+-----------------------------------------
  * Restful API and it's specification
  * Routing of API
  * User Management
  * Security in API
 
-for **Database**:
+In **Database** part we have below topics:
+------------------------------------------
  * ORM system
  * Models
 
@@ -37,21 +39,16 @@ for **Database**:
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Table of Contents:
    
+   /modules
+   /ObjectDataStructures
    /RestAPI
    /Routing
    /UserManagement
    /Security
    /ORM
    /Models
+   /Contact
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
