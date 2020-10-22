@@ -2,6 +2,7 @@ from flask import abort, request
 from models import PhysicalTopologyModel, PhysicalTopologySchema
 import json
 from config import db
+from pandas import read_excel, ExcelFile
 
 """
     This module handles /PhysicalTopology and /PhysicalTopology/real_all Path endpoints
@@ -100,3 +101,88 @@ def read_all_PT(UserId):
     else:
         schema = PhysicalTopologySchema(only=("id", "name", "create_date"), many= True)
         return schema.dump(PTs), 200
+
+
+def read_from_excel(PT_binary, UserId, name):
+    PT = {}
+    
+    xls = ExcelFile(PT_binary)
+    Temp_data = read_excel(xls, 'Nodes')
+    temp_dic ={}
+    headers = ['ID','Node','Location','ROADM_Type'] 
+
+    for pointer in headers:
+        temp_dic[pointer] = {}
+        if pointer in Temp_data:
+            temp_dic[pointer].update(Temp_data[pointer])
+        else:
+            return {"error_msg": f"There is no {pointer} column in excel file"}, 400
+    
+    ProperList = []
+    for Row in temp_dic["ID"].keys():
+
+        item = {}
+        item["Name"] = temp_dic["Node"][Row]
+        try:
+            Location = str(temp_dic["Location"][Row]).split(',')
+            Location = list(map(lambda x : float(x), Location))
+        except:
+            return {"error_msg": f"There is an issue at column Location and row {Row}"}, 400
+
+        item["lat"] = Location[0]
+        item["lng"] = Location[1]
+
+        # TODO: check ROADM types
+        item["ROADM_type"] = temp_dic["ROADM_Type"][Row]
+
+        ProperList.append(item)
+
+    PT["Nodes"] = ProperList
+
+    Temp_data = read_excel(xls, 'Links')
+    temp_dic ={}
+    headers = ["ID", "Source", "Destination", "Distance", "Fiber Type"]
+    
+    for pointer in headers:
+        temp_dic[pointer] = {}
+        if pointer in Temp_data:
+            temp_dic[pointer].update(Temp_data[pointer])
+        else:
+            return {"error_msg": f"There is no {pointer} column in excel file"}, 400
+    
+    ProperList = []
+    for Row in temp_dic["ID"].keys():
+
+        item = {}
+        item["Source"] = temp_dic["Source"][Row]
+        item["Destination"] = temp_dic["Destination"][Row]
+
+        # TODO: add multi-span support
+        try:
+            Distance = float(temp_dic["Distance"][Row])
+        except:
+            return {"error_msg": f"There is an issue at column Distance and row {Row}"}, 400
+
+        item["Distance"] = Distance
+
+        try:
+            FiberType = temp_dic["Fiber Type"][Row].strip()
+        except:
+            return {"error_msg": f"There is an issue at column Fiber Type and row {Row}"}, 400
+
+        item["FiberType"] = FiberType
+
+        ProperList.append(item)
+
+    PT["Links"] = ProperList
+
+    PT_object = PhysicalTopologyModel(name= name, data= PT)
+    User = PhysicalTopologyModel.query.filter_by(user_id= UserId).one_or_none()
+    if User is None:
+        return {"error_msg": "user not found"} , 404
+    else:
+        PT_object.user_id = UserId
+    db.session.add(PT_object)
+    db.session.commit()
+
+    return {"PT":PT, "Id":PT_object.id}, 201

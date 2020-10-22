@@ -271,6 +271,52 @@ paths:
                     type: string
                 required:
                   - error_msg
+  
+  /PhysicalTopology/from_excel/{UserId}:
+    post:
+      tags:
+        - Physical Topology
+      summary: creating PT with excel file
+      operationId: PhysicalTopology.read_from_excel
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                PT_binary:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: PT in JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  PT:
+                    $ref: '#/components/schemas/PhysicalTopology'
+                  Id:
+                    type: integer
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
           
   /PhysicalTopology/read_all/{UserId}:
     summary: Reading all PT's
