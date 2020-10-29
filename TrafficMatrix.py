@@ -1,7 +1,8 @@
 from flask import abort, request
 import json
 from config import db
-from models import TrafficMatrixModel, TrafficMatrixSchema
+from models import TrafficMatrixModel, TrafficMatrixSchema, UserModel
+from pandas import ExcelFile, read_excel
 
 """
     This module handles /TrafficMatrix and /TrafficMatrix/real_all Path endpoints
@@ -72,3 +73,77 @@ def read_all(UserId):
     else:
         schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many= True)
         return schema.dump(TMs), 200
+
+
+def read_from_excel(TM_binary, UserId, name):
+
+    def service_quantity_check(cell):
+        try:
+            if str(cell) == 'nan':
+                return 0
+            else:
+                return int(float(cell))
+        except:
+            return None
+
+    TM = {}
+
+    excel = ExcelFile(TM_binary)
+    data = excel.parse(header=1, skipfooter=0)
+
+    General_Columns = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
+    Service_headers = ['Quantity_E1', 'Quantity_STM1_E', 'Quantity_STM1_O', 'Quantity_STM4', 'Quantity_STM16', 
+                        'Quantity_STM64', 'Quantity_FE', 'Quantity_GE', 'Quantity_10GE', 'Quantity_100GE']
+
+    for header in General_Columns:
+        if not header in data:
+            return {"error_msg": f"there is no {header} column"}, 400
+
+    DemandsList = []    
+    for Row in data["ID"].keys():
+        Demand = {}
+        try:
+            Demand["Id"] = int(Row)
+        except:
+            return {"error_msg" : f"wrong ID format {Row}"}, 400
+
+        Demand["Source"] = data["Source"][Row].strip()
+        Demand["Destination"] = data["Destination"][Row].strip()
+        Demand["Type"] = None
+        Demand["ProtectionType"] = data["Protection_Type"][Row].strip()
+
+        if not Demand["ProtectionType"] in ("NoProtection", "1+1_NodeDisjoint"):
+            return {"error_msg" : f"wrong entry for ProtectionType, ID = {Row}"}, 400
+
+        Demand["RestorationType"] = data["Restoration_Type"][Row].strip()
+
+        if not Demand["RestorationType"] in ("JointSame", "None", "AdvJointSame"):
+            return {"error_msg" : f"wrong entry for RetorationType, ID = {Row}"}, 400
+        
+        Demand["Services"] = []
+
+        for service in Service_headers:
+            quantity = service_quantity_check(data[service][Row])
+            if quantity is not None:
+                if quantity != 0:
+                    Demand["Services"].append({
+                        "Type": service[9::],
+                        "Quantity": quantity
+                    })
+            else:
+                return {"error_msg" : f"wrong entry of quantity at ID = {Row} and service {service[9::]}"}, 400
+        
+        DemandsList.append(Demand)
+
+    TM["Demands"] = DemandsList
+
+    TM_object = TrafficMatrixModel(name= name, data= TM)
+    User = UserModel.query.filter_by(id= UserId).one_or_none()
+    if User is None:
+        return {"error_msg": "user not found"} , 404
+    else:
+        TM_object.user_id = UserId
+    db.session.add(TM_object)
+    db.session.commit()
+
+    return {"Id": TM_object.id, "TM": TM}, 201

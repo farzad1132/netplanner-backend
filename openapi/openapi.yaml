@@ -80,9 +80,13 @@ components:
                 type: string
               Destination:
                 type: string
+              Id:
+                type: integer
               Type:
                 type: string
               ProtectionType:
+                type: string
+              RestorationType:
                 type: string
               Services:
                 type: array
@@ -111,6 +115,7 @@ components:
               - Type
               - Services
               - ProtectionType
+              - RestorationType
             
     
   parameters:
@@ -135,8 +140,6 @@ paths:
       tags: 
        - Physical Topology
       summary: Obtaining stored physical topology
-      security:
-        - jwt: []
       description: With an id you can get a Physical Topology from database
       operationId: PhysicalTopology.get_PhysicalTopology
       parameters: 
@@ -170,8 +173,6 @@ paths:
       tags: 
         - Physical Topology
       summary: Creating New Physical Topology
-      security:
-        - jwt: []
       description: This method creates a Physical Topology with given data and answers 
         with its id
       operationId: PhysicalTopology.create_PhysicalTopology
@@ -217,8 +218,6 @@ paths:
       tags: 
         - Physical Topology
       summary: Updating existing Physical Topology
-      security:
-        - jwt: []
       description: this method updates any given node or link in a particular Physical Topology
       operationId: PhysicalTopology.update_PhysicalTopology
       parameters: 
@@ -249,8 +248,6 @@ paths:
       tags: 
        - Physical Topology
       summary: Deleting existing Physical Topology
-      security:
-        - jwt: []
       description: this method deletes corresponding Physical Topology
       operationId: PhysicalTopology.delete_PhysicalTopology
       parameters: 
@@ -324,8 +321,6 @@ paths:
       tags:
         - Physical Topology
       summary: Reading all PT's stored in Database
-      security:
-        - jwt: []
       operationId: PhysicalTopology.read_all_PT
       parameters:
         - $ref: '#/components/parameters/UserId'
@@ -370,8 +365,6 @@ paths:
       tags: 
         - Traffic Matrix
       summary: Obtaining stored Traffic Matrix
-      security:
-        - jwt: []
       description: Accessing a traffic Matrix using it's id
       parameters: 
         - $ref: '#/components/parameters/Id'
@@ -404,8 +397,6 @@ paths:
       tags: 
        - Traffic Matrix
       summary: Creating new Traffic Matrix
-      security:
-        - jwt: []
       description: This method creates a Traffic Matrix and returns its id
       operationId: TrafficMatrix.create_TrafficMatrix
       parameters:
@@ -439,8 +430,6 @@ paths:
       tags: 
        - Traffic Matrix
       summary: Updating an existing Traffic Matrix
-      security:
-        - jwt: []
       description: This method updates a Traffic Matrix from database
       parameters: 
         - $ref: '#/components/parameters/Id'
@@ -472,8 +461,6 @@ paths:
       tags: 
        - Traffic Matrix
       summary: Deleting an existing Traffic Matrix
-      security:
-        - jwt: []
       operationId: TrafficMatrix.delete_TrafficMatrix
       description: This method deletes a trafic Matrix from database
       parameters: 
@@ -482,6 +469,52 @@ paths:
       responses:
         200:
           description: Traffic Matrix deleted
+  
+  /TrafficMatrix/from_excel/{UserId}:
+    post:
+      tags:
+        - Traffic Matrix
+      summary: creating TM with excel file
+      operationId: TrafficMatrix.read_from_excel
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - name: name
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                TM_binary:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: TM in JSON
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  TM:
+                    $ref: '#/components/schemas/TrafficMatrix'
+                  Id:
+                    type: integer
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    type: string
+                required:
+                  - error_msg
           
   /TrafficMatrix/read_all/{UserId}:
     description: Reading all saved TM's for a user
@@ -489,8 +522,6 @@ paths:
       tags:
        - Traffic Matrix
       summary: Reading all Traffic Matrices
-      security:
-        - jwt: []
       parameters:
         - $ref: '#/components/parameters/UserId'
       operationId: TrafficMatrix.read_all
@@ -577,8 +608,6 @@ paths:
     summary: This path job is to handle projects
     get:
       description: Accessing a existing Project
-      security:
-        - jwt: []
       summary: Obtaining stored Project
       tags: 
         - Project
@@ -616,8 +645,6 @@ paths:
                 
     post:
       description: Creating new project using PT, TM, Cluster Id
-      security:
-        - jwt: []
       summary: Creating new Project
       tags: 
        - Project
@@ -683,8 +710,6 @@ paths:
     
     put:
       summary: Updating an existing Project
-      security:
-        - jwt: []
       tags: 
         - Project
       description: Updating Project Using Project_Id
@@ -739,8 +764,6 @@ paths:
     
     delete:
       summary: Deleting an Existing Project
-      security:
-        - jwt: []
       tags:
         - Project
       parameters:
@@ -827,8 +850,6 @@ paths:
                     type: string
                 required:
                   - error_msg
-      security:
-        - jwt: []
 
               
       

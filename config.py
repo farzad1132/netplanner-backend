@@ -17,7 +17,6 @@ DB_PORT = os.environ["DB_PORT"]
 DB_HOST = os.environ["DB_HOST"]
 DB_PASS = os.environ["DB_PASS"]
 DB_USER = os.environ["DB_USER"]
-
 db_url = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB}"
 
 

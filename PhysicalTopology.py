@@ -1,5 +1,5 @@
 from flask import abort, request
-from models import PhysicalTopologyModel, PhysicalTopologySchema
+from models import PhysicalTopologyModel, PhysicalTopologySchema, UserModel
 import json
 from config import db
 from pandas import read_excel, ExcelFile
@@ -177,7 +177,7 @@ def read_from_excel(PT_binary, UserId, name):
     PT["Links"] = ProperList
 
     PT_object = PhysicalTopologyModel(name= name, data= PT)
-    User = PhysicalTopologyModel.query.filter_by(user_id= UserId).one_or_none()
+    User = UserModel.query.filter_by(id= UserId).one_or_none()
     if User is None:
         return {"error_msg": "user not found"} , 404
     else:
