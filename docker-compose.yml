@@ -1,8 +1,8 @@
-version: '3.5'
+version: '3.8'
 services:
   db:
     image: postgres
-    restart: unless-stopped
+    restart: on-failure
     container_name: database
     env_file:
       - db.env
@@ -10,7 +10,9 @@ services:
       - 5432:5432
   
   service:
-    image: service_server:v1
+    build: .
+    volumes: 
+      - .:/app
     container_name: service
     ports: 
       - 5020:5000
