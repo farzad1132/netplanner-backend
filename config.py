@@ -4,11 +4,20 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
 
+# This handler will respond to exceptions that connexion does not cover it.
+# for example connexion is handling BadRequest but its not handling TypeError which this handler comes into play
+# here we are not specifying any status code because a variety of exceptions may invoke this handler and
+#  it's just for informing the client
+def general_exception_handler(e):
+    return {"error_msg": e.__str__()}
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Create the connexion application instance
 connex_app = connexion.App(__name__,
                             specification_dir=os.path.join(basedir, "openapi"))
+
+connex_app.add_error_handler(Exception, general_exception_handler)
 
 # Get the underlying Flask app instance
 app = connex_app.app

@@ -2,3 +2,5 @@
 __pycache__/
 db.env
 Dockerfile
+gunicorn_access_log.txt
+gunicorn_error_log.txt
