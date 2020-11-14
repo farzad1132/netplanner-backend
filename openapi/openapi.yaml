@@ -14,7 +14,7 @@ servers:
     description: development server of this version
   
   
-  - url: /v1-p
+  - url: /v1_p
     description: production server of this version
     
 components:
@@ -25,15 +25,15 @@ components:
       bearerFormat: JWT
       x-bearerInfoFunc: user.decode_token
   schemas:
-    PhysicalTopology:
+    physical_topology:
       type: object
       properties:
-        Nodes:
+        nodes:
           type: array
           items:
             type: object
             properties:
-              Name:
+              name:
                 type: string
               lat: 
                 type: number
@@ -41,92 +41,92 @@ components:
               lng:
                 type: number
                 format: float
-              ROADM_type:
+              roadm_type:
                 type: string
             required: 
               - Name
               - lat
               - lng
-              - ROADM_type
+              - roadm_type
             
-        Links:
+        links:
           type: array
           items:
             type: object
             properties:
-              Source:
+              source:
                 type: string
-              Destination:
+              destination:
                 type: string
-              Distance:
+              distance:
                 type: number
                 format: float
-              FiberType:
+              fiber_type:
                 type: string
             required: 
-              - Source
-              - Destination
-              - Distance
-              - FiberType
-    TrafficMatrix:
+              - source
+              - destination
+              - distance
+              - fiber_type
+    traffic_matrix:
       type: object
       properties:
-        Demands: 
+        demands: 
           type: array
           items:
             type: object
             properties:
-              Source:
+              source:
                 type: string
-              Destination:
+              destination:
                 type: string
-              Id:
+              id:
                 type: integer
-              Type:
+              type:
                 type: string
-              ProtectionType:
+              protection_type:
                 type: string
-              RestorationType:
+              restoration_type:
                 type: string
-              Services:
+              services:
                 type: array
                 items:
                   type: object
                   properties:
-                    Quantity:
+                    quantity:
                       type: integer
                       format: int32
-                    SLA:
+                    sla:
                       type: string
-                    Type:
+                    type:
                       type: string
-                    Granularity:
+                    granularity:
                       type: string
-                    Granularity_vc12:
+                    granularity_vc12:
                       type: string
-                    Granularity_vc4:
+                    granularity_vc4:
                       type: string
                   required: 
-                    - Type
-                    - Quantity
+                    - type
+                    - quantity
             required: 
-              - Source
-              - Destination
-              - Type
-              - Services
-              - ProtectionType
-              - RestorationType
+              - source
+              - destination
+              - type
+              - services
+              - protection_type
+              - restoration_type
             
     
   parameters:
-    Id:
-      name: Id
+    id:
+      name: id
       in: query
       required: true
       schema:
         type: integer
-    UserId:
-      name: UserId
+    user_id:
+      name: user_id
       in: path
       required: true
       schema:
@@ -134,8 +134,8 @@ components:
       
     
 paths:
-  /PhysicalTopology/{UserId}:
-    summary: this path is handeling Physical Topology interactions
+  /physical_topologies/{user_id}:
+    summary: this path is handling Physical Topology interactions
     get:
       tags: 
        - Physical Topology
@@ -143,8 +143,8 @@ paths:
       description: With an id you can get a Physical Topology from database
       operationId: PhysicalTopology.get_PhysicalTopology
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       responses:
         200:
           description: Physical Topology found
@@ -154,7 +154,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/PhysicalTopology'
+                    $ref: '#/components/schemas/physical_topology'
         default:
           description: error handling
           content:
@@ -182,13 +182,13 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
       requestBody:
         description: providing information for creating new Physical Topology
         content:
          application/json:
           schema:
-            $ref: '#/components/schemas/PhysicalTopology'
+            $ref: '#/components/schemas/physical_topology'
             
       responses:
         201:
@@ -198,10 +198,10 @@ paths:
               schema:
                 type: object
                 properties:
-                  Id:
+                  id:
                     type: integer
                 required: 
-                  - Id
+                  - id
         default:
           description: error handling
           content:
@@ -221,14 +221,14 @@ paths:
       description: this method updates any given node or link in a particular Physical Topology
       operationId: PhysicalTopology.update_PhysicalTopology
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       requestBody:
         description: provide anything that you want to update
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PhysicalTopology'
+              $ref: '#/components/schemas/physical_topology'
       responses:
         200:
           description: Physical Topology Updated
@@ -251,8 +251,8 @@ paths:
       description: this method deletes corresponding Physical Topology
       operationId: PhysicalTopology.delete_PhysicalTopology
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       responses:
         200:
           description: Physical Topology deleted
@@ -269,14 +269,14 @@ paths:
                 required:
                   - error_msg
   
-  /PhysicalTopology/from_excel/{UserId}:
+  /physical_topologies/from_excel/{user_id}:
     post:
       tags:
         - Physical Topology
-      summary: creating PT with excel file
+      summary: creating physical topology with excel file
       operationId: PhysicalTopology.read_from_excel
       parameters:
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
         - name: name
           in: query
           required: true
@@ -288,20 +288,20 @@ paths:
             schema:
               type: object
               properties:
-                PT_binary:
+                pt_binary:
                   type: string
                   format: binary
       responses:
         201:
-          description: PT in JSON
+          description: physical_topology in JSON
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  PT:
-                    $ref: '#/components/schemas/PhysicalTopology'
-                  Id:
+                  physical_topology:
+                    $ref: '#/components/schemas/physical_topology'
+                  id:
                     type: integer
         default:
           description: error handling
@@ -315,18 +315,18 @@ paths:
                 required:
                   - error_msg
           
-  /PhysicalTopology/read_all/{UserId}:
-    summary: Reading all PT's
+  /physical_topologies/read_all/{user_id}:
+    summary: Reading all physical topologies
     get:
       tags:
         - Physical Topology
-      summary: Reading all PT's stored in Database
+      summary: Reading all physical topologies stored in Database
       operationId: PhysicalTopology.read_all_PT
       parameters:
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
       responses:
         200:
-          description: Returning back all PT's
+          description: Returning back all physical topologies
           content:
             application/json:
               schema:
@@ -359,7 +359,7 @@ paths:
                   - error_msg
                 
           
-  /TrafficMatrix/{UserId}:
+  /traffic_matrices/{user_id}:
     summary: This path is handling operations related to Traffic Matrix
     get:
       tags: 
@@ -367,8 +367,8 @@ paths:
       summary: Obtaining stored Traffic Matrix
       description: Accessing a traffic Matrix using it's id
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       operationId: TrafficMatrix.get_TrafficMatrix
       responses:
         200:
@@ -379,7 +379,7 @@ paths:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/TrafficMatrix'
+                    $ref: '#/components/schemas/traffic_matrix'
         default:
           description: error handling
           content:
@@ -405,13 +405,13 @@ paths:
           required: true
           schema:
             type: string
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
       requestBody: 
         description: Providing Traffic Matrix information
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrafficMatrix'
+              $ref: '#/components/schemas/traffic_matrix'
       
       responses:
         201:
@@ -421,26 +421,26 @@ paths:
               schema:
                 type: object
                 properties:
-                  Id:
+                  id:
                     type: integer
                     format: int64
                 required: 
-                 - Id
+                 - id
     put:
       tags: 
        - Traffic Matrix
       summary: Updating an existing Traffic Matrix
       description: This method updates a Traffic Matrix from database
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       operationId: TrafficMatrix.update_TrafficMatrix  
       requestBody:
         description: Providing information for updating Traffic Matrix
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TrafficMatrix'
+              $ref: '#/components/schemas/traffic_matrix'
       
       responses:
         200:
@@ -462,22 +462,22 @@ paths:
        - Traffic Matrix
       summary: Deleting an existing Traffic Matrix
       operationId: TrafficMatrix.delete_TrafficMatrix
-      description: This method deletes a trafic Matrix from database
+      description: This method deletes a traffic Matrix from database
       parameters: 
-       - $ref: '#/components/parameters/Id'
-       - $ref: '#/components/parameters/UserId'
+       - $ref: '#/components/parameters/id'
+       - $ref: '#/components/parameters/user_id'
       responses:
         200:
           description: Traffic Matrix deleted
   
-  /TrafficMatrix/from_excel/{UserId}:
+  /traffic_matrices/from_excel/{user_id}:
     post:
       tags:
         - Traffic Matrix
-      summary: creating TM with excel file
+      summary: creating traffic matrix with excel file
       operationId: TrafficMatrix.read_from_excel
       parameters:
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
         - name: name
           in: query
           required: true
@@ -489,20 +489,20 @@ paths:
             schema:
               type: object
               properties:
-                TM_binary:
+                tm_binary:
                   type: string
                   format: binary
       responses:
         201:
-          description: TM in JSON
+          description: traffic_matrix in JSON
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  TM:
-                    $ref: '#/components/schemas/TrafficMatrix'
-                  Id:
+                  traffic_matrix:
+                    $ref: '#/components/schemas/traffic_matrix'
+                  id:
                     type: integer
         default:
           description: error handling
@@ -516,18 +516,18 @@ paths:
                 required:
                   - error_msg
           
-  /TrafficMatrix/read_all/{UserId}:
-    description: Reading all saved TM's for a user
+  /traffic_matrices/read_all/{user_id}:
+    description: Reading all saved traffic matrices for a user
     get:
       tags:
        - Traffic Matrix
       summary: Reading all Traffic Matrices
       parameters:
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
       operationId: TrafficMatrix.read_all
       responses:
         200:
-          description: Returning TM's
+          description: Returning traffic matrices
           content:
             application/json:
               schema:
@@ -560,7 +560,7 @@ paths:
                   - error_msg
           
           
-  /Clustering/{UserId}:
+  /clustering/{user_id}:
     summary: This path is handling operations related to Clustering
     post:
       operationId: Clustering.create_Cluster
@@ -575,7 +575,7 @@ paths:
             type: integer
             format: int64
           required: true
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
       requestBody:
         description: Providing Gateways and Subnodes
         content:
@@ -583,11 +583,11 @@ paths:
             schema:
               type: object
               properties:
-                Gateways:
+                gateways:
                   type: array
                   items:
                     type: string
-                Subnodes:
+                subnodes:
                   type: array
                   items:
                     type: string
@@ -599,12 +599,12 @@ paths:
               schema:
                 type: object
                 properties:
-                  ClusterId:
+                  cluster_id:
                     type: integer
                     format: int64
                 required: 
-                  - ClusterId
-  /Project/{UserId}:
+                  - cluster_id
+  /projects/{user_id}:
     summary: This path job is to handle projects
     get:
       description: Accessing a existing Project
@@ -612,8 +612,8 @@ paths:
       tags: 
         - Project
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       operationId: Project.read_Project
       responses:
         200:
@@ -644,39 +644,39 @@ paths:
                   - error_msg
                 
     post:
-      description: Creating new project using PT, TM, Cluster Id
+      description: Creating new project using physical topology, traffic matrix, Cluster id
       summary: Creating new Project
       tags: 
        - Project
       parameters: 
-        - name: TM_Id
+        - name: tm_id
           in: query
           required: true
           schema:
             type: integer
             format: int64
-          description: Traffic Matrix Id
+          description: Traffic Matrix id
         
-        - name: PT_Id
+        - name: pt_id
           in: query
           required: true
           schema:
             type: integer
             format: int64
-          description: Physical Topology Id
+          description: Physical Topology id
         
-        - name: Clusters_Id
+        - name: clusters_id
           in: query
           schema:
             type: array
             items:
               type: integer
               format: int64
-          description: Clusters Id
+          description: Clusters id
         
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
 
-        - name: Name
+        - name: name
           in: query
           required: true
           schema:
@@ -685,17 +685,17 @@ paths:
       operationId: Project.create_Project
       responses:
         201:
-          description: Sending back Project Id
+          description: Sending back Project id
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Project_Id:
+                  project_id:
                     type: integer
                     format: int64
                 required: 
-                  - Project_Id
+                  - project_id
         default:
           description: error handling
           content:
@@ -714,33 +714,33 @@ paths:
         - Project
       description: Updating Project Using Project_Id
       parameters: 
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
 
-        - name: TM_Id
+        - name: tm_id
           in: query
           schema:
             type: integer
             format: int64
-          description: Traffic Matrix Id
+          description: Traffic Matrix id
         
-        - name: PT_Id
+        - name: pt_id
           in: query
           schema:
             type: integer
             format: int64
-          description: Physical Topology Id
+          description: Physical Topology id
         
-        - name: Clusters_Id
+        - name: clusters_id
           in: query
           schema:
             type: array
             items:
               type: integer
               format: int64
-          description: Clusters Id
+          description: Clusters id
         
-        - name: Name
+        - name: name
           in: query
           required: true
           schema:
@@ -767,8 +767,8 @@ paths:
       tags:
         - Project
       parameters:
-        - $ref: '#/components/parameters/Id'
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/user_id'
       operationId: Project.delete_Project
       
       responses:
@@ -777,17 +777,17 @@ paths:
   /login:
     summary: path for logging in
     get:
-      summary: Accessing UserId with username and password
+      summary: Accessing user_id with username and password
       tags:
         - User
       parameters:
-        - name: Username
+        - name: username
           in: query
           required: true
           schema:
             type: string
         
-        - name: Password
+        - name: password
           in: query
           required: true
           schema:
@@ -802,7 +802,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  UserId:
+                  user_id:
                     type: integer
                   token:
                     type: string
@@ -818,14 +818,14 @@ paths:
                 required:
                   - error_msg
   
-  /Project/read_all/{UserId}:
-    summary: path for getting all projects associated with UserId
+  /projects/read_all/{user_id}:
+    summary: path for getting all projects associated with user_id
     get:
       summary: getting all projects
       tags:
         - Project
       parameters:
-        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/user_id'
       operationId: Project.read_all
       responses:
         200:
@@ -837,7 +837,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    Id:
+                    id:
                       type: integer
         default:
           description: error handling

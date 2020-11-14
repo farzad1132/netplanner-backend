@@ -4,47 +4,49 @@ from models import PhysicalTopologyModel, TrafficMatrixModel, UserModel, Project
 
 
 PHYSICALTOPOLOGY = {
-    "Nodes":[
+    "nodes":[
         {
-            "Name": "Tehran",
+            "name": "Tehran",
             "lat": 6.5,
             "lng": 7.5,
-            "ROADM_type": "CDC"
+            "roadm_type": "CDC"
         },
         {
-            "Name": "Qom",
+            "name": "Qom",
             "lat": 4.5,
             "lng": 8.5,
-            "ROADM_type": "CDC"
+            "roadm_type": "CDC"
         }
     ],
-    "Links":[
+    "links":[
         {
-            "Source": "Tehran",
-            "Destination": "Qom",
-            "Distance": 10.1,
-            "FiberType" : "sm"
+            "source": "Tehran",
+            "destination": "Qom",
+            "distance": 10.1,
+            "fiber_type" : "sm"
 
         }
     ]
 }
 
 TRAFFICMATRIX = {
-    "Demands":[
+    "demands":[
         {
-            "Source": "Tehran",
-            "Destination": "Qom",
-            "Type": None,
-            "ProtectionType": "Protection",
-            "Services":[
+            "id": 1,
+            "source": "Tehran",
+            "destination": "Qom",
+            "type": None,
+            "protection_type": "Protection",
+            "restoration_type": "None",
+            "services":[
                 {
-                    "Type": "100GE",
-                    "Quantity": 1,
+                    "type": "100GE",
+                    "quantity": 1,
 
                 },
                 {
-                    "Type": "1GE",
-                    "Quantity": 5
+                    "type": "1GE",
+                    "quantity": 5
                 }
                 
             ]
@@ -75,17 +77,17 @@ if __name__ == "__main__":
     db.create_all()
     user = UserModel(username= USER["username"],
                     password= bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
-    PT = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY)
-    user.PTs.append(PT)
-    TM = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX)
-    user.TMs.append(TM)
+    physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY)
+    user.physical_topologies.append(physical_topology)
+    traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX)
+    user.traffic_matrices.append(traffic_matrix)
     project = ProjectModel(name= "Test Project")
     user.projects.append(project)
-    TM.projects.append(project)
-    PT.projects.append(project)
+    traffic_matrix.projects.append(project)
+    physical_topology.projects.append(project)
     db.session.add(user)
     db.session.add(project)
-    db.session.add(TM)
-    db.session.add(PT)
+    db.session.add(traffic_matrix)
+    db.session.add(physical_topology)
 
     db.session.commit()
