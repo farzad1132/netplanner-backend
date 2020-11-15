@@ -11,11 +11,11 @@ from flask_bcrypt import Bcrypt
 def general_exception_handler(e):
     return {"error_msg": e.__str__()}
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Create the connexion application instance
 connex_app = connexion.App(__name__,
-                            specification_dir=os.path.join(basedir, "openapi"))
+                            specification_dir=os.path.join(BASE_DIR, "openapi"))
 
 connex_app.add_error_handler(Exception, general_exception_handler)
 

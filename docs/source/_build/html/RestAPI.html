@@ -48,7 +48,7 @@ and each path has several <strong>verbs</strong>.</p>
 <p>by verbs, we mean <strong>HTTP method</strong>.</p>
 <p>After specifying path we have to define verbs of the path.
 An example of <strong>get</strong> method for above path:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/PhysicalTopology/read_all/{UserId}:
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/PhysicalTopology/read_all/{user_id}:
   summary: Reading all PT&#39;s
   get:
     tags:
@@ -58,7 +58,7 @@ An example of <strong>get</strong> method for above path:</p>
       - jwt: []
     operationId: PhysicalTopology.read_all_PT
     parameters:
-      - $ref: &#39;#/components/parameters/UserId&#39;
+      - $ref: &#39;#/components/parameters/user_id&#39;
     responses:
       200:
         description: Returning back all PT&#39;s
@@ -113,7 +113,7 @@ An example of <strong>get</strong> method for above path:</p>
 from above code we can tell that function with name <em>read_all_PT</em> and module <em>PhysicalTopology</em> is responsible
 for this (path, verb).</p>
 <dl class="simple">
-<dt>example of (path, verb) pair:</dt><dd><p><cite>(/PhysicalTopology/read_all/{UserId}, GET)</cite></p>
+<dt>example of (path, verb) pair:</dt><dd><p><cite>(/PhysicalTopology/read_all/{user_id}, GET)</cite></p>
 </dd>
 </dl>
 </dd>
@@ -124,8 +124,8 @@ for this (path, verb).</p>
 As you can see in this code we have used <em>Reference</em> to prevent copying same exact code in multiple places.</p>
 <p>References are defined at the top of specification file.
 In this case definition is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">UserId</span><span class="p">:</span>
-  <span class="n">name</span><span class="p">:</span> <span class="n">UserId</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span><span class="p">:</span>
+  <span class="n">name</span><span class="p">:</span> <span class="n">user_id</span>
   <span class="ow">in</span><span class="p">:</span> <span class="n">path</span>
   <span class="n">required</span><span class="p">:</span> <span class="n">true</span>
   <span class="n">schema</span><span class="p">:</span>
@@ -156,8 +156,8 @@ is that we can return any status code other than 200 ( in this (path, verb) ) wi
 <div class="section" id="brief-look-at-handling-function">
 <h2>Brief look at handling function<a class="headerlink" href="#brief-look-at-handling-function" title="Permalink to this headline">¶</a></h2>
 <p>This handling function corresponds to above api specification:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">read_all_PT</span><span class="p">(</span><span class="n">UserId</span><span class="p">):</span>
-  <span class="n">PTs</span> <span class="o">=</span> <span class="n">PhysicalTopologyModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span> <span class="n">UserId</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">read_all_PT</span><span class="p">(</span><span class="n">user_id</span><span class="p">):</span>
+  <span class="n">PTs</span> <span class="o">=</span> <span class="n">PhysicalTopologyModel</span><span class="o">.</span><span class="n">query</span><span class="o">.</span><span class="n">filter_by</span><span class="p">(</span><span class="n">user_id</span><span class="o">=</span> <span class="n">user_id</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
   <span class="k">if</span> <span class="ow">not</span> <span class="n">PTs</span><span class="p">:</span>
       <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;error_msg&quot;</span><span class="p">:</span> <span class="s2">&quot;no Physical Topology found&quot;</span><span class="p">},</span> <span class="mi">404</span>
   <span class="k">else</span><span class="p">:</span>
@@ -188,7 +188,7 @@ request body.</p>
 Second we have used another Reference here for <strong>PhysicalTopology</strong> object.</p>
 <p>PhysicalTopology and <strong>TrafficMatrix</strong> objects will be discussed in their own section</p>
 <p>An example of extracting request body in handler function is as follow:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_PhysicalTopology</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">UserId</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_PhysicalTopology</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
   <span class="n">PT</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">get_data</span><span class="p">())</span>
   <span class="n">PT_object</span> <span class="o">=</span> <span class="n">PhysicalTopologyModel</span><span class="p">(</span><span class="n">name</span><span class="o">=</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span> <span class="n">PT</span><span class="p">)</span>
   <span class="n">db</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">PT_object</span><span class="p">)</span>

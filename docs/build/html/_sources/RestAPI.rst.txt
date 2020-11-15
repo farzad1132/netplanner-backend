@@ -21,7 +21,7 @@ An example of **get** method for above path:
 
 .. code-block:: 
 
-    /PhysicalTopology/read_all/{UserId}:
+    /PhysicalTopology/read_all/{user_id}:
       summary: Reading all PT's
       get:
         tags:
@@ -31,7 +31,7 @@ An example of **get** method for above path:
           - jwt: []
         operationId: PhysicalTopology.read_all_PT
         parameters:
-          - $ref: '#/components/parameters/UserId'
+          - $ref: '#/components/parameters/user_id'
         responses:
           200:
             description: Returning back all PT's
@@ -81,7 +81,7 @@ Usage of different components in our example code
         for this (path, verb).
 
         example of (path, verb) pair: 
-          `(/PhysicalTopology/read_all/{UserId}, GET)`
+          `(/PhysicalTopology/read_all/{user_id}, GET)`
     
     * **parameters**
         As its name speaks, this component defines this (path, verb) parameters.
@@ -92,8 +92,8 @@ Usage of different components in our example code
         
         .. code-block:: 
 
-          UserId:
-            name: UserId
+          user_id:
+            name: user_id
             in: path
             required: true
             schema:
@@ -121,8 +121,8 @@ This handling function corresponds to above api specification:
 
 .. code-block::
 
-  def read_all_PT(UserId):
-    PTs = PhysicalTopologyModel.query.filter_by(user_id= UserId).all()
+  def read_all_PT(user_id):
+    PTs = PhysicalTopologyModel.query.filter_by(user_id= user_id).all()
     if not PTs:
         return {"error_msg": "no Physical Topology found"}, 404
     else:
@@ -163,7 +163,7 @@ An example of extracting request body in handler function is as follow:
 
 .. code-block::
 
-  def create_PhysicalTopology(name, UserId):
+  def create_PhysicalTopology(name, user_id):
     PT = json.loads(request.get_data())
     PT_object = PhysicalTopologyModel(name= name, data= PT)
     db.session.add(PT_object)

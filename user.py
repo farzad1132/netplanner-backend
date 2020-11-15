@@ -12,14 +12,14 @@ JWT_LIFETIME_SECONDS = 600
 JWT_ALGORITHM = 'HS256'
 JWT_ISSUER = 'sina.netplanner.flask'
 
-def login(Username, Password):
-    User = UserModel.query.filter_by(username= Username).one_or_none()
+def login(username, password):
+    User = UserModel.query.filter_by(username= username).one_or_none()
     if User is None:
         return 404
-    elif not bcrypt.check_password_hash(User.password, Password):
+    elif not bcrypt.check_password_hash(User.password, password):
         return 401
     else:
-        return {"UserId": User.id, "token": generate_token(User.id)}, 200
+        return {"user_id": User.id, "token": generate_token(User.id)}, 200
 
 def decode_token(token):
     try:
@@ -28,13 +28,13 @@ def decode_token(token):
         six.raise_from(Unauthorized, e)
 
 
-def generate_token(UserId):
+def generate_token(user_id):
     timestamp = _current_timestamp()
     payload = {
         "iss": JWT_ISSUER,
         "iat": int(timestamp),
         "exp": int(timestamp + JWT_LIFETIME_SECONDS),
-        "sub": str(UserId),
+        "sub": str(user_id),
     }
 
     return jwt.encode(payload, JWT_SECRET, algorithm= JWT_ALGORITHM)

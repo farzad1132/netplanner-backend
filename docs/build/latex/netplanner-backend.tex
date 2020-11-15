@@ -184,7 +184,7 @@ After specifying path we have to define verbs of the path.
 An example of \sphinxstylestrong{get} method for above path:
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-/PhysicalTopology/read\PYGZus{}all/\PYGZob{}UserId\PYGZcb{}:
+/PhysicalTopology/read\PYGZus{}all/\PYGZob{}user_id\PYGZcb{}:
   summary: Reading all PT\PYGZsq{}s
   get:
     tags:
@@ -194,7 +194,7 @@ An example of \sphinxstylestrong{get} method for above path:
       \PYGZhy{} jwt: []
     operationId: PhysicalTopology.read\PYGZus{}all\PYGZus{}PT
     parameters:
-      \PYGZhy{} \PYGZdl{}ref: \PYGZsq{}\PYGZsh{}/components/parameters/UserId\PYGZsq{}
+      \PYGZhy{} \PYGZdl{}ref: \PYGZsq{}\PYGZsh{}/components/parameters/user_id\PYGZsq{}
     responses:
       200:
         description: Returning back all PT\PYGZsq{}s
@@ -252,7 +252,7 @@ from above code we can tell that function with name \sphinxstyleemphasis{read\_a
 for this (path, verb).
 \begin{description}
 \item[{example of (path, verb) pair:}] \leavevmode
-\sphinxtitleref{(/PhysicalTopology/read\_all/\{UserId\}, GET)}
+\sphinxtitleref{(/PhysicalTopology/read\_all/\{user_id\}, GET)}
 
 \end{description}
 
@@ -267,8 +267,8 @@ References are defined at the top of specification file.
 In this case definition is:
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{n}{UserId}\PYG{p}{:}
-  \PYG{n}{name}\PYG{p}{:} \PYG{n}{UserId}
+\PYG{n}{user_id}\PYG{p}{:}
+  \PYG{n}{name}\PYG{p}{:} \PYG{n}{user_id}
   \PYG{o+ow}{in}\PYG{p}{:} \PYG{n}{path}
   \PYG{n}{required}\PYG{p}{:} \PYG{n}{true}
   \PYG{n}{schema}\PYG{p}{:}
@@ -303,8 +303,8 @@ is that we can return any status code other than 200 ( in this (path, verb) ) wi
 This handling function corresponds to above api specification:
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k}{def} \PYG{n+nf}{read\PYGZus{}all\PYGZus{}PT}\PYG{p}{(}\PYG{n}{UserId}\PYG{p}{)}\PYG{p}{:}
-  \PYG{n}{PTs} \PYG{o}{=} \PYG{n}{PhysicalTopologyModel}\PYG{o}{.}\PYG{n}{query}\PYG{o}{.}\PYG{n}{filter\PYGZus{}by}\PYG{p}{(}\PYG{n}{user\PYGZus{}id}\PYG{o}{=} \PYG{n}{UserId}\PYG{p}{)}\PYG{o}{.}\PYG{n}{all}\PYG{p}{(}\PYG{p}{)}
+\PYG{k}{def} \PYG{n+nf}{read\PYGZus{}all\PYGZus{}PT}\PYG{p}{(}\PYG{n}{user_id}\PYG{p}{)}\PYG{p}{:}
+  \PYG{n}{PTs} \PYG{o}{=} \PYG{n}{PhysicalTopologyModel}\PYG{o}{.}\PYG{n}{query}\PYG{o}{.}\PYG{n}{filter\PYGZus{}by}\PYG{p}{(}\PYG{n}{user\PYGZus{}id}\PYG{o}{=} \PYG{n}{user_id}\PYG{p}{)}\PYG{o}{.}\PYG{n}{all}\PYG{p}{(}\PYG{p}{)}
   \PYG{k}{if} \PYG{o+ow}{not} \PYG{n}{PTs}\PYG{p}{:}
       \PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{error\PYGZus{}msg}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{no Physical Topology found}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{\PYGZcb{}}\PYG{p}{,} \PYG{l+m+mi}{404}
   \PYG{k}{else}\PYG{p}{:}
@@ -344,7 +344,7 @@ PhysicalTopology and \sphinxstylestrong{TrafficMatrix} objects will be discussed
 An example of extracting request body in handler function is as follow:
 
 \begin{sphinxVerbatim}[commandchars=\\\{\}]
-\PYG{k}{def} \PYG{n+nf}{create\PYGZus{}PhysicalTopology}\PYG{p}{(}\PYG{n}{name}\PYG{p}{,} \PYG{n}{UserId}\PYG{p}{)}\PYG{p}{:}
+\PYG{k}{def} \PYG{n+nf}{create\PYGZus{}PhysicalTopology}\PYG{p}{(}\PYG{n}{name}\PYG{p}{,} \PYG{n}{user_id}\PYG{p}{)}\PYG{p}{:}
   \PYG{n}{PT} \PYG{o}{=} \PYG{n}{json}\PYG{o}{.}\PYG{n}{loads}\PYG{p}{(}\PYG{n}{request}\PYG{o}{.}\PYG{n}{get\PYGZus{}data}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
   \PYG{n}{PT\PYGZus{}object} \PYG{o}{=} \PYG{n}{PhysicalTopologyModel}\PYG{p}{(}\PYG{n}{name}\PYG{o}{=} \PYG{n}{name}\PYG{p}{,} \PYG{n}{data}\PYG{o}{=} \PYG{n}{PT}\PYG{p}{)}
   \PYG{n}{db}\PYG{o}{.}\PYG{n}{session}\PYG{o}{.}\PYG{n}{add}\PYG{p}{(}\PYG{n}{PT\PYGZus{}object}\PYG{p}{)}
