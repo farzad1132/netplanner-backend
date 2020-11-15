@@ -144,6 +144,9 @@ def read_from_excel(pt_binary, user_id, name):
     # Response:
     #   1. JSON object of excel file
 
+    if PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409 
+
     pt = {}
     xls = ExcelFile(pt_binary)
     temp_data = read_excel(xls, 'Nodes')

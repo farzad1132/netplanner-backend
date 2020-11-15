@@ -614,7 +614,7 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
-      operationId: Project.read_Project
+      operationId: Project.read_project
       responses:
         200:
           description: Sending PT_id, TM_id
@@ -682,7 +682,7 @@ paths:
           schema:
            type: string
       
-      operationId: Project.create_Project
+      operationId: Project.create_project
       responses:
         201:
           description: Sending back Project id
@@ -746,7 +746,7 @@ paths:
           schema:
             type: string
       
-      operationId: Project.update_Project
+      operationId: Project.update_project
       responses:
         200:
           description: Done
@@ -769,7 +769,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
-      operationId: Project.delete_Project
+      operationId: Project.delete_project
       
       responses:
         200:

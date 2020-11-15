@@ -116,6 +116,9 @@ def read_from_excel(tm_binary, user_id, name):
     # Response:
     #   1. traffic matrix object
 
+    if TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409 
+
     GENERAL_COLUMNS = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
     SERVICE_HEADERS = ['Quantity_E1', 'Quantity_STM1_E', 'Quantity_STM1_O', 'Quantity_STM4', 'Quantity_STM16', 
                         'Quantity_STM64', 'Quantity_FE', 'Quantity_GE', 'Quantity_10GE', 'Quantity_100GE']

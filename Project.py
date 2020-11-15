@@ -4,104 +4,120 @@ from config import db
 from models import ProjectModel, ProjectSchema, PhysicalTopologyModel, TrafficMatrixModel, UserModel
 
 
-# This function handles GET method at /Project
-# parameters:
-#   1. Project Id
-# Response:
-#   1. TrafficMatrix Id
-#   2. PhysicalTopology Id
-#   TODO: 3. Results Id list
-def read_Project(Id, UserId):
-    Proj = ProjectModel.query.filter_by(id= Id).one_or_none()
-    if Proj is None:
+
+def read_project(id, user_id):
+    # this endpoint will return a project details
+    #
+    # Parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # Response:
+    #   1. traffic matrix id
+    #   2. physical topology id
+    #   TODO: 3. results id list
+
+    project = ProjectModel.query.filter_by(id=id).one_or_none()
+    if project is None:
         return {"error_msg": "project not found"}, 404
     else:
         schema = ProjectSchema(only=('pt_id', 'tm_id'))
-        return schema.dump(Proj), 200
+        return schema.dump(project), 200
 
+def create_project(tm_id, pt_id, user_id, name, clusters_id=None):
+    # this endpoint will create a project for user
+    #
+    # Parameters:
+    #   1. traffic matrix id
+    #   2. physical topology id
+    #   3. user_id
+    #   4. name of the project
+    #
+    # Response:
+    #   1. Project id
 
-# This function handles POST method at /Project
-# Parameters:
-#   1. Traffic matrix Id
-#   2. physical Topology
-#   3. UserId
-#   4. Name of the project
-# Response:
-#   1. Project Id
-# Response: 201
-def create_Project(TM_Id, PT_Id, UserId, Name, Clusters_Id=None):
-    PT = PhysicalTopologyModel.query.filter_by(id = PT_Id).one_or_none()
-    if PT is None:
-        return {"error_msg": f"Physical Topology with id = {PT_Id} not found"}, 404
+    if ProjectModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the project has conflict with another record"}, 409 
+
+    pt = PhysicalTopologyModel.query.filter_by(id =pt_id).one_or_none()
+    if pt is None:
+        return {"error_msg": f"Physical Topology with id = {pt_id} not found"}, 404
     
-    TM = TrafficMatrixModel.query.filter_by(id= TM_Id).one_or_none()
-    if TM is None:
-        return {"error_msg": f"Traffic Matrix with id = {TM_Id} not found"}, 404
+    tm = TrafficMatrixModel.query.filter_by(id=tm_id).one_or_none()
+    if tm is None:
+        return {"error_msg": f"Traffic Matrix with id = {tm_id} not found"}, 404
     
-    User = UserModel.query.filter_by(id= UserId).one_or_none()
-    if User is None:
-        return {"error_msg": f"User with id = {UserId} not found"}, 404
+    user = UserModel.query.filter_by(id=user_id).one_or_none()
+    if user is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
     
-    Proj = ProjectModel(name= Name)
-    Proj.user = User
-    Proj.TM = TM
-    Proj.PT = PT
-    db.session.add(Proj)
+    project = ProjectModel(name= name)
+    project.user = user
+    project.tm = tm
+    project.pt = pt
+
+    db.session.add(project)
     db.session.commit()
 
-    return {"Project_Id": Proj.id}, 201
+    return {"project_id": project.id}, 201
 
+# TODO: this endpoint needs an update !!
+def update_project(id, user_id, tm_id=None, pt_id=None, name=None, clusters_id=None):
+    # this endpoint will update a project
+    #
+    # Parameters:
+    #
+    #   1. PhysicalTopology id - optional
+    #   2. TrafficMatrix id - optional
+    #   3. name - optional
+    #   4. Project id
+    #   5. user_id
+    # Response:     200
 
-# This function handles PUT method at /PhysicalTopology
-# parameters:
-#   1. PhysicalTopology Id - optional
-#   2. TrafficMatrix Id - optional
-#   3. Name - optional
-#   4. Project Id
-#   5. UserId
-# Response:     200
-def update_Project(Id, UserId, TM_Id=None, PT_Id=None, Name=None, Clusters_Id=None):
-    if (TM_Id or PT_Id or Clusters_Id or Name) is None:
+    if (tm_id or pt_id or clusters_id or name) is None:
         return {"error_msg": "all three field can not be none"}, 400
     
-    Proj = ProjectModel.query.filter_by(id = Id).one_or_none()
-    if Proj is None:
+    project = ProjectModel.query.filter_by(id=id, user_id=user_id).one_or_none()
+    if project is None:
         return {"error_msg": "Project not found"}, 404
 
-    if TM_Id:
-        TM = TrafficMatrixModel.query.filter_by(id = TM_Id).one_or_none()
-
-        if TM is None:
+    if tm_id is not None:
+        tm = TrafficMatrixModel.query.filter_by(id=tm_id, user_id=user_id).one_or_none()
+        if tm is None:
             return {"error_msg": "Traffic Matrix not found"}, 404
-        
-        Proj.TM = TM
+        project.tm = tm
         db.session.commit()
     
-    elif PT_Id:
-        PT = PhysicalTopologyModel.query.filter_by(id = PT_Id).one_or_none()
-
-        if PT is None:
+    elif pt_id is not None:
+        pt = PhysicalTopologyModel.query.filter_by(id=pt_id, user_id=user_id).one_or_none()
+        if pt is None:
             return {"error_msg": "Physical Topology not found"}, 404
-        
-        Proj.PT = PT
+        project.pt = pt
         db.session.commit()
     
-    elif Name:
-        Proj.name = Name
+    elif name is not None:
+        project.name = name
         db.session.commit()
     
     return 200
 
-
-
-def delete_Project(Id, UserId):
+# TODO: complete this endpoint
+def delete_project(id, user_id):
     print("delete method")
 
 
-def read_all(UserId):
-    Projs = ProjectModel.query.filter_by(user_id= UserId).all()
-    if not Projs:
+def read_all(user_id):
+    # this endpoint will return a list of users projects
+    #
+    # Parameters:
+    #   1. user_id
+    #
+    # Response:
+    #   1. list of projects ids
+
+    project_list = ProjectModel.query.filter_by(user_id=user_id).all()
+    if not project_list:
         return {"error_msg":"No project found for this user"}, 404
     else:
         schema = ProjectSchema(only=('id',), many=True)
-        return schema.dump(Projs), 200
+        return schema.dump(project_list), 200
