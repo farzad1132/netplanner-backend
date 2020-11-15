@@ -23,8 +23,10 @@ def get_traffic_matrix(id, user_id):
     # Response:
     #   1. traffic matrix object
 
-    tm = TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()
-    if tm is None:
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
+
+    if tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none() is None:
         return {"error_msg":"No traffic Matrix found"}, 404
     else:
         schema = TrafficMatrixSchema(only=("data",), many= False)
@@ -43,8 +45,14 @@ def create_traffic_matrix(name, user_id):
     # Response: 
     #   1. id
 
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
+
+    if TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the project has conflict with another record"}, 409
+
     tm = json.loads(request.get_data())
-    TM_object = TrafficMatrixModel(name= name, data= tm)
+    TM_object = TrafficMatrixModel(name=name, data=tm)
 
     db.session.add(TM_object)
     db.session.commit()
@@ -62,10 +70,12 @@ def update_traffic_matrix(id, user_id):
     #   1. traffic matrix object
     #
     # Response:  200
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
  
     new_tm = json.loads(request.get_data())
-    old_tm = TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()
-    if old_tm is None:
+    if old_tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none() is None:
         return {"error_msg":"No Traffic Matrix found"}, 404
     else:
         old_tm.data = new_tm
@@ -81,8 +91,10 @@ def delete_traffic_matrix(id, user_id):
     #
     # Response:     200
 
-    tm = TrafficMatrixModel.query.filter_by(id= id).one_or_none()
-    if tm is None:
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
+
+    if tm:=TrafficMatrixModel.query.filter_by(id= id).one_or_none() is None:
         return {"error_msg":"No Traffic Matrix found"}, 404
     else:
         db.session.delete(tm)
@@ -97,6 +109,9 @@ def read_all(user_id):
     #
     # Response:
     #   1. list of ids
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     tm_list = TrafficMatrixModel.query.filter_by(user_id= user_id).all()
     if not tm_list:
@@ -115,6 +130,9 @@ def read_from_excel(tm_binary, user_id, name):
     #
     # Response:
     #   1. traffic matrix object
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     if TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409 
@@ -176,11 +194,7 @@ def read_from_excel(tm_binary, user_id, name):
     tm["demands"] = demands_list
 
     tm_object = TrafficMatrixModel(name=name, data=tm)
-    user = UserModel.query.filter_by(id= user_id).one_or_none()
-    if user is None:
-        return {"error_msg": "user not found"} , 404
-    else:
-        tm_object.user_id = user_id
+    tm_object.user_id = user_id
 
     db.session.add(tm_object)
     db.session.commit()

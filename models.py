@@ -9,7 +9,7 @@ class PhysicalTopologyModel(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column("id", db.Integer, primary_key= True)
-    name = db.Column("name", db.String, nullable= False, unique= True)
+    name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     projects = db.relationship( "ProjectModel", back_populates= "physical_topology")
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
@@ -25,7 +25,7 @@ class TrafficMatrixModel(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column( "id", db.Integer, primary_key= True)
-    name = db.Column("name", db.String, nullable= False, unique= True)
+    name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
     user = db.relationship( "UserModel", back_populates= "traffic_matrices")

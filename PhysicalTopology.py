@@ -49,9 +49,11 @@ def get_physical_topology(id, user_id):
     #
     # Response:
     #   1. physical topology object
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
     
-    pt = PhysicalTopologyModel.query.filter_by(id= id, user_id= user_id).one_or_none()
-    if pt is None:
+    if pt:=PhysicalTopologyModel.query.filter_by(id= id, user_id= user_id).one_or_none() is None:
         return {"error_msg":"Physical Topology not found"}, 404
     else:
         schema = PhysicalTopologySchema(only=("data", ), many= False)
@@ -69,6 +71,9 @@ def create_physical_topology(name, user_id):
     #
     # Response: 
     #   1. id of the saved object in database
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     pt = json.loads(request.get_data())
     pt_object = PhysicalTopologyModel(name=name, data=pt)
@@ -88,11 +93,13 @@ def update_physical_topology(id, user_id):
     # RequestBody: 
     #   1. physical topology JSON
     #
-    # Response:     200 
+    # Response:     200
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     new_pt = json.loads(request.get_data())
-    old_pt = PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()
-    if old_pt is None:
+    if old_pt:= PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none() is None:
         return {"error_msg": "Physical Topology not found"}, 404
     else:
         old_pt.data = new_pt
@@ -106,10 +113,12 @@ def delete_physical_topology(id, user_id):
     #   1. id
     #   2. user_id
     #
-    # Response:  200 
+    # Response:  200
 
-    pt = PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()
-    if pt is None:
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
+
+    if pt:=PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none() is None:
         return {"error_msg": "Physical Topology not found"}, 404
     else:
         db.session.delete(pt)
@@ -124,6 +133,9 @@ def read_all_pts(user_id):
     #
     # Response:
     #   1. list of physical topologies id
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     pt_list = PhysicalTopologyModel.query.filter_by(user_id= user_id).all()
     if not pt_list:
@@ -143,6 +155,9 @@ def read_from_excel(pt_binary, user_id, name):
     #
     # Response:
     #   1. JSON object of excel file
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     if PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the physical topology has conflict with another record"}, 409 
@@ -212,11 +227,7 @@ def read_from_excel(pt_binary, user_id, name):
     pt["links"] = proper_list
 
     pt_object = PhysicalTopologyModel(name=name, data=pt)
-    user = UserModel.query.filter_by(id=user_id).one_or_none()
-    if user is None:
-        return {"error_msg": "user not found"} , 404
-    else:
-        pt_object.user_id = user_id
+    pt_object.user_id = user_id
 
     db.session.add(pt_object)
     db.session.commit()
