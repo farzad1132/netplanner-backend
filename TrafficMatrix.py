@@ -5,7 +5,7 @@ from models import TrafficMatrixModel, TrafficMatrixSchema, UserModel
 from pandas import ExcelFile, read_excel
 
 """
-    This module handles /TrafficMatrix and /TrafficMatrix/real_all Path endpoints
+    This module handles /traffic_matrices and /traffic_matrices/real_all Path endpoints
     Allowed methods:
         1. GET
         2. POST
@@ -13,69 +13,112 @@ from pandas import ExcelFile, read_excel
         4. DELETE
 """
 
-# This function handles GET method at /TrafficMatrix
-# parameters:
-#   1. TrafficMatrix Id
-# Response:
-#   1. TrafficMatrix object
-def get_TrafficMatrix(Id, UserId):
-    TM = TrafficMatrixModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
-    if TM is None:
-        return {"error_msg":"no traffic Matrix found"}, 404
+def get_traffic_matrix(id, user_id):
+    # this endpoint will return a traffic matrix object to front
+    #
+    # parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # Response:
+    #   1. traffic matrix object
+
+    tm = TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()
+    if tm is None:
+        return {"error_msg":"No traffic Matrix found"}, 404
     else:
         schema = TrafficMatrixSchema(only=("data",), many= False)
-        return schema.dump(TM), 200
+        return schema.dump(tm), 200
 
-# This function handles POST method at /TrafficMatrix
-# Request Body: TrafficMatrix
-# Response: 201
-def create_TrafficMatrix(name, UserId):
-    TM = json.loads(request.get_data())
-    TM_object = TrafficMatrixModel(name= name, data= TM)
+def create_traffic_matrix(name, user_id):
+    # this endpoint creates a new traffic matrix with received object
+    #
+    # Parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # Request Body: 
+    #   1. traffic matrix object
+    #
+    # Response: 
+    #   1. id
+
+    tm = json.loads(request.get_data())
+    TM_object = TrafficMatrixModel(name= name, data= tm)
+
     db.session.add(TM_object)
     db.session.commit()
     
-    return {"Id": TM_object.id}, 201
+    return {"id": TM_object.id}, 201
 
-# This function handles PUT method at /TrafficMatrix
-# parameters:
-#   1. TrafficMatrix Id
-# RequestBody:  TrafficMatrix
-# Response:     200 
-def update_TrafficMatrix(Id, UserId):
-    TM_new = json.loads(request.get_data())
-    TM_old = TrafficMatrixModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
-    if TM_old is None:
-        return {"error_msg":"no traffic Matrix found"}, 404
+def update_traffic_matrix(id, user_id):
+    # this endpoint will update traffic matrix with received id
+    #
+    # Parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # RequestBody:  
+    #   1. traffic matrix object
+    #
+    # Response:  200
+ 
+    new_tm = json.loads(request.get_data())
+    old_tm = TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()
+    if old_tm is None:
+        return {"error_msg":"No Traffic Matrix found"}, 404
     else:
-        TM_old.data = TM_new
+        old_tm.data = new_tm
         db.session.commit()
         return 200
 
-# This function handles DELETE method at /Trafficmatrix
-# parameters:
-#   1. Trafficmatrix Id
-# Response:     200 
-def delete_TrafficMatrix(Id, UserId):
-    TM = TrafficMatrixModel.query.filter_by(id= Id).one_or_none()
-    if TM is None:
-        abort(404)
+def delete_traffic_matrix(id, user_id):
+    # this endpoint will delete a traffic matrix
+    #
+    # Parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # Response:     200
+
+    tm = TrafficMatrixModel.query.filter_by(id= id).one_or_none()
+    if tm is None:
+        return {"error_msg":"No Traffic Matrix found"}, 404
     else:
-        db.session.delete(TM)
+        db.session.delete(tm)
         db.session.commit()
         return 200
 
-# This function handles GET method at /TrafficMatrix/read_all
-def read_all(UserId):
-    TMs = TrafficMatrixModel.query.filter_by(user_id= UserId).all()
-    if not TMs:
+def read_all(user_id):
+    # this endpoint will return all of user's traffic matrices
+    #
+    # Parameters:
+    #   1. id
+    #
+    # Response:
+    #   1. list of ids
+
+    tm_list = TrafficMatrixModel.query.filter_by(user_id= user_id).all()
+    if not tm_list:
         return {"error_msg": "no Traffic Matrix found for this user"}, 404
     else:
-        schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many= True)
-        return schema.dump(TMs), 200
+        schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many=True)
+        return schema.dump(tm_list), 200
 
+def read_from_excel(tm_binary, user_id, name):
+    # this endpoint will return object of received traffic matrix excel file
+    #
+    # Parameters:
+    #   1. traffic matrix excel file
+    #   2. user_id
+    #   3. name of the traffic matrix
+    #
+    # Response:
+    #   1. traffic matrix object
 
-def read_from_excel(TM_binary, UserId, name):
+    GENERAL_COLUMNS = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
+    SERVICE_HEADERS = ['Quantity_E1', 'Quantity_STM1_E', 'Quantity_STM1_O', 'Quantity_STM4', 'Quantity_STM16', 
+                        'Quantity_STM64', 'Quantity_FE', 'Quantity_GE', 'Quantity_10GE', 'Quantity_100GE']
 
     def service_quantity_check(cell):
         try:
@@ -86,64 +129,57 @@ def read_from_excel(TM_binary, UserId, name):
         except:
             return None
 
-    TM = {}
-
-    excel = ExcelFile(TM_binary)
+    tm = {}
+    excel = ExcelFile(tm_binary)
     data = excel.parse(header=1, skipfooter=0)
-
-    General_Columns = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
-    Service_headers = ['Quantity_E1', 'Quantity_STM1_E', 'Quantity_STM1_O', 'Quantity_STM4', 'Quantity_STM16', 
-                        'Quantity_STM64', 'Quantity_FE', 'Quantity_GE', 'Quantity_10GE', 'Quantity_100GE']
-
-    for header in General_Columns:
+    for header in GENERAL_COLUMNS:
         if not header in data:
             return {"error_msg": f"there is no {header} column"}, 400
 
-    DemandsList = []    
-    for Row in data["ID"].keys():
-        Demand = {}
+    demands_list = []    
+    for row in data["ID"].keys():
+        demand = {}
         try:
-            Demand["Id"] = int(Row)
+            demand["id"] = int(row)
         except:
-            return {"error_msg" : f"wrong ID format {Row}"}, 400
+            return {"error_msg" : f"wrong ID format {row}"}, 400
 
-        Demand["Source"] = data["Source"][Row].strip()
-        Demand["Destination"] = data["Destination"][Row].strip()
-        Demand["Type"] = None
-        Demand["ProtectionType"] = data["Protection_Type"][Row].strip()
+        demand["source"] = data["Source"][row].strip()
+        demand["destination"] = data["Destination"][row].strip()
+        demand["type"] = None
 
-        if not Demand["ProtectionType"] in ("NoProtection", "1+1_NodeDisjoint"):
-            return {"error_msg" : f"wrong entry for ProtectionType, ID = {Row}"}, 400
+        demand["protection_type"] = data["Protection_Type"][row].strip()
+        if not demand["protection_type"] in ("NoProtection", "1+1_NodeDisjoint"):
+            return {"error_msg" : f"wrong entry for ProtectionType, ID = {row}"}, 400
 
-        Demand["RestorationType"] = data["Restoration_Type"][Row].strip()
-
-        if not Demand["RestorationType"] in ("JointSame", "None", "AdvJointSame"):
-            return {"error_msg" : f"wrong entry for RetorationType, ID = {Row}"}, 400
+        demand["restoration_type"] = data["Restoration_Type"][row].strip()
+        if not demand["restoration_type"] in ("JointSame", "None", "AdvJointSame"):
+            return {"error_msg" : f"wrong entry for RetorationType, ID = {row}"}, 400
         
-        Demand["Services"] = []
-
-        for service in Service_headers:
-            quantity = service_quantity_check(data[service][Row])
+        demand["services"] = []
+        for service in SERVICE_HEADERS:
+            quantity = service_quantity_check(data[service][row])
             if quantity is not None:
                 if quantity != 0:
-                    Demand["Services"].append({
-                        "Type": service[9::],
-                        "Quantity": quantity
+                    demand["services"].append({
+                        "type": service[9::],
+                        "quantity": quantity
                     })
             else:
-                return {"error_msg" : f"wrong entry of quantity at ID = {Row} and service {service[9::]}"}, 400
+                return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
         
-        DemandsList.append(Demand)
+        demands_list.append(demand)
 
-    TM["Demands"] = DemandsList
+    tm["demands"] = demands_list
 
-    TM_object = TrafficMatrixModel(name= name, data= TM)
-    User = UserModel.query.filter_by(id= UserId).one_or_none()
-    if User is None:
+    tm_object = TrafficMatrixModel(name=name, data=tm)
+    user = UserModel.query.filter_by(id= user_id).one_or_none()
+    if user is None:
         return {"error_msg": "user not found"} , 404
     else:
-        TM_object.user_id = UserId
-    db.session.add(TM_object)
+        tm_object.user_id = user_id
+
+    db.session.add(tm_object)
     db.session.commit()
 
-    return {"Id": TM_object.id, "TM": TM}, 201
+    return {"id": tm_object.id, "TM": tm}, 201

@@ -141,7 +141,7 @@ paths:
        - Physical Topology
       summary: Obtaining stored physical topology
       description: With an id you can get a Physical Topology from database
-      operationId: PhysicalTopology.get_PhysicalTopology
+      operationId: PhysicalTopology.get_physical_topology
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
@@ -175,7 +175,7 @@ paths:
       summary: Creating New Physical Topology
       description: This method creates a Physical Topology with given data and answers 
         with its id
-      operationId: PhysicalTopology.create_PhysicalTopology
+      operationId: PhysicalTopology.create_physical_topology
       parameters:
         - name: name
           in: query
@@ -219,7 +219,7 @@ paths:
         - Physical Topology
       summary: Updating existing Physical Topology
       description: this method updates any given node or link in a particular Physical Topology
-      operationId: PhysicalTopology.update_PhysicalTopology
+      operationId: PhysicalTopology.update_physical_topology
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
@@ -249,7 +249,7 @@ paths:
        - Physical Topology
       summary: Deleting existing Physical Topology
       description: this method deletes corresponding Physical Topology
-      operationId: PhysicalTopology.delete_PhysicalTopology
+      operationId: PhysicalTopology.delete_physical_topology
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
@@ -321,7 +321,7 @@ paths:
       tags:
         - Physical Topology
       summary: Reading all physical topologies stored in Database
-      operationId: PhysicalTopology.read_all_PT
+      operationId: PhysicalTopology.read_all_pts
       parameters:
         - $ref: '#/components/parameters/user_id'
       responses:
@@ -369,7 +369,7 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
-      operationId: TrafficMatrix.get_TrafficMatrix
+      operationId: TrafficMatrix.get_traffic_matrix
       responses:
         200:
           description: Requested Traffic Matrix found
@@ -398,7 +398,7 @@ paths:
        - Traffic Matrix
       summary: Creating new Traffic Matrix
       description: This method creates a Traffic Matrix and returns its id
-      operationId: TrafficMatrix.create_TrafficMatrix
+      operationId: TrafficMatrix.create_traffic_matrix
       parameters:
         - name: name
           in: query
@@ -434,7 +434,7 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
-      operationId: TrafficMatrix.update_TrafficMatrix  
+      operationId: TrafficMatrix.update_traffic_matrix  
       requestBody:
         description: Providing information for updating Traffic Matrix
         content:
@@ -461,7 +461,7 @@ paths:
       tags: 
        - Traffic Matrix
       summary: Deleting an existing Traffic Matrix
-      operationId: TrafficMatrix.delete_TrafficMatrix
+      operationId: TrafficMatrix.delete_traffic_matrix
       description: This method deletes a traffic Matrix from database
       parameters: 
        - $ref: '#/components/parameters/id'

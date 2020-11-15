@@ -15,26 +15,26 @@ from pandas import read_excel, ExcelFile
 
 # Sample for Physical Topology
 PHYSICALTOPOLOGY = {
-    "Nodes":[
+    "nodes":[
         {
-            "Name": "Tehran",
+            "name": "Tehran",
             "lat": 6.5,
             "lng": 7.5,
-            "ROADM_type": "CDC"
+            "roadm_type": "CDC"
         },
         {
-            "Name": "Qom",
+            "name": "Qom",
             "lat": 4.5,
             "lng": 8.5,
-            "ROADM_type": "CDC"
+            "roadm_type": "CDC"
         }
     ],
-    "Links":[
+    "links":[
         {
-            "Source": "Tehran",
-            "Destination": "Qom",
-            "Distance": 10.1,
-            "FiberType" : "sm"
+            "source": "Tehran",
+            "destination": "Qom",
+            "distance": 10.1,
+            "fiber_type" : "sm"
 
         }
     ]
@@ -78,7 +78,7 @@ def create_physical_topology(name, user_id):
     
     return {"id": pt_object.id}, 201
 
-def update_PhysicalTopology(id, user_id):
+def update_physical_topology(id, user_id):
     # this endpoint will update a physical topology
     #
     # parameters:
