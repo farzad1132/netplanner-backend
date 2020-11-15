@@ -7,21 +7,14 @@ from marshmallow import fields
 class PhysicalTopologyModel(db.Model):
     __tablename__ = "PhysicalTopology"
     __table_args__ = {'extend_existing': True}
-    id = db.Column("id", db.Integer, 
-                        primary_key= True)
-    name = db.Column("name", db.String, 
-                        nullable= False,
-                        unique= True)
+
+    id = db.Column("id", db.Integer, primary_key= True)
+    name = db.Column("name", db.String, nullable= False, unique= True)
     data = db.Column("data", JSON, nullable= False)
-    projects = db.relationship( "ProjectModel",
-                                back_populates= "physical_topology")
-    user_id = db.Column(db.Integer, 
-                        db.ForeignKey("User.id"))
-    user = db.relationship( "UserModel",
-                            back_populates= "physical_topologies")
-    
-    create_date = db.Column(db.DateTime, 
-                            default=datetime.utcnow, 
+    projects = db.relationship( "ProjectModel", back_populates= "physical_topology")
+    user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
+    user = db.relationship( "UserModel", back_populates= "physical_topologies")
+    create_date = db.Column(db.DateTime, default=datetime.utcnow, 
                             onupdate=datetime.utcnow)
     
     def __repr__(self):
@@ -30,23 +23,14 @@ class PhysicalTopologyModel(db.Model):
 class TrafficMatrixModel(db.Model):
     __tablename__ = "TrafficMatrix"
     __table_args__ = {'extend_existing': True}
-    id = db.Column( "id", 
-                    db.Integer, primary_key= True)
-    name = db.Column(   "name", 
-                        db.String,
-                        nullable= False,
-                        unique= True)
-    data = db.Column(   "data", 
-                        JSON, nullable= False)
-    user_id = db.Column(db.Integer, 
-                        db.ForeignKey("User.id"))
-    user = db.relationship( "UserModel",
-                            back_populates= "traffic_matrices")
-    projects = db.relationship( "ProjectModel",
-                                back_populates= "traffic_matrix")
-    
-    create_date = db.Column(db.DateTime, 
-                            default=datetime.utcnow, 
+
+    id = db.Column( "id", db.Integer, primary_key= True)
+    name = db.Column("name", db.String, nullable= False, unique= True)
+    data = db.Column("data", JSON, nullable= False)
+    user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
+    user = db.relationship( "UserModel", back_populates= "traffic_matrices")
+    projects = db.relationship( "ProjectModel", back_populates= "traffic_matrix")
+    create_date = db.Column(db.DateTime, default=datetime.utcnow, 
                             onupdate=datetime.utcnow)
     
     def __repr__(self):
@@ -55,28 +39,14 @@ class TrafficMatrixModel(db.Model):
 class UserModel(db.Model):
     __tablename__ = "User"
     __table_args__ = {'extend_existing': True}
-    id = db.Column( "id", 
-                    db.Integer, 
-                    primary_key= True)
-    username = db.Column(   "username", 
-                        db.String, 
-                        nullable= False,
-                        unique= True)
-    password = db.Column(   "password",
-                            db.String,
-                            nullable= False)
-    projects = db.relationship( "ProjectModel",
-                                back_populates= "user")
 
-    traffic_matrices = db.relationship( "TrafficMatrixModel",
-                            back_populates= "user")
-    
-    physical_topologies = db.relationship( "PhysicalTopologyModel",
-                            back_populates= "user")
-    
-    create_date = db.Column(db.DateTime, 
-                            default=datetime.utcnow, 
-                            onupdate=datetime.utcnow)
+    id = db.Column( "id", db.Integer, primary_key= True)
+    username = db.Column("username", db.String, nullable= False, unique= True)
+    password = db.Column("password", db.String, nullable= False)
+    projects = db.relationship("ProjectModel", back_populates= "user")
+    traffic_matrices = db.relationship( "TrafficMatrixModel", back_populates= "user")
+    physical_topologies = db.relationship( "PhysicalTopologyModel", back_populates= "user")
+    create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
         return f"USER(name= {self.username})"
@@ -84,28 +54,16 @@ class UserModel(db.Model):
 class ProjectModel(db.Model):
     __tablename__ = "Project"
     __table_args__ = {'extend_existing': True}
-    id = db.Column( "id", 
-                    db.Integer, 
-                    primary_key= True)
-    name = db.Column(   "name", 
-                        db.String, 
-                        nullable= False)
-    create_date = db.Column(db.DateTime, 
-                            default=datetime.utcnow, 
-                            onupdate=datetime.utcnow)
-    user_id = db.Column(db.Integer, 
-                        db.ForeignKey("User.id"))
-    tm_id = db.Column(  db.Integer, 
-                        db.ForeignKey("TrafficMatrix.id"))
-    pt_id = db.Column(  db.Integer, 
-                        db.ForeignKey("PhysicalTopology.id"))
 
-    user = db.relationship( "UserModel",
-                            back_populates= "projects") 
-    traffic_matrix = db.relationship(   "TrafficMatrixModel",
-                            back_populates= "projects") 
-    physical_topology = db.relationship(   "PhysicalTopologyModel",
-                            back_populates= "projects")
+    id = db.Column( "id", db.Integer, primary_key= True)
+    name = db.Column("name", db.String, nullable= False)
+    create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
+    tm_id = db.Column(db.Integer, db.ForeignKey("TrafficMatrix.id"))
+    pt_id = db.Column(db.Integer, db.ForeignKey("PhysicalTopology.id"))
+    user = db.relationship("UserModel", back_populates= "projects") 
+    traffic_matrix = db.relationship("TrafficMatrixModel", back_populates= "projects") 
+    physical_topology = db.relationship("PhysicalTopologyModel", back_populates= "projects")
 
     def __repr__(self):
         return f"PROJECT(name= {self.name}, username= {self.user.name}, PT name={self.physical_topologies.name}, TM name={self.traffic_matrix.name})" 
@@ -129,8 +87,7 @@ class UserSchema(ma.SQLAlchemyAutoSchema):
         sqla_session = db.session
         include_fk = True
     
-    projects = fields.Nested(   "UserProjectSchema", 
-                                default=[], many= True)
+    projects = fields.Nested("UserProjectSchema", default=[], many= True)
 
 class UserProjectSchema(ma.Schema):
     id = fields.Int()

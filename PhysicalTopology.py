@@ -5,7 +5,7 @@ from config import db
 from pandas import read_excel, ExcelFile
 
 """
-    This module handles /PhysicalTopology and /PhysicalTopology/real_all Path endpoints
+    This module handles /physical_topologies and /physical_topologies/real_all Path endpoints
     Allowed methods:
         1. GET
         2. POST
@@ -40,149 +40,182 @@ PHYSICALTOPOLOGY = {
     ]
 }
 
-
-# This function handles GET method at /PhysicalTopology
-# parameters:
-#   1. Physical Topology Id
-# Response:
-#   1. Physical Topology object
-def get_PhysicalTopology(Id, UserId):
-    PT = PhysicalTopologyModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
-    if PT is None:
+def get_physical_topology(id, user_id):
+    # this endpoint will send a physical topology to front
+    #
+    # parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # Response:
+    #   1. physical topology object
+    
+    pt = PhysicalTopologyModel.query.filter_by(id= id, user_id= user_id).one_or_none()
+    if pt is None:
         return {"error_msg":"Physical Topology not found"}, 404
     else:
         schema = PhysicalTopologySchema(only=("data", ), many= False)
-        return schema.dump(PT), 200
+        return schema.dump(pt), 200
 
-# This function handles POST method at /PhysicalTopology
-# Request Body: Physical Topology
-# Response: 201
-def create_PhysicalTopology(name, UserId):
-    PT = json.loads(request.get_data())
-    PT_object = PhysicalTopologyModel(name= name, data= PT)
-    db.session.add(PT_object)
+def create_physical_topology(name, user_id):
+    # this endpoint creates a record in physical topology database with received object
+    #
+    # Parameters:
+    #   1. name of the received object
+    #   2. user_id
+    #
+    # Request Body: 
+    #   1. physical_topology JSON
+    #
+    # Response: 
+    #   1. id of the saved object in database
+
+    pt = json.loads(request.get_data())
+    pt_object = PhysicalTopologyModel(name=name, data=pt)
+
+    db.session.add(pt_object)
     db.session.commit()
     
-    return {"Id": PT_object.id}, 201
+    return {"id": pt_object.id}, 201
 
-# This function handles PUT method at /PhysicalTopology
-# parameters:
-#   1. PhysicalTopology Id
-# RequestBody:  PhysicalTopology
-# Response:     200 
-def update_PhysicalTopology(Id, UserId):
-    PT_new = json.loads(request.get_data())
-    PT_old = PhysicalTopologyModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
-    if PT_old is None:
+def update_PhysicalTopology(id, user_id):
+    # this endpoint will update a physical topology
+    #
+    # parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # RequestBody: 
+    #   1. physical topology JSON
+    #
+    # Response:     200 
+
+    new_pt = json.loads(request.get_data())
+    old_pt = PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()
+    if old_pt is None:
         return {"error_msg": "Physical Topology not found"}, 404
     else:
-        PT_old.data = PT_new
+        old_pt.data = new_pt
         db.session.commit()
         return 200
 
-# This function handles DELETE method at /PhysicalTopology
-# parameters:
-#   1. PhysicalTopology Id
-# Response:     200 
-def delete_PhysicalTopology(Id, UserId):
-    PT = PhysicalTopologyModel.query.filter_by(id= Id, user_id= UserId).one_or_none()
-    if PT is None:
+def delete_physical_topology(id, user_id):
+    # this endpoint will deletea physical topology
+    #
+    # parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # Response:  200 
+
+    pt = PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()
+    if pt is None:
         return {"error_msg": "Physical Topology not found"}, 404
     else:
-        db.session.delete(PT)
+        db.session.delete(pt)
         db.session.commit()
         return 200
 
-# This function handles GET method at /PhysicalTopology/read_all
-def read_all_PT(UserId):
-    PTs = PhysicalTopologyModel.query.filter_by(user_id= UserId).all()
-    if not PTs:
-        return {"error_msg": "no Physical Topology found"}, 404
+def read_all_pts(user_id):
+    # this endpoint will all of user's physical topologies id
+    #
+    # Parameters:
+    #   1. user_id
+    #
+    # Response:
+    #   1. list of physical topologies id
+
+    pt_list = PhysicalTopologyModel.query.filter_by(user_id= user_id).all()
+    if not pt_list:
+        return {"error_msg": "No Physical Topology found"}, 404
     else:
         schema = PhysicalTopologySchema(only=("id", "name", "create_date"), many= True)
-        return schema.dump(PTs), 200
+        return schema.dump(pt_list), 200
 
+def read_from_excel(pt_binary, user_id, name):
+    # This end point will create a JSON object with received excel file and will send it for front
+    # and also save it into database
+    #
+    # RequestBody:
+    #   1. excel file
+    #   2. user_id
+    #   3. name for physical topology
+    #
+    # Response:
+    #   1. JSON object of excel file
 
-def read_from_excel(PT_binary, UserId, name):
-    PT = {}
-    
-    xls = ExcelFile(PT_binary)
-    Temp_data = read_excel(xls, 'Nodes')
+    pt = {}
+    xls = ExcelFile(pt_binary)
+    temp_data = read_excel(xls, 'Nodes')
     temp_dic ={}
     headers = ['ID','Node','Location','ROADM_Type'] 
-
     for pointer in headers:
         temp_dic[pointer] = {}
-        if pointer in Temp_data:
-            temp_dic[pointer].update(Temp_data[pointer])
+        if pointer in temp_data:
+            temp_dic[pointer].update(temp_data[pointer])
         else:
             return {"error_msg": f"There is no {pointer} column in excel file"}, 400
     
-    ProperList = []
-    for Row in temp_dic["ID"].keys():
-
+    proper_list = []
+    for row in temp_dic["ID"].keys():
         item = {}
-        item["Name"] = temp_dic["Node"][Row]
+        item["name"] = temp_dic["Node"][row]
         try:
-            Location = str(temp_dic["Location"][Row]).split(',')
-            Location = list(map(lambda x : float(x), Location))
+            location = str(temp_dic["Location"][row]).split(',')
+            location = list(map(lambda x : float(x), location))
         except:
-            return {"error_msg": f"There is an issue at column Location and row {Row}"}, 400
-
-        item["lat"] = Location[0]
-        item["lng"] = Location[1]
+            return {"error_msg": f"There is an issue at column Location and row {row}"}, 400
+        item["lat"] = location[0]
+        item["lng"] = location[1]
 
         # TODO: check ROADM types
-        item["ROADM_type"] = temp_dic["ROADM_Type"][Row]
+        item["roadm_type"] = temp_dic["ROADM_Type"][row]
 
-        ProperList.append(item)
+        proper_list.append(item)
 
-    PT["Nodes"] = ProperList
+    pt["nodes"] = proper_list
 
-    Temp_data = read_excel(xls, 'Links')
+    temp_data = read_excel(xls, 'Links')
     temp_dic ={}
     headers = ["ID", "Source", "Destination", "Distance", "Fiber Type"]
-    
     for pointer in headers:
         temp_dic[pointer] = {}
-        if pointer in Temp_data:
-            temp_dic[pointer].update(Temp_data[pointer])
+        if pointer in temp_data:
+            temp_dic[pointer].update(temp_data[pointer])
         else:
             return {"error_msg": f"There is no {pointer} column in excel file"}, 400
     
-    ProperList = []
-    for Row in temp_dic["ID"].keys():
-
+    proper_list = []
+    for row in temp_dic["ID"].keys():
         item = {}
-        item["Source"] = temp_dic["Source"][Row]
-        item["Destination"] = temp_dic["Destination"][Row]
+        item["source"] = temp_dic["Source"][row]
+        item["destination"] = temp_dic["Destination"][row]
 
         # TODO: add multi-span support
         try:
-            Distance = float(temp_dic["Distance"][Row])
+            distance = float(temp_dic["Distance"][row])
         except:
-            return {"error_msg": f"There is an issue at column Distance and row {Row}"}, 400
-
-        item["Distance"] = Distance
+            return {"error_msg": f"There is an issue at column Distance and row {row}"}, 400
+        item["distance"] = distance
 
         try:
-            FiberType = temp_dic["Fiber Type"][Row].strip()
+            fiber_type = temp_dic["Fiber Type"][row].strip()
         except:
-            return {"error_msg": f"There is an issue at column Fiber Type and row {Row}"}, 400
+            return {"error_msg": f"There is an issue at column Fiber Type and row {row}"}, 400
+        item["fiber_type"] = fiber_type
 
-        item["FiberType"] = FiberType
+        proper_list.append(item)
 
-        ProperList.append(item)
+    pt["links"] = proper_list
 
-    PT["Links"] = ProperList
-
-    PT_object = PhysicalTopologyModel(name= name, data= PT)
-    User = UserModel.query.filter_by(id= UserId).one_or_none()
-    if User is None:
+    pt_object = PhysicalTopologyModel(name=name, data=pt)
+    user = UserModel.query.filter_by(id=user_id).one_or_none()
+    if user is None:
         return {"error_msg": "user not found"} , 404
     else:
-        PT_object.user_id = UserId
-    db.session.add(PT_object)
+        pt_object.user_id = user_id
+
+    db.session.add(pt_object)
     db.session.commit()
 
-    return {"PT":PT, "Id":PT_object.id}, 201
+    return {"PT":pt, "id":pt_object.id}, 201

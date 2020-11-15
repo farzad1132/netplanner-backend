@@ -75,16 +75,19 @@ if __name__ == "__main__":
     db.session.commit()
     #clear_data(db.session)
     db.create_all()
-    user = UserModel(username= USER["username"],
-                    password= bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
+    
+    user = UserModel(username=USER["username"], 
+                     password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
     physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY)
     user.physical_topologies.append(physical_topology)
     traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX)
     user.traffic_matrices.append(traffic_matrix)
     project = ProjectModel(name= "Test Project")
+
     user.projects.append(project)
     traffic_matrix.projects.append(project)
     physical_topology.projects.append(project)
+
     db.session.add(user)
     db.session.add(project)
     db.session.add(traffic_matrix)
