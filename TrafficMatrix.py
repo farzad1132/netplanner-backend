@@ -26,7 +26,7 @@ def get_traffic_matrix(id, user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none() is None:
+    if (tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
         return {"error_msg":"No traffic Matrix found"}, 404
     else:
         schema = TrafficMatrixSchema(only=("data",), many= False)
@@ -75,7 +75,7 @@ def update_traffic_matrix(id, user_id):
         return {"error_msg": f"user with id = {user_id} not found"}, 404
  
     new_tm = json.loads(request.get_data())
-    if old_tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none() is None:
+    if (old_tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
         return {"error_msg":"No Traffic Matrix found"}, 404
     else:
         old_tm.data = new_tm
@@ -94,7 +94,7 @@ def delete_traffic_matrix(id, user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if tm:=TrafficMatrixModel.query.filter_by(id= id).one_or_none() is None:
+    if (tm:=TrafficMatrixModel.query.filter_by(id= id).one_or_none()) is None:
         return {"error_msg":"No Traffic Matrix found"}, 404
     else:
         db.session.delete(tm)

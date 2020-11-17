@@ -44,7 +44,7 @@ components:
               roadm_type:
                 type: string
             required: 
-              - Name
+              - name
               - lat
               - lng
               - roadm_type
@@ -176,19 +176,20 @@ paths:
       description: This method creates a Physical Topology with given data and answers 
         with its id
       operationId: PhysicalTopology.create_physical_topology
-      parameters:
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
+      parameters: 
         - $ref: '#/components/parameters/user_id'
       requestBody:
         description: providing information for creating new Physical Topology
         content:
          application/json:
           schema:
-            $ref: '#/components/schemas/physical_topology'
+            type: object
+            properties:
+              physical_topology:
+                $ref: '#/components/schemas/physical_topology'
+              name:
+                type: string
+            
             
       responses:
         201:
