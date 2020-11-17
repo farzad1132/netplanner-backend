@@ -32,18 +32,26 @@ def get_traffic_matrix(id, user_id):
         schema = TrafficMatrixSchema(only=("data",), many= False)
         return schema.dump(tm), 200
 
-def create_traffic_matrix(name, user_id):
+def create_traffic_matrix(body, user_id):
     # this endpoint creates a new traffic matrix with received object
     #
     # Parameters:
-    #   1. id
-    #   2. user_id
+    #   1. user_id
     #
     # Request Body: 
     #   1. traffic matrix object
+    #   2. name
     #
     # Response: 
     #   1. id
+
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'name' can not be None"}, 400
+    elif TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
+    
+    if (tm:=body["traffic_matrix"]) is None:
+        return {"error_msg": "'traffic matrix' can not be None"}, 400
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
@@ -51,7 +59,6 @@ def create_traffic_matrix(name, user_id):
     if TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the project has conflict with another record"}, 409
 
-    tm = json.loads(request.get_data())
     TM_object = TrafficMatrixModel(name=name, data=tm)
 
     db.session.add(TM_object)
@@ -59,24 +66,35 @@ def create_traffic_matrix(name, user_id):
     
     return {"id": TM_object.id}, 201
 
-def update_traffic_matrix(id, user_id):
+def update_traffic_matrix(body, user_id):
     # this endpoint will update traffic matrix with received id
     #
     # Parameters:
-    #   1. id
     #   2. user_id
     #
     # RequestBody:  
     #   1. traffic matrix object
+    #   2. name
+    #   3. id
     #
     # Response:  200
+
+    if (id:=body["id"]) is None:
+        return {"error_msg": "'id' can not be None"}, 400
+    
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'name' can not be None"}, 400
+    elif TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
+    
+    if (new_tm:=body["traffic_matrix"]) is None:
+        return {"error_msg": "'traffic matrix' can not be None"}, 400
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
  
-    new_tm = json.loads(request.get_data())
     if (old_tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
-        return {"error_msg":"No Traffic Matrix found"}, 404
+        return {"error_msg":"No Traffic Matrix found with given id for this user"}, 404
     else:
         old_tm.data = new_tm
         db.session.commit()
@@ -120,7 +138,7 @@ def read_all(user_id):
         schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many=True)
         return schema.dump(tm_list), 200
 
-def read_from_excel(tm_binary, user_id, name):
+def read_from_excel(tm_binary, user_id, body):
     # this endpoint will return object of received traffic matrix excel file
     #
     # Parameters:
@@ -131,11 +149,16 @@ def read_from_excel(tm_binary, user_id, name):
     # Response:
     #   1. traffic matrix object
 
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'name' can not be None"}, 400
+    elif TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
+    
+    if tm_binary is None:
+        return {"error_msg": "'tm_binary' can not be None"}, 400
+
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
-
-    if TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
-        return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409 
 
     GENERAL_COLUMNS = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
     SERVICE_HEADERS = ['Quantity_E1', 'Quantity_STM1_E', 'Quantity_STM1_O', 'Quantity_STM4', 'Quantity_STM16', 

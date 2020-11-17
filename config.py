@@ -9,7 +9,7 @@ from flask_bcrypt import Bcrypt
 # here we are not specifying any status code because a variety of exceptions may invoke this handler and
 #  it's just for informing the client
 def general_exception_handler(e):
-    return {"error_msg": e.__str__()}
+    return {"error_msg": e.__repr__()}
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 

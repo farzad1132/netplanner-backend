@@ -87,22 +87,33 @@ def create_physical_topology(body, user_id):
     
     return {"id": pt_object.id}, 201
 
-def update_physical_topology(id, user_id):
+def update_physical_topology(body, user_id):
     # this endpoint will update a physical topology
     #
     # parameters:
-    #   1. id
-    #   2. user_id
+    #   1. user_id
     #
     # RequestBody: 
     #   1. physical topology JSON
+    #   2. name
+    #   3. id
     #
     # Response:     200
+
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'id' can not be None"}, 400
+    elif PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
+    
+    if (id:=body["id"]) is None:
+        return {"error_msg": "'id' can not be None"}, 400
+    
+    if (new_pt:=body["physical_topology"]) is None:
+        return {"error_msg": "'physical topology' can not be None"}, 400
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    new_pt = json.loads(request.get_data())
     if (old_pt:= PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
         return {"error_msg": "Physical Topology not found"}, 404
     else:
@@ -148,7 +159,7 @@ def read_all_pts(user_id):
         schema = PhysicalTopologySchema(only=("id", "name", "create_date"), many= True)
         return schema.dump(pt_list), 200
 
-def read_from_excel(pt_binary, user_id, name):
+def read_from_excel(body, pt_binary, user_id):
     # This end point will create a JSON object with received excel file and will send it for front
     # and also save it into database
     #
@@ -159,6 +170,11 @@ def read_from_excel(pt_binary, user_id, name):
     #
     # Response:
     #   1. JSON object of excel file
+
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'name' can not be None"}, 400
+    elif pt_binary is None:
+        return {"error_msg": "'pt_binary' can not be None"}, 400
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404

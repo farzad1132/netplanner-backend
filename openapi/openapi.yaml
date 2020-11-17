@@ -25,6 +25,13 @@ components:
       bearerFormat: JWT
       x-bearerInfoFunc: user.decode_token
   schemas:
+    id:
+      type: integer
+    name:
+      type: string
+    error_msg:
+      type: string
+    
     physical_topology:
       type: object
       properties:
@@ -153,7 +160,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  data:
+                  physical_topology:
                     $ref: '#/components/schemas/physical_topology'
         default:
           description: error handling
@@ -163,7 +170,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
                 
@@ -188,7 +195,7 @@ paths:
               physical_topology:
                 $ref: '#/components/schemas/physical_topology'
               name:
-                type: string
+                $ref: '#/components/schemas/name'
             
             
       responses:
@@ -200,7 +207,7 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: integer
+                    $ref: '#/components/schemas/id'
                 required: 
                   - id
         default:
@@ -211,7 +218,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
     
@@ -222,14 +229,21 @@ paths:
       description: this method updates any given node or link in a particular Physical Topology
       operationId: PhysicalTopology.update_physical_topology
       parameters: 
-        - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
       requestBody:
         description: provide anything that you want to update
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/physical_topology'
+              type: object
+              properties:
+                physical_topology:
+                  $ref: '#/components/schemas/physical_topology'
+                id:
+                  $ref: '#/components/schemas/id'
+                name:
+                  $ref: '#/components/schemas/name'
+
       responses:
         200:
           description: Physical Topology Updated
@@ -241,7 +255,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
     
@@ -266,7 +280,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
   
@@ -278,11 +292,6 @@ paths:
       operationId: PhysicalTopology.read_from_excel
       parameters:
         - $ref: '#/components/parameters/user_id'
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           multipart/form-data:
@@ -292,6 +301,8 @@ paths:
                 pt_binary:
                   type: string
                   format: binary
+                name:
+                  $ref: '#/components/schemas/name'
       responses:
         201:
           description: physical_topology in JSON
@@ -302,8 +313,6 @@ paths:
                 properties:
                   physical_topology:
                     $ref: '#/components/schemas/physical_topology'
-                  id:
-                    type: integer
         default:
           description: error handling
           content:
@@ -312,7 +321,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
           
@@ -336,10 +345,9 @@ paths:
                   type: object
                   properties:
                     name:
-                      type: string
+                      $ref: '#/components/schemas/name'
                     id:
-                      type: integer
-                      format: int64
+                      $ref: '#/components/schemas/id'
                     create_date:
                       type: string
                       format: date-time
@@ -355,7 +363,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
                 
@@ -379,7 +387,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  data:
+                  traffic_matrix:
                     $ref: '#/components/schemas/traffic_matrix'
         default:
           description: error handling
@@ -389,7 +397,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
             
@@ -401,18 +409,18 @@ paths:
       description: This method creates a Traffic Matrix and returns its id
       operationId: TrafficMatrix.create_traffic_matrix
       parameters:
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
         - $ref: '#/components/parameters/user_id'
       requestBody: 
         description: Providing Traffic Matrix information
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/traffic_matrix'
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/name'
+                traffic_matrix:
+                  $ref: '#/components/schemas/traffic_matrix'
       
       responses:
         201:
@@ -423,8 +431,7 @@ paths:
                 type: object
                 properties:
                   id:
-                    type: integer
-                    format: int64
+                    $ref: '#/components/schemas/id'
                 required: 
                  - id
     put:
@@ -433,7 +440,6 @@ paths:
       summary: Updating an existing Traffic Matrix
       description: This method updates a Traffic Matrix from database
       parameters: 
-        - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
       operationId: TrafficMatrix.update_traffic_matrix  
       requestBody:
@@ -441,7 +447,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/traffic_matrix'
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/name'
+                id:
+                  $ref: '#/components/schemas/id'
+                traffic_matrix:
+                  $ref: '#/components/schemas/traffic_matrix'
       
       responses:
         200:
@@ -455,7 +468,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
     delete:
@@ -479,11 +492,6 @@ paths:
       operationId: TrafficMatrix.read_from_excel
       parameters:
         - $ref: '#/components/parameters/user_id'
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           multipart/form-data:
@@ -493,6 +501,8 @@ paths:
                 tm_binary:
                   type: string
                   format: binary
+                name:
+                  $ref: '#/components/schemas/name'
       responses:
         201:
           description: traffic_matrix in JSON
@@ -504,7 +514,7 @@ paths:
                   traffic_matrix:
                     $ref: '#/components/schemas/traffic_matrix'
                   id:
-                    type: integer
+                    $ref: '#/components/schemas/id'
         default:
           description: error handling
           content:
@@ -513,7 +523,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
           
@@ -556,7 +566,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
           
@@ -640,7 +650,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
                 
@@ -705,7 +715,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
     
@@ -759,7 +769,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
     
@@ -815,7 +825,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
   
@@ -848,7 +858,7 @@ paths:
                 type: object
                 properties:
                   error_msg:
-                    type: string
+                    $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
 
