@@ -13,13 +13,14 @@ JWT_ALGORITHM = 'HS256'
 JWT_ISSUER = 'sina.netplanner.flask'
 
 def login(username, password):
-    User = UserModel.query.filter_by(username= username).one_or_none()
-    if User is None:
+
+    user = UserModel.query.filter_by(username= username).one_or_none()
+    if user is None:
         return 404
-    elif not bcrypt.check_password_hash(User.password, password):
+    elif not bcrypt.check_password_hash(user.password, password):
         return 401
     else:
-        return {"user_id": User.id, "token": generate_token(User.id)}, 200
+        return {"user_id": user.id, "token": generate_token(user.id)}, 200
 
 def decode_token(token):
     try:

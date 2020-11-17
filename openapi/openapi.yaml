@@ -547,10 +547,9 @@ paths:
                   type: object
                   properties:
                     name:
-                      type: string
+                      $ref: '#/components/schemas/name'
                     id:
-                      type: integer
-                      format: int64
+                      $ref: '#/components/schemas/id'
                     create_date:
                       type: string
                       format: date-time
@@ -660,38 +659,19 @@ paths:
       tags: 
        - Project
       parameters: 
-        - name: tm_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-          description: Traffic Matrix id
-        
-        - name: pt_id
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-          description: Physical Topology id
-        
-        - name: clusters_id
-          in: query
-          schema:
-            type: array
-            items:
-              type: integer
-              format: int64
-          description: Clusters id
-        
         - $ref: '#/components/parameters/user_id'
-
-        - name: name
-          in: query
-          required: true
-          schema:
-           type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/name'
+                pt_id:
+                  type: integer
+                tm_id:
+                  type: integer
       
       operationId: Project.create_project
       responses:
@@ -704,7 +684,6 @@ paths:
                 properties:
                   project_id:
                     type: integer
-                    format: int64
                 required: 
                   - project_id
         default:
@@ -725,38 +704,22 @@ paths:
         - Project
       description: Updating Project Using Project_Id
       parameters: 
-        - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
-
-        - name: tm_id
-          in: query
-          schema:
-            type: integer
-            format: int64
-          description: Traffic Matrix id
-        
-        - name: pt_id
-          in: query
-          schema:
-            type: integer
-            format: int64
-          description: Physical Topology id
-        
-        - name: clusters_id
-          in: query
-          schema:
-            type: array
-            items:
-              type: integer
-              format: int64
-          description: Clusters id
-        
-        - name: name
-          in: query
-          required: true
-          schema:
-            type: string
-      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  $ref: '#/components/schemas/name'
+                pt_id:
+                  type: integer
+                tm_id:
+                  type: integer
+                id:
+                  $ref: '#/components/schemas/id'
+                 
       operationId: Project.update_project
       responses:
         200:
