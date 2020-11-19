@@ -3,6 +3,7 @@ from models import PhysicalTopologyModel, PhysicalTopologySchema, UserModel
 import json
 from config import db
 from pandas import read_excel, ExcelFile
+import uuid
 
 """
     This module handles /physical_topologies and /physical_topologies/real_all Path endpoints
@@ -40,34 +41,43 @@ PHYSICALTOPOLOGY = {
     ]
 }
 
-def get_physical_topology(id, user_id):
+def get_physical_topology(id, user_id, version=None):
     # this endpoint will send a physical topology to front
     #
     # parameters:
     #   1. id
     #   2. user_id
+    #   3. version (optional)
     #
     # Response:
     #   1. physical topology object
+    #   2. last version number
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
     
-    if (pt:=PhysicalTopologyModel.query.filter_by(id= id, user_id= user_id).one_or_none()) is None:
+    if version is None:
+        pt_list = PhysicalTopologyModel.query.filter_by(pt_id=id, user_id= user_id)\
+        .order_by(PhysicalTopologyModel.version.desc()).all()
+    else:
+        pt_list = PhysicalTopologyModel.query.filter_by(pt_id=id, user_id= user_id, version=version).all()
+
+    if not pt_list:
         return {"error_msg":"Physical Topology not found"}, 404
     else:
-        schema = PhysicalTopologySchema(only=("data", ), many= False)
-        return schema.dump(pt), 200
+        schema = PhysicalTopologySchema(only=("data", "version"), many= False)
+        return schema.dump(pt_list[0]), 200
 
 def create_physical_topology(body, user_id):
     # this endpoint creates a record in physical topology database with received object
     #
     # Parameters:
-    #   1. name of the received object
+    #   1. user_id
     #
     # Request Body: 
     #   1. physical_topology JSON
-    #   2. user_id
+    #   2. name
+    #   3. comment
     #
     # Response: 
     #   1. id of the saved object in database
@@ -76,16 +86,21 @@ def create_physical_topology(body, user_id):
         return {"error_msg": "'name' can not be None"}, 400
     if (physical_topology:= body["physical_topology"]) is None:
         return {"error_msg": "'physical_topology' can not be None"}, 400
+    
+    if (comment:=body["comment"]) is None:
+        return {"error_msg": "'comment' can not be None"}, 400
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    pt_object = PhysicalTopologyModel(name=name, data=physical_topology)
-
+    pt_id = uuid.uuid4().hex
+    pt_object = PhysicalTopologyModel(name=name, data=physical_topology, comment=comment, 
+                                        pt_id=pt_id, version=1)
+    pt_object.user_id = user_id
     db.session.add(pt_object)
     db.session.commit()
     
-    return {"id": pt_object.id}, 201
+    return {"id": pt_id}, 201
 
 def update_physical_topology(body, user_id):
     # this endpoint will update a physical topology
@@ -97,6 +112,7 @@ def update_physical_topology(body, user_id):
     #   1. physical topology JSON
     #   2. name
     #   3. id
+    #   4. comment
     #
     # Response:     200
 
@@ -108,16 +124,23 @@ def update_physical_topology(body, user_id):
     if (id:=body["id"]) is None:
         return {"error_msg": "'id' can not be None"}, 400
     
+    if (comment:=body["comment"]) is None:
+        return {"error_msg": "'comment' can not be None"}, 400
+    
     if (new_pt:=body["physical_topology"]) is None:
         return {"error_msg": "'physical topology' can not be None"}, 400
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+    if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if (old_pt:= PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
+    if not (pt_list:=PhysicalTopologyModel.query.filter_by(pt_id=id, user_id= user_id)\
+                    .order_by(PhysicalTopologyModel.version.desc()).all()):
         return {"error_msg": "Physical Topology not found"}, 404
     else:
-        old_pt.data = new_pt
+        pt_object = PhysicalTopologyModel(pt_id=id, comment=comment, version=pt_list[0].version+1,
+                                            name=name, data=new_pt)
+        pt_object.user = user
+        db.session.add(pt_object)
         db.session.commit()
         return 200
 

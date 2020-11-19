@@ -25,12 +25,20 @@ components:
       bearerFormat: JWT
       x-bearerInfoFunc: user.decode_token
   schemas:
+    pt_id:
+      type: string
+    tm_id:
+      type: string
     id:
-      type: integer
+      type: string
     name:
       type: string
     error_msg:
       type: string
+    comment:
+      type: string
+    version:
+      type: integer
     
     physical_topology:
       type: object
@@ -131,11 +139,16 @@ components:
       in: query
       required: true
       schema:
-        type: integer
+        type: string
     user_id:
       name: user_id
       in: path
       required: true
+      schema:
+        type: integer
+    version:
+      name: version
+      in: query
       schema:
         type: integer
       
@@ -152,6 +165,7 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/version'
       responses:
         200:
           description: Physical Topology found
@@ -162,6 +176,8 @@ paths:
                 properties:
                   physical_topology:
                     $ref: '#/components/schemas/physical_topology'
+                  version:
+                    $ref: '#/components/schemas/version'
         default:
           description: error handling
           content:
@@ -196,6 +212,8 @@ paths:
                 $ref: '#/components/schemas/physical_topology'
               name:
                 $ref: '#/components/schemas/name'
+              comment:
+                $ref: '#/components/schemas/comment'
             
             
       responses:
@@ -243,6 +261,8 @@ paths:
                   $ref: '#/components/schemas/id'
                 name:
                   $ref: '#/components/schemas/name'
+                comment:
+                  $ref: '#/components/schemas/comment'
 
       responses:
         200:
@@ -634,9 +654,9 @@ paths:
                 type: object
                 properties:
                   tm_id:
-                    type: integer
+                    $ref: '#/components/schemas/tm_id'
                   pt_id:
-                    type: integer
+                    $ref: '#/components/schemas/pt_id'
                 required:
                   - tm_id
                   - pt_id
@@ -669,9 +689,9 @@ paths:
                 name:
                   $ref: '#/components/schemas/name'
                 pt_id:
-                  type: integer
+                  $ref: '#/components/schemas/pt_id'
                 tm_id:
-                  type: integer
+                  $ref: '#/components/schemas/tm_id'
       
       operationId: Project.create_project
       responses:
@@ -714,9 +734,9 @@ paths:
                 name:
                   $ref: '#/components/schemas/name'
                 pt_id:
-                  type: integer
+                  $ref: '#/components/schemas/pt_id'
                 tm_id:
-                  type: integer
+                  $ref: '#/components/schemas/tm_id'
                 id:
                   $ref: '#/components/schemas/id'
                  

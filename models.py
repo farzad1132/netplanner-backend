@@ -9,6 +9,7 @@ class PhysicalTopologyModel(db.Model):
     __table_args__ = {'extend_existing': True}
 
     id = db.Column("id", db.Integer, primary_key= True)
+    pt_id = db.Column("pt_id", db.String, nullable=False)
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     projects = db.relationship( "ProjectModel", back_populates= "physical_topology")
@@ -16,15 +17,18 @@ class PhysicalTopologyModel(db.Model):
     user = db.relationship( "UserModel", back_populates= "physical_topologies")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, 
                             onupdate=datetime.utcnow)
+    comment = db.Column("comment", db.String, nullable=False)
+    version = db.Column("version", db.Integer, nullable=False)
     
     def __repr__(self):
-        return f"PT(id= {self.id}, name= {self.name})"
+        return f"PT(id= {self.id}, pt_id= {self.pt_id}, version= {self.version}, name= {self.name})"
 
 class TrafficMatrixModel(db.Model):
     __tablename__ = "TrafficMatrix"
     __table_args__ = {'extend_existing': True}
 
     id = db.Column( "id", db.Integer, primary_key= True)
+    tm_id = db.Column("tm_id", db.String, nullable=False)
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
@@ -32,9 +36,11 @@ class TrafficMatrixModel(db.Model):
     projects = db.relationship( "ProjectModel", back_populates= "traffic_matrix")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, 
                             onupdate=datetime.utcnow)
+    comment = db.Column("comment", db.String, nullable=False)
+    version = db.Column("version", db.Integer, nullable=False)
     
     def __repr__(self):
-        return f"TM(id= {self.id}, name= {self.name})"
+        return f"TM(id= {self.id}, tm_id= {self.tm_id}, version= {self.version} name= {self.name})"
 
 class UserModel(db.Model):
     __tablename__ = "User"
