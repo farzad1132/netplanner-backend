@@ -65,8 +65,8 @@ def create_project(body, user_id):
     
     project = ProjectModel(name= name)
     project.user = user
-    project.tm = tm
-    project.pt = pt
+    project.traffic_matrix = tm
+    project.physical_topology = pt
 
     db.session.add(project)
     db.session.commit()
