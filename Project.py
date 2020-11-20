@@ -17,7 +17,7 @@ def read_project(id, user_id):
     #   2. physical topology id
     #   TODO: 3. results id list
 
-    if UserModel.query.filter_by(user_id=user_id).one_or_none() is None:
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": "No user found with given id"}, 404
 
     if (project:=ProjectModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
@@ -145,5 +145,5 @@ def read_all(user_id):
     if not project_list:
         return {"error_msg":"No project found for this user"}, 404
     else:
-        schema = ProjectSchema(only=('id',), many=True)
+        schema = ProjectSchema(only=('id', 'name'), many=True)
         return schema.dump(project_list), 200

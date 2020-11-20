@@ -12,13 +12,19 @@ JWT_LIFETIME_SECONDS = 600
 JWT_ALGORITHM = 'HS256'
 JWT_ISSUER = 'sina.netplanner.flask'
 
-def login(username, password):
+def login(body):
 
-    user = UserModel.query.filter_by(username= username).one_or_none()
-    if user is None:
-        return 404
+    if (password:=body["password"]) is None:
+        return {"error_msg":"'password' can not be none"}, 400
+    
+    if (username:=body["username"]) is None:
+        return {"error_msg":"'username' can not be none"}, 400
+
+    if (user:=UserModel.query.filter_by(username= username).one_or_none()) is None:
+        return {"error_msg": "user not found"}, 404
+    
     elif not bcrypt.check_password_hash(user.password, password):
-        return 401
+        return {"wrong username or password"}, 404
     else:
         return {"user_id": user.id, "token": generate_token(user.id)}, 200
 

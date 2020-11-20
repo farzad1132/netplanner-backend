@@ -6,10 +6,8 @@ from flask_bcrypt import Bcrypt
 
 # This handler will respond to exceptions that connexion does not cover it.
 # for example connexion is handling BadRequest but its not handling TypeError which this handler comes into play
-# here we are not specifying any status code because a variety of exceptions may invoke this handler and
-#  it's just for informing the client
 def general_exception_handler(e):
-    return {"error_msg": e.__repr__()}
+    return {"error_msg": e.__repr__()}, 500
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
