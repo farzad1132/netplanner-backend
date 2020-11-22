@@ -172,12 +172,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  physical_topology:
-                    $ref: '#/components/schemas/physical_topology'
-                  version:
-                    $ref: '#/components/schemas/version'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    physical_topology:
+                      $ref: '#/components/schemas/physical_topology'
+                    version:
+                      $ref: '#/components/schemas/version'
         default:
           description: error handling
           content:
@@ -371,6 +373,10 @@ paths:
                     create_date:
                       type: string
                       format: date-time
+                    version:
+                      $ref: '#/components/schemas/version'
+                    comment:
+                      $ref: '#/components/schemas/version'
                   required:
                     - name
                     - id

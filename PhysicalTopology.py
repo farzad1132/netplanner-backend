@@ -43,6 +43,8 @@ PHYSICALTOPOLOGY = {
 
 def get_physical_topology(id, user_id, version=None):
     # this endpoint will send a physical topology to front
+    # if version is specified then this endpoint will only return that version but if version is not specified
+    # this endpoint will return all versions
     #
     # parameters:
     #   1. id
@@ -57,16 +59,19 @@ def get_physical_topology(id, user_id, version=None):
         return {"error_msg": f"user with id = {user_id} not found"}, 404
     
     if version is None:
-        pt_list = PhysicalTopologyModel.query.filter_by(pt_id=id, user_id= user_id)\
-        .order_by(PhysicalTopologyModel.version.desc()).all()
+        pt_list = PhysicalTopologyModel.query.filter_by(pt_id=id, user_id= user_id).all()
     else:
         pt_list = PhysicalTopologyModel.query.filter_by(pt_id=id, user_id= user_id, version=version).all()
 
     if not pt_list:
         return {"error_msg":"Physical Topology not found"}, 404
     else:
-        schema = PhysicalTopologySchema(only=("data", "version"), many= False)
-        return schema.dump(pt_list[0]), 200
+        if version is None:
+            schema = PhysicalTopologySchema(only=("data", "version"), many= True)
+            return schema.dump(pt_list), 200
+        else:
+            schema = PhysicalTopologySchema(only=("data", "version"), many= True)
+            return schema.dump(pt_list), 200
 
 def create_physical_topology(body, user_id):
     # this endpoint creates a record in physical topology database with received object
@@ -165,6 +170,7 @@ def delete_physical_topology(id, user_id):
 
 def read_all_pts(user_id):
     # this endpoint will all of user's physical topologies id
+    # this endpoint will return latest version number of each record
     #
     # Parameters:
     #   1. user_id
@@ -175,11 +181,15 @@ def read_all_pts(user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    pt_list = PhysicalTopologyModel.query.filter_by(user_id= user_id).all()
-    if not pt_list:
+    if not (pt_list:=db.session.query(PhysicalTopologyModel)\
+                    .filter_by(user_id=user_id)\
+                    .distinct(PhysicalTopologyModel.pt_id)\
+                    .order_by(PhysicalTopologyModel.pt_id)\
+                    .order_by(PhysicalTopologyModel.version.desc()).all()):
+                    
         return {"error_msg": "No Physical Topology found"}, 404
     else:
-        schema = PhysicalTopologySchema(only=("id", "name", "create_date"), many= True)
+        schema = PhysicalTopologySchema(only=("pt_id", "name", "create_date", "version", "comment"), many= True)
         return schema.dump(pt_list), 200
 
 def read_from_excel(body, pt_binary, user_id):
@@ -269,10 +279,10 @@ def read_from_excel(body, pt_binary, user_id):
 
     pt["links"] = proper_list
 
-    pt_object = PhysicalTopologyModel(name=name, data=pt)
+    pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1)
     pt_object.user_id = user_id
 
     db.session.add(pt_object)
     db.session.commit()
 
-    return {"PT":pt, "id":pt_object.id}, 201
+    return {"PT":pt, "id":pt_object.pt_id}, 201
