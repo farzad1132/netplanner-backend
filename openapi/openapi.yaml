@@ -180,6 +180,10 @@ paths:
                       $ref: '#/components/schemas/physical_topology'
                     version:
                       $ref: '#/components/schemas/version'
+                    name:
+                      $ref: '#/components/schemas/name'
+                    id:
+                      $ref: '#/components/schemas/id'
         default:
           description: error handling
           content:
@@ -404,6 +408,7 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/version'
       operationId: TrafficMatrix.get_traffic_matrix
       responses:
         200:
@@ -411,10 +416,18 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  traffic_matrix:
-                    $ref: '#/components/schemas/traffic_matrix'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    traffic_matrix:
+                      $ref: '#/components/schemas/traffic_matrix'
+                    version:
+                      $ref: '#/components/schemas/version'
+                    name:
+                      $ref: '#/components/schemas/name'
+                    id:
+                      $ref: '#/components/schemas/id'
         default:
           description: error handling
           content:
@@ -447,6 +460,8 @@ paths:
                   $ref: '#/components/schemas/name'
                 traffic_matrix:
                   $ref: '#/components/schemas/traffic_matrix'
+                comment:
+                  $ref: '#/components/schemas/comment'
       
       responses:
         201:
@@ -481,6 +496,8 @@ paths:
                   $ref: '#/components/schemas/id'
                 traffic_matrix:
                   $ref: '#/components/schemas/traffic_matrix'
+                comment:
+                  $ref: '#/components/schemas/comment'
       
       responses:
         200:

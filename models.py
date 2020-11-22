@@ -27,8 +27,8 @@ class TrafficMatrixModel(db.Model):
     __tablename__ = "TrafficMatrix"
     __table_args__ = {'extend_existing': True}
 
-    id = db.Column( "id", db.Integer, primary_key= True)
-    tm_id = db.Column("tm_id", db.String, nullable=False)
+    primary_id = db.Column( "primary_id", db.Integer, primary_key= True)
+    id = db.Column("id", db.String, nullable=False)
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
@@ -65,7 +65,7 @@ class ProjectModel(db.Model):
     name = db.Column("name", db.String, nullable= False)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
-    tm_id = db.Column(db.Integer, db.ForeignKey("TrafficMatrix.id"))
+    tm_id = db.Column(db.Integer, db.ForeignKey("TrafficMatrix.primary_id"))
     pt_id = db.Column(db.Integer, db.ForeignKey("PhysicalTopology.primary_id"))
     user = db.relationship("UserModel", back_populates= "projects") 
     traffic_matrix = db.relationship("TrafficMatrixModel", back_populates= "projects") 

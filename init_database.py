@@ -84,8 +84,12 @@ if __name__ == "__main__":
     user.physical_topologies.append(physical_topology)
     user.physical_topologies.append(physical_topology_2)
     user.physical_topologies.append(physical_topology_3)
-    traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, tm_id='1', version=1, comment="first tm")
+    traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=1, comment="first tm")
+    traffic_matrix_2 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=2, comment="second tm")
+    traffic_matrix_3 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=3, comment="third tm")
     user.traffic_matrices.append(traffic_matrix)
+    user.traffic_matrices.append(traffic_matrix_2)
+    user.traffic_matrices.append(traffic_matrix_3)
     project = ProjectModel(name= "Test Project")
 
     user.projects.append(project)
