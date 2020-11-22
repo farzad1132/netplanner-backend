@@ -8,8 +8,8 @@ class PhysicalTopologyModel(db.Model):
     __tablename__ = "PhysicalTopology"
     __table_args__ = {'extend_existing': True}
 
-    id = db.Column("id", db.Integer, primary_key= True)
-    pt_id = db.Column("pt_id", db.String, nullable=False)
+    primary_id = db.Column("primary_id", db.Integer, primary_key= True)
+    id = db.Column("id", db.String, nullable=False)
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     projects = db.relationship( "ProjectModel", back_populates= "physical_topology")
@@ -66,7 +66,7 @@ class ProjectModel(db.Model):
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
     tm_id = db.Column(db.Integer, db.ForeignKey("TrafficMatrix.id"))
-    pt_id = db.Column(db.Integer, db.ForeignKey("PhysicalTopology.id"))
+    pt_id = db.Column(db.Integer, db.ForeignKey("PhysicalTopology.primary_id"))
     user = db.relationship("UserModel", back_populates= "projects") 
     traffic_matrix = db.relationship("TrafficMatrixModel", back_populates= "projects") 
     physical_topology = db.relationship("PhysicalTopologyModel", back_populates= "projects")

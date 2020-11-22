@@ -78,9 +78,9 @@ if __name__ == "__main__":
     
     user = UserModel(username=USER["username"], 
                      password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
-    physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, pt_id='1', comment="first pt")
-    physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, pt_id='1', comment="second pt")
-    physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=3, pt_id='1', comment="third pt")
+    physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='1', comment="first pt")
+    physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, id='1', comment="second pt")
+    physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=3, id='1', comment="third pt")
     user.physical_topologies.append(physical_topology)
     user.physical_topologies.append(physical_topology_2)
     user.physical_topologies.append(physical_topology_3)
