@@ -596,10 +596,16 @@ paths:
                     create_date:
                       type: string
                       format: date-time
+                    comment:
+                      $ref: '#/components/schemas/comment'
+                    version:
+                      $ref: '#/components/schemas/version'
                   required:
                     - name
                     - id
                     - date-time
+                    - comment
+                    - version
         default:
           description: error handling
           content:

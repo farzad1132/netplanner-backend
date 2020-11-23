@@ -143,21 +143,28 @@ def delete_traffic_matrix(id, user_id):
 
 def read_all(user_id):
     # this endpoint will return all of user's traffic matrices
+    # this endpoint will return latest version number of each record
     #
     # Parameters:
     #   1. id
     #
     # Response:
     #   1. list of ids
+    #   2. name
+    #   3. version
+    #   4. comment
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    tm_list = TrafficMatrixModel.query.filter_by(user_id= user_id).all()
-    if not tm_list:
+    if not (tm_list:=db.session.query(TrafficMatrixModel)\
+                        .filter_by(user_id=user_id)\
+                        .distinct(TrafficMatrixModel.id)\
+                        .order_by(TrafficMatrixModel.id)\
+                        .order_by(TrafficMatrixModel.version.desc()).all()):
         return {"error_msg": "no Traffic Matrix found for this user"}, 404
     else:
-        schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many=True)
+        schema = TrafficMatrixSchema(only=("id", "name", "create_date", "comment", "version"), many=True)
         return schema.dump(tm_list), 200
 
 def read_from_excel(tm_binary, user_id, body):
@@ -237,8 +244,8 @@ def read_from_excel(tm_binary, user_id, body):
         demands_list.append(demand)
 
     tm["demands"] = demands_list
-
-    tm_object = TrafficMatrixModel(name=name, data=tm)
+    id = uuid.uuid4().hex
+    tm_object = TrafficMatrixModel(name=name, data=tm, comment="initial version", version=1, id=id)
     tm_object.user_id = user_id
 
     db.session.add(tm_object)

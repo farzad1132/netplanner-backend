@@ -173,6 +173,9 @@ def read_all_pts(user_id):
     #
     # Response:
     #   1. list of physical topologies id
+    #   2. name
+    #   3. version
+    #   4. comment
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
@@ -274,8 +277,8 @@ def read_from_excel(body, pt_binary, user_id):
         proper_list.append(item)
 
     pt["links"] = proper_list
-
-    pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1)
+    id = uuid.uuid4().hex
+    pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1, id=id)
     pt_object.user_id = user_id
 
     db.session.add(pt_object)
