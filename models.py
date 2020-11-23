@@ -8,7 +8,8 @@ class PhysicalTopologyModel(db.Model):
     __tablename__ = "PhysicalTopology"
     __table_args__ = {'extend_existing': True}
 
-    id = db.Column("id", db.Integer, primary_key= True)
+    primary_id = db.Column("primary_id", db.Integer, primary_key= True)
+    id = db.Column("id", db.String, nullable=False)
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     projects = db.relationship( "ProjectModel", back_populates= "physical_topology")
@@ -16,15 +17,18 @@ class PhysicalTopologyModel(db.Model):
     user = db.relationship( "UserModel", back_populates= "physical_topologies")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, 
                             onupdate=datetime.utcnow)
+    comment = db.Column("comment", db.String, nullable=False)
+    version = db.Column("version", db.Integer, nullable=False)
     
     def __repr__(self):
-        return f"PT(id= {self.id}, name= {self.name})"
+        return f"PT(id= {self.id}, pt_id= {self.pt_id}, version= {self.version}, name= {self.name})"
 
 class TrafficMatrixModel(db.Model):
     __tablename__ = "TrafficMatrix"
     __table_args__ = {'extend_existing': True}
 
-    id = db.Column( "id", db.Integer, primary_key= True)
+    primary_id = db.Column( "primary_id", db.Integer, primary_key= True)
+    id = db.Column("id", db.String, nullable=False)
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
@@ -32,9 +36,11 @@ class TrafficMatrixModel(db.Model):
     projects = db.relationship( "ProjectModel", back_populates= "traffic_matrix")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, 
                             onupdate=datetime.utcnow)
+    comment = db.Column("comment", db.String, nullable=False)
+    version = db.Column("version", db.Integer, nullable=False)
     
     def __repr__(self):
-        return f"TM(id= {self.id}, name= {self.name})"
+        return f"TM(id= {self.id}, tm_id= {self.tm_id}, version= {self.version} name= {self.name})"
 
 class UserModel(db.Model):
     __tablename__ = "User"
@@ -59,8 +65,8 @@ class ProjectModel(db.Model):
     name = db.Column("name", db.String, nullable= False)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey("User.id"))
-    tm_id = db.Column(db.Integer, db.ForeignKey("TrafficMatrix.id"))
-    pt_id = db.Column(db.Integer, db.ForeignKey("PhysicalTopology.id"))
+    tm_id = db.Column(db.Integer, db.ForeignKey("TrafficMatrix.primary_id"))
+    pt_id = db.Column(db.Integer, db.ForeignKey("PhysicalTopology.primary_id"))
     user = db.relationship("UserModel", back_populates= "projects") 
     traffic_matrix = db.relationship("TrafficMatrixModel", back_populates= "projects") 
     physical_topology = db.relationship("PhysicalTopologyModel", back_populates= "projects")

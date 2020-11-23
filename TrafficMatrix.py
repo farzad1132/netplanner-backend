@@ -3,6 +3,7 @@ import json
 from config import db
 from models import TrafficMatrixModel, TrafficMatrixSchema, UserModel
 from pandas import ExcelFile, read_excel
+import uuid
 
 """
     This module handles /traffic_matrices and /traffic_matrices/real_all Path endpoints
@@ -13,24 +14,32 @@ from pandas import ExcelFile, read_excel
         4. DELETE
 """
 
-def get_traffic_matrix(id, user_id):
+def get_traffic_matrix(id, user_id, version=None):
     # this endpoint will return a traffic matrix object to front
+    # if version is specified then this endpoint will only return that version but if version is not specified
+    # this endpoint will return all versions
     #
     # parameters:
     #   1. id
     #   2. user_id
+    #   3. version (optional)
     #
     # Response:
     #   1. traffic matrix object
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
+    
+    if version is None:
+        tm_list = db.session.query(TrafficMatrixModel).filter_by(id=id, user_id=user_id).all()
+    else:
+        tm_list = db.session.query(TrafficMatrixModel).filter_by(id=id, user_id=user_id, version=version).all()
 
-    if (tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
+    if not tm_list:
         return {"error_msg":"No traffic Matrix found"}, 404
     else:
-        schema = TrafficMatrixSchema(only=("data",), many= False)
-        return schema.dump(tm), 200
+        schema = TrafficMatrixSchema(only=("data", "version", "comment", "name"), many= True)
+        return schema.dump(tm_list), 200
 
 def create_traffic_matrix(body, user_id):
     # this endpoint creates a new traffic matrix with received object
@@ -41,6 +50,7 @@ def create_traffic_matrix(body, user_id):
     # Request Body: 
     #   1. traffic matrix object
     #   2. name
+    #   3. comment
     #
     # Response: 
     #   1. id
@@ -50,7 +60,10 @@ def create_traffic_matrix(body, user_id):
     elif TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
     
-    if (tm:=body["traffic_matrix"]) is None:
+    if (comment:=body["comment"]) is None:
+        return {"error_msg": "'comment' can not be None"}, 400
+
+    if (traffic_matrix:=body["traffic_matrix"]) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
@@ -59,12 +72,13 @@ def create_traffic_matrix(body, user_id):
     if TrafficMatrixModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the project has conflict with another record"}, 409
 
-    TM_object = TrafficMatrixModel(name=name, data=tm)
-
-    db.session.add(TM_object)
+    id = uuid.uuid4().hex
+    tm_object = TrafficMatrixModel(name=name, data=traffic_matrix, version=1, id=id, comment=comment)
+    tm_object.user_id = user_id
+    db.session.add(tm_object)
     db.session.commit()
     
-    return {"id": TM_object.id}, 201
+    return {"id": tm_object.id}, 201
 
 def update_traffic_matrix(body, user_id):
     # this endpoint will update traffic matrix with received id
@@ -76,6 +90,7 @@ def update_traffic_matrix(body, user_id):
     #   1. traffic matrix object
     #   2. name
     #   3. id
+    #   4. comment
     #
     # Response:  200
 
@@ -90,13 +105,20 @@ def update_traffic_matrix(body, user_id):
     if (new_tm:=body["traffic_matrix"]) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+    if (comment:=body["comment"]) is None:
+        return {"error_msg": "'comment' can not be None"}, 400
+
+    if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
  
-    if (old_tm:=TrafficMatrixModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
-        return {"error_msg":"No Traffic Matrix found with given id for this user"}, 404
+    if not (tm_list:=db.session.query(TrafficMatrixModel).filter_by(id=id, user_id=user_id)\
+                        .order_by(TrafficMatrixModel.version.desc()).all()):
+        return {"error_msg": "Physical Topology not found"}, 404
     else:
-        old_tm.data = new_tm
+        tm_object = TrafficMatrixModel(name=name, data=new_tm, version=tm_list[0].version+1,
+                                        comment=comment, id=id)
+        tm_object.user = user
+        db.session.add(tm_object)
         db.session.commit()
         return 200
 
@@ -121,21 +143,28 @@ def delete_traffic_matrix(id, user_id):
 
 def read_all(user_id):
     # this endpoint will return all of user's traffic matrices
+    # this endpoint will return latest version number of each record
     #
     # Parameters:
     #   1. id
     #
     # Response:
     #   1. list of ids
+    #   2. name
+    #   3. version
+    #   4. comment
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    tm_list = TrafficMatrixModel.query.filter_by(user_id= user_id).all()
-    if not tm_list:
+    if not (tm_list:=db.session.query(TrafficMatrixModel)\
+                        .filter_by(user_id=user_id)\
+                        .distinct(TrafficMatrixModel.id)\
+                        .order_by(TrafficMatrixModel.id)\
+                        .order_by(TrafficMatrixModel.version.desc()).all()):
         return {"error_msg": "no Traffic Matrix found for this user"}, 404
     else:
-        schema = TrafficMatrixSchema(only=("id", "name", "create_date"), many=True)
+        schema = TrafficMatrixSchema(only=("id", "name", "create_date", "comment", "version"), many=True)
         return schema.dump(tm_list), 200
 
 def read_from_excel(tm_binary, user_id, body):
@@ -215,8 +244,8 @@ def read_from_excel(tm_binary, user_id, body):
         demands_list.append(demand)
 
     tm["demands"] = demands_list
-
-    tm_object = TrafficMatrixModel(name=name, data=tm)
+    id = uuid.uuid4().hex
+    tm_object = TrafficMatrixModel(name=name, data=tm, comment="initial version", version=1, id=id)
     tm_object.user_id = user_id
 
     db.session.add(tm_object)

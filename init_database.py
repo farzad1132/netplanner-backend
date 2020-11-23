@@ -78,10 +78,18 @@ if __name__ == "__main__":
     
     user = UserModel(username=USER["username"], 
                      password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
-    physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY)
+    physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='1', comment="first pt")
+    physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, id='1', comment="second pt")
+    physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=3, id='1', comment="third pt")
     user.physical_topologies.append(physical_topology)
-    traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX)
+    user.physical_topologies.append(physical_topology_2)
+    user.physical_topologies.append(physical_topology_3)
+    traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=1, comment="first tm")
+    traffic_matrix_2 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=2, comment="second tm")
+    traffic_matrix_3 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=3, comment="third tm")
     user.traffic_matrices.append(traffic_matrix)
+    user.traffic_matrices.append(traffic_matrix_2)
+    user.traffic_matrices.append(traffic_matrix_3)
     project = ProjectModel(name= "Test Project")
 
     user.projects.append(project)
