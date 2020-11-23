@@ -62,6 +62,9 @@ def create_project(body, user_id):
     pt_version = body.get("pt_version", 1)
     tm_version = body.get("tm_version", 1)
 
+    if (not isinstance(pt_version, int)) or (not isinstance(tm_version, int)):
+        return {"error_msg":"wrong version number format"}, 400
+
     if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
