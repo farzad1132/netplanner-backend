@@ -91,9 +91,11 @@ if __name__ == "__main__":
     user.traffic_matrices.append(traffic_matrix_2)
     user.traffic_matrices.append(traffic_matrix_3)
     project = ProjectModel(name= "Test Project")
+    project.current_pt_version = 1
+    project.current_tm_version = 2
 
     user.projects.append(project)
-    traffic_matrix.projects.append(project)
+    traffic_matrix_2.projects.append(project)
     physical_topology.projects.append(project)
 
     db.session.add(user)

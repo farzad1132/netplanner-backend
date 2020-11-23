@@ -686,9 +686,15 @@ paths:
                     $ref: '#/components/schemas/tm_id'
                   pt_id:
                     $ref: '#/components/schemas/pt_id'
+                  current_pt_version:
+                    $ref: '#/components/schemas/version'
+                  current_tm_version:
+                    $ref: '#/components/schemas/version'
                 required:
                   - tm_id
                   - pt_id
+                  - current_pt_version
+                  - current_tm_version
                   #results list of id's
         default:
           description: error handling
@@ -721,6 +727,14 @@ paths:
                   $ref: '#/components/schemas/pt_id'
                 tm_id:
                   $ref: '#/components/schemas/tm_id'
+                pt_version:
+                  $ref: '#/components/schemas/version'
+                tm_version:
+                  $ref: '#/components/schemas/version'
+              required:
+                - name
+                - pt_id
+                - tm_id
       
       operationId: Project.create_project
       responses:
@@ -768,6 +782,10 @@ paths:
                   $ref: '#/components/schemas/tm_id'
                 id:
                   $ref: '#/components/schemas/id'
+                current_pt_version:
+                  $ref: '#/components/schemas/version'
+                current_tm_version:
+                  $ref: '#/components/schemas/version'
                  
       operationId: Project.update_project
       responses:

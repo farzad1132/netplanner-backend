@@ -21,7 +21,7 @@ class PhysicalTopologyModel(db.Model):
     version = db.Column("version", db.Integer, nullable=False)
     
     def __repr__(self):
-        return f"PT(id= {self.id}, pt_id= {self.pt_id}, version= {self.version}, name= {self.name})"
+        return f"PT(id= {self.id}, version= {self.version}, name= {self.name})"
 
 class TrafficMatrixModel(db.Model):
     __tablename__ = "TrafficMatrix"
@@ -40,7 +40,7 @@ class TrafficMatrixModel(db.Model):
     version = db.Column("version", db.Integer, nullable=False)
     
     def __repr__(self):
-        return f"TM(id= {self.id}, tm_id= {self.tm_id}, version= {self.version} name= {self.name})"
+        return f"TM(id= {self.id}, version= {self.version} name= {self.name})"
 
 class UserModel(db.Model):
     __tablename__ = "User"
@@ -70,6 +70,8 @@ class ProjectModel(db.Model):
     user = db.relationship("UserModel", back_populates= "projects") 
     traffic_matrix = db.relationship("TrafficMatrixModel", back_populates= "projects") 
     physical_topology = db.relationship("PhysicalTopologyModel", back_populates= "projects")
+    current_pt_version = db.Column("current_pt_version", db.Integer, nullable=False)
+    current_tm_version = db.Column("current_tm_version", db.Integer, nullable=False)
 
     def __repr__(self):
         return f"PROJECT(name= {self.name}, username= {self.user.name}, PT name={self.physical_topologies.name}, TM name={self.traffic_matrix.name})" 

@@ -15,6 +15,8 @@ def read_project(id, user_id):
     # Response:
     #   1. traffic matrix id
     #   2. physical topology id
+    #   3. current_pt_version
+    #   4. current_tm_version
     #   TODO: 3. results id list
 
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
@@ -23,8 +25,12 @@ def read_project(id, user_id):
     if (project:=ProjectModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
         return {"error_msg": "project not found"}, 404
     else:
-        schema = ProjectSchema(only=('pt_id', 'tm_id'))
-        return schema.dump(project), 200
+        #schema = ProjectSchema(only=('pt_id', 'tm_id'))
+        #return schema.dump(project), 200
+        return {"pt_id":project.physical_topology.id,
+                "tm_id":project.traffic_matrix.id,
+                "current_pt_version":project.current_pt_version,
+                "current_tm_version":project.current_tm_version}, 200
 
 def create_project(body, user_id):
     # this endpoint will create a project for user
@@ -36,6 +42,8 @@ def create_project(body, user_id):
     #   1. traffic matrix id
     #   2. physical topology id
     #   3. name
+    #   4. pt_version (optional)
+    #   5. tm_version (optional)
     #
     # Response:
     #   1. Project id
@@ -50,6 +58,9 @@ def create_project(body, user_id):
     
     if (tm_id:=body["tm_id"]) is None:
         return {"error_msg": "'tm_id' can not be None"}, 400
+    
+    pt_version = body.get("pt_version", 1)
+    tm_version = body.get("tm_version", 1)
 
     if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
@@ -57,16 +68,18 @@ def create_project(body, user_id):
     if ProjectModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the project has conflict with another record"}, 409 
 
-    if (pt:=PhysicalTopologyModel.query.filter_by(id =pt_id, user_id=user_id).one_or_none()) is None:
+    if (pt:=PhysicalTopologyModel.query.filter_by(id=pt_id, user_id=user_id, version=pt_version).one_or_none()) is None:
         return {"error_msg": f"Physical Topology with id = {pt_id} not found"}, 404
     
-    if (tm:=TrafficMatrixModel.query.filter_by(id=tm_id, user_id=user_id).one_or_none()) is None:
+    if (tm:=TrafficMatrixModel.query.filter_by(id=tm_id, user_id=user_id, version=tm_version).one_or_none()) is None:
         return {"error_msg": f"Traffic Matrix with id = {tm_id} not found"}, 404
     
     project = ProjectModel(name= name)
     project.user = user
     project.traffic_matrix = tm
     project.physical_topology = pt
+    project.current_pt_version = pt_version
+    project.current_tm_version = tm_version
 
     db.session.add(project)
     db.session.commit()
@@ -85,7 +98,9 @@ def update_project(body, user_id):
     #   2. TrafficMatrix id
     #   3. name
     #   4. Project id
-    #
+    #   5. current_pt_version
+    #   6. current_tm_version
+    #  
     # Response:     200
 
     if (name:=body["name"]) is None:
@@ -107,14 +122,22 @@ def update_project(body, user_id):
     
     if (project:=ProjectModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
         return {"error_msg": "Project not found"}, 404
-
-    if (tm:=TrafficMatrixModel.query.filter_by(id=tm_id, user_id=user_id).one_or_none()) is None:
-        return {"error_msg": "Traffic Matrix not found"}, 404
-    project.tm = tm
     
-    if (pt:=PhysicalTopologyModel.query.filter_by(id=pt_id, user_id=user_id).one_or_none()) is None:
+    if (current_pt_version:=body["current_pt_version"]) is None:
+        return {"error_msg": "'current_pt_version' can not be None"}, 400
+    project.current_pt_version = current_pt_version
+    
+    if (current_tm_version:=body["current_tm_version"]) is None:
+        return {"error_msg": "'current_tm_version' can not be None"}, 400
+    project.current_tm_version = current_tm_version
+
+    if (tm:=TrafficMatrixModel.query.filter_by(id=tm_id, user_id=user_id, version=current_tm_version).one_or_none()) is None:
+        return {"error_msg": "Traffic Matrix not found"}, 404
+    project.traffic_matrix = tm
+    
+    if (pt:=PhysicalTopologyModel.query.filter_by(id=pt_id, user_id=user_id, version=current_pt_version).one_or_none()) is None:
         return {"error_msg": "Physical Topology not found"}, 404
-    project.pt = pt
+    project.physical_topology = pt
     
     if ProjectModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the project has conflict with another record"}
