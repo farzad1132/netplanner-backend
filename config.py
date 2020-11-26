@@ -3,6 +3,7 @@ import connexion
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
+from flask_cors import CORS
 
 # This handler will respond to exceptions that connexion does not cover it.
 # for example connexion is handling BadRequest but its not handling TypeError which this handler comes into play
@@ -33,6 +34,7 @@ app.config["SQLALCHEMY_ECHO"] = True
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+cors = CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 # Create the SqlAlchemy db instance
 db = SQLAlchemy(app)
 
