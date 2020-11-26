@@ -1,6 +1,6 @@
 import os
 from config import db, bcrypt
-from models import PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel
+from models import PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel
 
 
 PHYSICALTOPOLOGY = {
@@ -63,6 +63,18 @@ PROJECTS = {
     "name": "Test Project"
 }
 
+CLUSTER = {
+    "gateways": [
+        "Tehran",
+        "Qom"
+    ],
+    "subnodes":[
+        "Karaj"
+    ],
+    "color": "green",
+    "type": "100GE"
+}
+
 def clear_data(session):
     meta = db.metadata
     for table in reversed(meta.sorted_tables):
@@ -77,7 +89,7 @@ if __name__ == "__main__":
     db.create_all()
     
     user = UserModel(username=USER["username"], 
-                     password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
+                     password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'), id='1')
     physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='1', comment="first pt")
     physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, id='1', comment="second pt")
     physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=3, id='1', comment="third pt")
@@ -94,6 +106,9 @@ if __name__ == "__main__":
     project.current_pt_version = 1
     project.current_tm_version = 2
 
+    cluster = ClusterModel(name="Test Cluster", data=CLUSTER)
+    cluster.project = project
+
     user.projects.append(project)
     traffic_matrix_2.projects.append(project)
     physical_topology.projects.append(project)
@@ -102,5 +117,6 @@ if __name__ == "__main__":
     db.session.add(project)
     db.session.add(traffic_matrix)
     db.session.add(physical_topology)
+    db.session.add(cluster)
 
     db.session.commit()

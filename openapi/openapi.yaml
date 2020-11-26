@@ -40,6 +40,25 @@ components:
     version:
       type: integer
     
+    cluster:
+      type: object
+      properties:
+        gateways:
+          type: array
+          items:
+            type: string
+        subnodes:
+          type: array
+          items:
+            type: string
+        color:
+          type: string
+        type:
+          type: string
+      required:
+        - gateways
+        - subnodes
+    
     physical_topology:
       type: object
       properties:
@@ -145,7 +164,12 @@ components:
       in: path
       required: true
       schema:
-        type: integer
+        type: string
+    project_id:
+      name: project_id
+      in: query
+      schema:
+        type: string
     version:
       name: version
       in: query
@@ -619,21 +643,56 @@ paths:
                   - error_msg
           
           
-  /clustering/{user_id}:
+  /clustering/manual/read_all/{user_id}:
     summary: This path is handling operations related to Clustering
+    get:
+      operationId: Clustering.get_clusters
+      summary: returning all clusters belonging to a project
+      tags:
+        - Clustering
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/project_id'
+      responses:
+        200:
+          description: ok response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    data:
+                      $ref: '#/components/schemas/cluster'
+                    name:
+                      $ref: '#/components/schemas/name'
+                    id:
+                      $ref: '#/components/schemas/id'
+                  required:
+                    - data
+                    - name
+                    - id
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                required:
+                  - error_msg
+  
+  /clustering/manual/{user_id}:
     post:
-      operationId: Clustering.create_Cluster
+      operationId: Clustering.create_cluster
       summary: Creating clusters
       tags: 
         - Clustering
       description: Creating new cluster in a Physical Topology (use this method if you want to save cluster in database)
       parameters: 
-        - name: PhysicalTopologyId
-          in: query
-          schema:
-            type: integer
-            format: int64
-          required: true
         - $ref: '#/components/parameters/user_id'
       requestBody:
         description: Providing Gateways and Subnodes
@@ -642,27 +701,31 @@ paths:
             schema:
               type: object
               properties:
-                gateways:
-                  type: array
-                  items:
-                    type: string
-                subnodes:
-                  type: array
-                  items:
-                    type: string
+                cluster:
+                  $ref: '#/components/schemas/cluster'
+                project_id:
+                  $ref: '#/components/schemas/id'
+                name:
+                  $ref: '#/components/schemas/name'
+              required:
+                - name
+                - project_id
+                - cluster
       responses:
         201:
           description: Cluster saved in DataBase
+        default:
+          description: error handling
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  cluster_id:
-                    type: integer
-                    format: int64
-                required: 
-                  - cluster_id
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                required:
+                  - error_msg
+
   /projects/{user_id}:
     summary: This path job is to handle projects
     get:

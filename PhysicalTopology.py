@@ -85,6 +85,9 @@ def create_physical_topology(body, user_id):
 
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
+    elif PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
+        
     if (physical_topology:= body["physical_topology"]) is None:
         return {"error_msg": "'physical_topology' can not be None"}, 400
     
