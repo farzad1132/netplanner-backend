@@ -651,7 +651,7 @@ paths:
   /clustering/manual/read_all/{user_id}:
     summary: This path is handling operations related to Clustering
     get:
-      operationId: Clustering.get_clusters
+      operationId: Clustering.get_all_clusters
       summary: returning all clusters belonging to a project
       tags:
         - Clustering

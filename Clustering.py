@@ -71,7 +71,7 @@ def create_cluster(body, user_id):
 
     return 201
 
-def get_clusters(user_id, project_id):
+def get_all_clusters(user_id, project_id):
     # this endpoint will return all of project clusters after checking their compatibility
     # with current version of physical topology
     #
