@@ -170,6 +170,11 @@ components:
       in: query
       schema:
         type: string
+    cluster_id:
+      name: cluster_id
+      in: query
+      schema:
+        type: string
     version:
       name: version
       in: query
@@ -686,6 +691,42 @@ paths:
                   - error_msg
   
   /clustering/manual/{user_id}:
+    get:
+      operationId: Clustering.get_cluster
+      summary: returning cluster with given id
+      tags:
+        - Clustering
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/project_id'
+        - $ref: '#/components/parameters/cluster_id'
+      responses:
+        200:
+          description: ok response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/cluster'
+                  name:
+                    $ref: '#/components/schemas/name'
+                required:
+                  - data
+                  - name
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                required:
+                  - error_msg
+      
     post:
       operationId: Clustering.create_cluster
       summary: Creating clusters

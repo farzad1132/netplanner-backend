@@ -65,11 +65,10 @@ PROJECTS = {
 
 CLUSTER = {
     "gateways": [
-        "Tehran",
-        "Qom"
+        "Tehran"
     ],
     "subnodes":[
-        "Karaj"
+        "Qom"
     ],
     "color": "green",
     "type": "100GE"

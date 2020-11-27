@@ -10,7 +10,7 @@ def cluster_format_check(cluster):
         return False
     elif not isinstance(cluster["subnodes"], list):
         return False
-    elif not not cluster["subnodes"]:
+    elif not cluster["subnodes"]:
         return False
     else:
         return True
@@ -42,7 +42,7 @@ def create_cluster(body, user_id):
     #
     # response: 201
 
-    if db.session.quey(UserModel).filter_by(id=user_id).one_or_none is None:
+    if db.session.query(UserModel).filter_by(id=user_id).one_or_none is None:
         return {"error_msg": "user with given id not found"}, 404
 
     if (name:=body["name"]) is None:
@@ -95,12 +95,40 @@ def get_clusters(user_id, project_id):
     for cluster in clusters:
         check_tup=check_pt_cluster_compatibility(pt, cluster.data)
         if not check_tup[0]:
-            return {"error_msg": f"""cluster with id= {cluster.id} is not compatible with current version \
-                                        of physical topology in project, node '{check_tup[1]}' does not exist \
-                                        in physical topology"""}, 400
+            return {"error_msg": f"cluster with id= {cluster.id} is not compatible with current version"
+                                    f" of physical topology in project, node '{check_tup[1]}' does not exist"
+                                    " in physical topology"}, 400
     
     schema = ClusterSchema(only=('id', 'name', 'data'), many=True)
     return schema.dump(clusters), 200
 
+def get_cluster(user_id, project_id, cluster_id):
+    # this endpoint will return just one cluster in project **without compatibility check**
+    #
+    # parameters:
+    #   1. user_id
+    #   2. project_id
+    #   3. cluster_id
+    #
+    # response:
+    #   1. cluster dict
+    #   2. cluster name
+    #
+    # example usage: image you have used above endpoint and error_msg have returned and it says
+    #                cluster with id= ### is incompatible with current version of physical topology
+    #                now you(frontend) have to change pt version or cluster in order to use this cluster
+    #                if you want to go second way ( changing cluster structure ), first you need to get this cluster
+    #                (using this endpoint) and then edit it in frontend.
 
+    if db.session.query(UserModel).filter_by(id=user_id).one_or_none is None:
+        return {"error_msg": "user with given id not found"}, 404
 
+    if (db.session.query(ProjectModel).filter_by(id=project_id, user_id=user_id).one_or_none()) is None:
+        return {"error_msg": "project with given id not found"}, 404
+
+    if (cluster:=db.session.query(ClusterModel)\
+                    .filter_by(project_id=project_id, id=cluster_id).one_or_none()) is None:
+        return {"error_msg": "no cluster in project with given id"}, 404
+
+    schema = ClusterSchema(only=('name', 'data'), many=False)
+    return schema.dump(cluster), 200
