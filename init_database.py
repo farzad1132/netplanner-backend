@@ -88,7 +88,7 @@ if __name__ == "__main__":
     db.create_all()
     
     user = UserModel(username=USER["username"], 
-                     password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'), id='1')
+                     password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'), id='1', role="manager")
     physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='1', comment="first pt")
     physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, id='1', comment="second pt")
     physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=3, id='1', comment="third pt")

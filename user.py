@@ -26,7 +26,7 @@ def login(body):
     elif not bcrypt.check_password_hash(user.password, password):
         return {"wrong username or password"}, 404
     else:
-        return {"user_id": user.id, "token": generate_token(user.id)}, 200
+        return {"user_id": user.id, "token": generate_token(user.id), 'role': user.role}, 200
 
 def decode_token(token):
     try:

@@ -54,6 +54,7 @@ class UserModel(db.Model):
     traffic_matrices = db.relationship( "TrafficMatrixModel", back_populates= "user")
     physical_topologies = db.relationship( "PhysicalTopologyModel", back_populates= "user")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    role = db.Column("role", db.String, nullable= False)
     
     def __repr__(self):
         return f"USER(name= {self.username})"
