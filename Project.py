@@ -89,7 +89,6 @@ def create_project(body, user_id):
 
     return {"project_id": project.id}, 201
 
-# TODO: this endpoint needs an update !!
 def update_project(body, user_id):
     # this endpoint will update a project
     #

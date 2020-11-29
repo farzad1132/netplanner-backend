@@ -648,7 +648,7 @@ paths:
                   - error_msg
           
           
-  /clustering/manual/read_all/{user_id}:
+  /clustering/read_all/{user_id}:
     summary: This path is handling operations related to Clustering
     get:
       operationId: Clustering.get_all_clusters
@@ -726,13 +726,12 @@ paths:
                     $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
-      
     post:
       operationId: Clustering.create_cluster
       summary: Creating clusters
       tags: 
         - Clustering
-      description: Creating new cluster in a Physical Topology (use this method if you want to save cluster in database)
+      description: Creating new cluster in a project (it will have a 1 to 1 relation to pt and pt_version)
       parameters: 
         - $ref: '#/components/parameters/user_id'
       requestBody:
@@ -742,16 +741,20 @@ paths:
             schema:
               type: object
               properties:
-                cluster:
-                  $ref: '#/components/schemas/cluster'
                 project_id:
                   $ref: '#/components/schemas/id'
-                name:
-                  $ref: '#/components/schemas/name'
-              required:
-                - name
-                - project_id
-                - cluster
+                clusters:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      cluster:
+                        $ref: '#/components/schemas/cluster'
+                      name:
+                        $ref: '#/components/schemas/name'
+                    required:
+                      - name
+                      - cluster
       responses:
         201:
           description: Cluster saved in DataBase

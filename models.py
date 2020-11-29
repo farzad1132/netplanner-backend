@@ -20,6 +20,7 @@ class PhysicalTopologyModel(db.Model):
                             onupdate=datetime.utcnow)
     comment = db.Column("comment", db.String, nullable=False)
     version = db.Column("version", db.Integer, nullable=False)
+    #clusters = db.relationship("ClusterModel", back_populates= "physical_topology") 
     
     def __repr__(self):
         return f"PT(id= {self.id}, version= {self.version}, name= {self.name})"
@@ -86,6 +87,9 @@ class ClusterModel(db.Model):
     name = db.Column("name", db.String, nullable= False)
     data = db.Column("data", JSON, nullable= False)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    pt_id = db.Column("pt_id", db.String, nullable= False)
+    pt_version = db.Column("pt_version", db.Integer, nullable=False)
+    #physical_topology = db.relationship("PhysicalTopologyModel", back_populates= "clusters")
     project_id = db.Column(db.String, db.ForeignKey("Project.id"))
     project = db.relationship("ProjectModel", back_populates= "clusters")
 

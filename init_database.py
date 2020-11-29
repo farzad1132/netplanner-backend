@@ -106,7 +106,10 @@ if __name__ == "__main__":
     project.current_tm_version = 2
 
     cluster = ClusterModel(name="Test Cluster", data=CLUSTER)
-    cluster.project = project
+    #physical_topology.clusters.append(cluster)
+    cluster.pt_version = 1
+    cluster.project_id = project.id
+    cluster.pt_id = "1"
 
     user.projects.append(project)
     traffic_matrix_2.projects.append(project)
