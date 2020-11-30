@@ -888,6 +888,10 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
+                  physical_topology:
+                     $ref: '#/components/schemas/physical_topology'
+                  traffic_matrix:
+                     $ref: '#/components/schemas/traffic_matrix'
                 required:
                   - error_msg
     
@@ -930,6 +934,10 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
+                  physical_topology:
+                     $ref: '#/components/schemas/physical_topology'
+                  traffic_matrix:
+                     $ref: '#/components/schemas/traffic_matrix'
                 required:
                   - error_msg
     

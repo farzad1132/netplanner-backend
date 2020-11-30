@@ -15,6 +15,9 @@ import uuid
 """
 
 def check_tm_format(tm):
+    # this function is used for error checking in traffic matrix
+    # it also adds '<property>_error' properties in case that finds an error
+
     ids = []
     flag = True
     for demand in tm["demands"]:
@@ -65,6 +68,8 @@ def get_traffic_matrix(id, user_id, version=None):
 
 def create_traffic_matrix(body, user_id):
     # this endpoint creates a new traffic matrix with received object
+    # NOTE: this endpoint will check traffic matrix and if it finds and error it will return a JSON
+    #       like from_excel endpoint ( and its err_codes ).
     #
     # Parameters:
     #   1. user_id
@@ -107,6 +112,7 @@ def create_traffic_matrix(body, user_id):
 
 def update_traffic_matrix(body, user_id):
     # this endpoint will update traffic matrix with received id
+    # NOTE: this endpoint has error checking (like create_traffic_matrix and from_excel endpoints)
     #
     # Parameters:
     #   2. user_id

@@ -3,7 +3,25 @@ import json
 from config import db
 from models import ProjectModel, ProjectSchema, PhysicalTopologyModel, TrafficMatrixModel, UserModel
 
-
+def pt_and_tm_compatibility(pt, tm):
+    # this function will responsible of simple compatibility between physical toplogy
+    # and traffic matrix
+    # NOTE: this function adds error descriptions in **traffic matrix** JSON
+    
+    nodes_name_list = []
+    for node in pt["nodes"]:
+        nodes_name_list.append(node["name"])
+    
+    flag = True
+    for demand in tm["demands"]:
+        if not (demand["source"] in nodes_name_list):
+            flag = False
+            demand["source_error"] = "err_code:3, 'source' must be one of the nodes"
+        if not (demand["destination"] in nodes_name_list):
+            flag = False
+            demand["destination_error"] = "err_code:3, 'destination' must be one of the nodes"
+    
+    return flag
 
 def read_project(id, user_id):
     # this endpoint will return a project details
@@ -77,6 +95,10 @@ def create_project(body, user_id):
     if (tm:=TrafficMatrixModel.query.filter_by(id=tm_id, user_id=user_id, version=tm_version).one_or_none()) is None:
         return {"error_msg": f"Traffic Matrix with id = {tm_id} not found"}, 404
     
+    if not pt_and_tm_compatibility(pt, tm):
+        return {"err_msg": "given physical toplogy and traffic matrix are not compatible with each other",
+                "traffic_matrix": tm, "physical_toplogy": pt}, 400
+    
     project = ProjectModel(name= name)
     project.user = user
     project.traffic_matrix = tm
@@ -140,6 +162,10 @@ def update_project(body, user_id):
     if (pt:=PhysicalTopologyModel.query.filter_by(id=pt_id, user_id=user_id, version=current_pt_version).one_or_none()) is None:
         return {"error_msg": "Physical Topology not found"}, 404
     project.physical_topology = pt
+
+    if not pt_and_tm_compatibility(pt, tm):
+        return {"err_msg": "given physical toplogy and traffic matrix are not compatible with each other",
+                "traffic_matrix": tm, "physical_toplogy": pt}, 400
     
     if ProjectModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
         return {"error_msg":"name of the project has conflict with another record"}

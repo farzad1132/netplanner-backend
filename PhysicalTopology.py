@@ -102,7 +102,7 @@ def get_physical_topology(id, user_id, version=None):
 
 def create_physical_topology(body, user_id):
     # this endpoint creates a record in physical topology database with received object
-    # NOTE: this endpoint will check physical topology and if it finds and error it will return a JSOM
+    # NOTE: this endpoint will check physical topology and if it finds and error it will return a JSON
     #       like from_excel endpoint ( and its err_codes ).
     #
     # Parameters:
@@ -143,7 +143,7 @@ def create_physical_topology(body, user_id):
 
 def update_physical_topology(body, user_id):
     # this endpoint will update a physical topology
-    # NOTE: this endpoint has error checking (like create_physical toplogy and from_excel endpoints)
+    # NOTE: this endpoint has error checking (like create_physical_toplogy and from_excel endpoints)
     #
     # parameters:
     #   1. user_id
