@@ -196,7 +196,9 @@ def read_all_pts(user_id):
 
 def read_from_excel(body, pt_binary, user_id):
     # This end point will create a JSON object with received excel file and will send it for front
-    # and also save it into database
+    # and also will save it into database
+    # NOTE: if this endpoint detects an error in file, it will not save it in database and 
+    #       frontend have to save it with create_physical_topology endpoint.
     #
     # RequestBody:
     #   1. excel file
@@ -205,6 +207,15 @@ def read_from_excel(body, pt_binary, user_id):
     #
     # Response:
     #   1. JSON object of excel file
+    #
+    # NOTE: in each item of json if the there is something wrong with one of properties, there is a '<property>_error'
+    #       in that item explaining problem along with error code.
+    #
+    # error codes in this endpoint:
+    #   1. X must be float
+    #   2. X must be from ('Directionless','CDC')
+    #   3. X must be one of the nodes
+    #   4. X must be float for integer
 
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
@@ -215,13 +226,14 @@ def read_from_excel(body, pt_binary, user_id):
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     if PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
-        return {"error_msg":"name of the physical topology has conflict with another record"}, 409 
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
 
+    flag = True # this flag is used later to check whether PT is correct of not
     pt = {}
     xls = ExcelFile(pt_binary)
     temp_data = read_excel(xls, 'Nodes')
     temp_dic ={}
-    headers = ['ID','Node','Location','ROADM_Type'] 
+    headers = ['ID','Node','lat','lng','ROADM_Type'] 
     for pointer in headers:
         temp_dic[pointer] = {}
         if pointer in temp_data:
@@ -230,19 +242,29 @@ def read_from_excel(body, pt_binary, user_id):
             return {"error_msg": f"There is no {pointer} column in excel file"}, 400
     
     proper_list = []
+    nodes_name_list = []
     for row in temp_dic["ID"].keys():
         item = {}
         item["name"] = temp_dic["Node"][row]
+        nodes_name_list.append(item["name"])
         try:
-            location = str(temp_dic["Location"][row]).split(',')
-            location = list(map(lambda x : float(x), location))
+            temp_dic["lat"][row] = float(temp_dic["lat"][row])
         except:
-            return {"error_msg": f"There is an issue at column Location and row {row}"}, 400
-        item["lat"] = location[0]
-        item["lng"] = location[1]
+            flag = False
+            item["lat_error"] = "err_code:1, 'lat' must be float"
+        try:
+            temp_dic["lng"][row] = float(temp_dic["lng"][row])
+        except:
+            flag = False
+            item["lng_error"] = "err_code:1, 'lat' must be float"
 
-        # TODO: check ROADM types
-        item["roadm_type"] = temp_dic["ROADM_Type"][row]
+        item["lat"] = temp_dic["lat"][row]
+        item["lng"] = temp_dic["lng"][row]
+
+        if not (roadm:=temp_dic["ROADM_Type"][row]) in ("Directionless", "CDC"):
+            flag = False
+            item["roadm_type_error"] = "err_code:2, roadm_type must be from ('Directionless','CDC')"
+        item["roadm_type"] = roadm
 
         proper_list.append(item)
 
@@ -261,16 +283,25 @@ def read_from_excel(body, pt_binary, user_id):
     proper_list = []
     for row in temp_dic["ID"].keys():
         item = {}
-        item["source"] = temp_dic["Source"][row]
-        item["destination"] = temp_dic["Destination"][row]
+        if not (source:=temp_dic["Source"][row]) in nodes_name_list:
+            flag = False
+            item["source_error"] = "err_code:3, link 'source' must be one of the nodes"
+        if not (destination:=temp_dic["Destination"][row]) in nodes_name_list:
+            flag = False
+            item["destination_error"] = "err_code:3, link 'destination' must be one of the nodes"
+        item["source"] = source
+        item["destination"] = destination
 
         # TODO: add multi-span support
         try:
             distance = float(temp_dic["Distance"][row])
         except:
-            return {"error_msg": f"There is an issue at column Distance and row {row}"}, 400
+            flag = False
+            item["distance_error"] = "err_code:4, 'distance' must be float or integer"
+            distance = temp_dic["Distance"][row]
         item["distance"] = distance
 
+        # TODO: complete fiber_type check
         try:
             fiber_type = temp_dic["Fiber Type"][row].strip()
         except:
@@ -280,11 +311,13 @@ def read_from_excel(body, pt_binary, user_id):
         proper_list.append(item)
 
     pt["links"] = proper_list
-    id = uuid.uuid4().hex
-    pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1, id=id)
-    pt_object.user_id = user_id
+    if flag is True:
+        pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1)
+        pt_object.user_id = user_id
 
-    db.session.add(pt_object)
-    db.session.commit()
+        db.session.add(pt_object)
+        db.session.commit()
 
-    return {"PT":pt, "id":pt_object.id}, 201
+        return {"pt":pt, "id":pt_object.id}, 201
+    else:
+        return {"err_msg":"there is error(s) in this file", "pt":pt}, 400
