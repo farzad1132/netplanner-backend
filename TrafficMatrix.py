@@ -14,6 +14,28 @@ import uuid
         4. DELETE
 """
 
+def check_tm_format(tm):
+    ids = []
+    flag = True
+    for demand in tm["demands"]:
+        if not (isinstance(demand["id"], int) and (demand["id"] in ids)):
+            flag = False
+            demand["id_error"] = "err_code:5, 'id' must be integer and unique"
+        if not (demand["protection_type"] in ("NoProtection", "1+1_NodeDisjoint")):
+            flag = False
+            demand["protection_type_error"] = "err_code:6, 'protection_type' must be in ('NoProtection', '1+1_NodeDisjoint')"
+        if not (demand["restoration_type"] in ("JointSame", "None", "AdvJointSame")):
+            flag = False
+            demand["restoration_type_error"] = "err_code:7, 'restoration_type' must be from ('JointSame', 'None', 'AdvJointSame')"
+        
+        for service in demand["services"]:
+            if not isinstance(service["quantity"], int):
+                flag = False
+                service["quantity_error"] = "err_code:8, 'quantity' must be integer"
+    
+    return flag
+
+
 def get_traffic_matrix(id, user_id, version=None):
     # this endpoint will return a traffic matrix object to front
     # if version is specified then this endpoint will only return that version but if version is not specified
@@ -66,6 +88,9 @@ def create_traffic_matrix(body, user_id):
     if (traffic_matrix:=body["traffic_matrix"]) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
 
+    if not check_tm_format(traffic_matrix):
+        return {"error_msg": "there is/are error(s) in traffic matrix", "traffic_matrix": traffic_matrix}, 400
+
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
@@ -104,6 +129,9 @@ def update_traffic_matrix(body, user_id):
     
     if (new_tm:=body["traffic_matrix"]) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
+
+    if not check_tm_format(new_tm):
+        return {"error_msg": "there is/are error(s) in traffic matrix", "traffic_matrix": new_tm}, 400
 
     if (comment:=body["comment"]) is None:
         return {"error_msg": "'comment' can not be None"}, 400
@@ -171,7 +199,7 @@ def read_from_excel(tm_binary, user_id, body):
     # This end point will create a JSON object with received excel file and will send it for front
     # and also will save it into database
     # NOTE: if this endpoint detects an error in file, it will not save it in database and 
-    #       frontend have to save it with create_physical_topology endpoint
+    #       frontend have to save it with create_traffic_matrix endpoint
     #
     # Parameters:
     #   1. traffic matrix excel file

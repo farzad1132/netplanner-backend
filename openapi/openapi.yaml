@@ -510,6 +510,19 @@ paths:
                     $ref: '#/components/schemas/id'
                 required: 
                  - id
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                  traffic_matrix:
+                  $ref: '#/components/schemas/traffic_matrix'
+                required:
+                  - error_msg
     put:
       tags: 
        - Traffic Matrix
@@ -547,6 +560,8 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
+                  traffic_matrix:
+                  $ref: '#/components/schemas/traffic_matrix'
                 required:
                   - error_msg
     delete:
