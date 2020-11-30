@@ -272,6 +272,8 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
+                  pt:
+                    $ref: '#/components/schemas/physical_topology'
                 required:
                   - error_msg
     
@@ -311,6 +313,8 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
+                  pt:
+                    $ref: '#/components/schemas/physical_topology'
                 required:
                   - error_msg
     
