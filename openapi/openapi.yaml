@@ -272,7 +272,7 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
-                  pt:
+                  physical_topology:
                     $ref: '#/components/schemas/physical_topology'
                 required:
                   - error_msg
@@ -313,7 +313,7 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
-                  pt:
+                  physical_topology:
                     $ref: '#/components/schemas/physical_topology'
                 required:
                   - error_msg
@@ -381,7 +381,7 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
-                  pt:
+                  physical_topology:
                     $ref: '#/components/schemas/physical_topology'
                 required:
                   - error_msg
@@ -602,6 +602,8 @@ paths:
                 properties:
                   error_msg:
                     $ref: '#/components/schemas/error_msg'
+                  traffic_matrix:
+                    $ref: '#/components/schemas/traffic_matrix'
                 required:
                   - error_msg
           

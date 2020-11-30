@@ -168,15 +168,27 @@ def read_all(user_id):
         return schema.dump(tm_list), 200
 
 def read_from_excel(tm_binary, user_id, body):
-    # this endpoint will return object of received traffic matrix excel file
+    # This end point will create a JSON object with received excel file and will send it for front
+    # and also will save it into database
+    # NOTE: if this endpoint detects an error in file, it will not save it in database and 
+    #       frontend have to save it with create_physical_topology endpoint
     #
     # Parameters:
     #   1. traffic matrix excel file
     #   2. user_id
     #   3. name of the traffic matrix
     #
+    # NOTE: in each item of json if the there is something wrong with one of properties, there is a '<property>_error'
+    #       in that item explaining problem along with error code.
+    #
     # Response:
     #   1. traffic matrix object
+    #
+    # error_codes:
+    #   err_code:5. X must be integer and unique
+    #   err_code:6. X must be in ('NoProtection', '1+1_NodeDisjoint')
+    #   err_code:7. X must be from ('JointSame', 'None', 'AdvJointSame')
+    #   err_code:8. X must be integer
 
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
@@ -209,25 +221,33 @@ def read_from_excel(tm_binary, user_id, body):
         if not header in data:
             return {"error_msg": f"there is no {header} column"}, 400
 
-    demands_list = []    
+    demands_list = []
+    flag = True
     for row in data["ID"].keys():
         demand = {}
         try:
             demand["id"] = int(row)
         except:
-            return {"error_msg" : f"wrong ID format {row}"}, 400
+            demand["id"] = row
+            flag = False
+            demand["id_error"] = "err_code:5, 'id' must be integer and unique"
+            #return {"error_msg" : f"wrong ID format {row}"}, 400
 
-        demand["source"] = data["Source"][row].strip()
-        demand["destination"] = data["Destination"][row].strip()
+        demand["source"] = str(data["Source"][row]).strip()
+        demand["destination"] = str(data["Destination"][row]).strip()
         demand["type"] = None
 
-        demand["protection_type"] = data["Protection_Type"][row].strip()
+        demand["protection_type"] = str(data["Protection_Type"][row]).strip()
         if not demand["protection_type"] in ("NoProtection", "1+1_NodeDisjoint"):
-            return {"error_msg" : f"wrong entry for ProtectionType, ID = {row}"}, 400
+            #return {"error_msg" : f"wrong entry for ProtectionType, ID = {row}"}, 400
+            flag = False
+            demand["protection_type_error"] = "err_code:6, 'protection_type' must be in ('NoProtection', '1+1_NodeDisjoint')"
 
-        demand["restoration_type"] = data["Restoration_Type"][row].strip()
+        demand["restoration_type"] = str(data["Restoration_Type"][row]).strip()
         if not demand["restoration_type"] in ("JointSame", "None", "AdvJointSame"):
-            return {"error_msg" : f"wrong entry for RetorationType, ID = {row}"}, 400
+            #return {"error_msg" : f"wrong entry for RetorationType, ID = {row}"}, 400
+            flag = False
+            demand["restoration_type_error"] = "err_code:7, 'restoration_type' must be from ('JointSame', 'None', 'AdvJointSame')"
         
         demand["services"] = []
         for service in SERVICE_HEADERS:
@@ -239,16 +259,24 @@ def read_from_excel(tm_binary, user_id, body):
                         "quantity": quantity
                     })
             else:
-                return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
+                #return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
+                flag = False
+                demand["services"].append({
+                    "type": service[9::],
+                    "quantity": data[service][row],
+                    "quantity_error": "err_code:8, 'quantity' must be integer"
+                })
         
         demands_list.append(demand)
 
     tm["demands"] = demands_list
-    id = uuid.uuid4().hex
-    tm_object = TrafficMatrixModel(name=name, data=tm, comment="initial version", version=1, id=id)
-    tm_object.user_id = user_id
+    if flag is True:
+        tm_object = TrafficMatrixModel(name=name, data=tm, comment="initial version", version=1)
+        tm_object.user_id = user_id
 
-    db.session.add(tm_object)
-    db.session.commit()
+        db.session.add(tm_object)
+        db.session.commit()
 
-    return {"id": tm_object.id, "TM": tm}, 201
+        return {"id": tm_object.id, "traffic_matrix": tm}, 201
+    else:
+        return {"err_msg": "there is error(s) in this file", "traffic_matrix":tm}, 400

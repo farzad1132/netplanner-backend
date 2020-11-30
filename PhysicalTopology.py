@@ -131,7 +131,7 @@ def create_physical_topology(body, user_id):
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     if not check_pt_format(physical_topology):
-        return {"error_msg": "there is/are error(s) in physical toplogy", "pt": physical_topology}, 400
+        return {"error_msg": "there is/are error(s) in physical toplogy", "physical_topology": physical_topology}, 400
 
     pt_object = PhysicalTopologyModel(name=name, data=physical_topology, comment=comment, 
                                         version=1)
@@ -171,7 +171,7 @@ def update_physical_topology(body, user_id):
         return {"error_msg": "'physical topology' can not be None"}, 400
     
     if not check_pt_format(new_pt):
-        return {"error_msg": "there is/are error(s) in physical toplogy", "pt": new_pt}, 400
+        return {"error_msg": "there is/are error(s) in physical toplogy", "physical_topology": new_pt}, 400
 
     if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
@@ -357,6 +357,6 @@ def read_from_excel(body, pt_binary, user_id):
         db.session.add(pt_object)
         db.session.commit()
 
-        return {"pt":pt, "id":pt_object.id}, 201
+        return {"physical_topology":pt, "id":pt_object.id}, 201
     else:
-        return {"err_msg":"there is error(s) in this file", "pt":pt}, 400
+        return {"err_msg":"there is error(s) in this file", "physical_topology":pt}, 400
