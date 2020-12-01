@@ -30,6 +30,8 @@ def login(body):
 
 def register_designer():
 
+def search_user():
+
 def add_designer_to_project(body, user_id):
     if (user:=UserModel.query.filter_by(user_id= user_id).one_or_none()) is None:
         return {"error_msg": "user not found"}, 404

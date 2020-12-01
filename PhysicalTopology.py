@@ -1,5 +1,5 @@
 from flask import abort, request
-from models import PhysicalTopologyModel, PhysicalTopologySchema, UserModel
+from models import PhysicalTopologyModel, PhysicalTopologySchema, UserModel, PhysicalTopologyUsersModel
 import json
 from config import db
 from pandas import read_excel, ExcelFile
@@ -41,6 +41,47 @@ PHYSICALTOPOLOGY = {
     ]
 }
 
+def get_user_pts_id(user_id):
+    # this function finds all of user's physical topologies id including owned ones and shared ones
+    # return value:
+    #   1. list of ids
+    
+    id_list = []
+    owned_pts = db.session.query(PhysicalTopologyModel).filter_by(owner_id=user_id).all()
+    for pt in owned_pts:
+        id_list.append(pt.id)
+    
+    shared_pts = db.session.query(PhysicalTopologyUsersModel).filter_by(user_id=user_id).all()
+    for pt in shared_pts:
+        id_list.append(pt.pt_it)
+    
+    return id_list
+
+def get_authorized_user(pt_id, user_id):
+    # return values:
+    #   1. info tuple:
+    #       1. boolean indicating authorization
+    #       2. error_msg (default is "")
+    #       3. status code of error (default is 0)
+    #   2. physical topology object (database object)
+    #   3. user object (database object)
+
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return (False, f"user with id = {user_id} not found", 404), None, None
+
+    if (pt:=db.session.query(PhysicalTopologyModel).filter_by(id=pt_id).one_or_none()) is None:
+        return (False, "Physical Topology not found", 404), None, None
+    elif user_id == pt.owner_id:
+        user = db.session.query(UserModel).filter_by(id=user_id).one_or_none()
+        return (True, "", 0), pt, user
+    
+    if db.session.query(PhysicalTopologyUsersModel).filter_by(pt_id=pt_id, user_id=user_id).one_or_none() is None:
+        return (False, "Not Authorized", 401), None, None
+    else:
+        user = user = db.session.query(UserModel).filter_by(id=user_id).one_or_none()
+        return (True, "", 0), pt, user
+
+
 def get_physical_topology(id, user_id, version=None):
     # this endpoint will send a physical topology to front
     # if version is specified then this endpoint will only return that version but if version is not specified
@@ -55,19 +96,17 @@ def get_physical_topology(id, user_id, version=None):
     #   1. physical topology object
     #   2. last version number
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
+    info_tuple, _, _= get_authorized_user(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
     
     if version is None:
-        pt_list = PhysicalTopologyModel.query.filter_by(id=id, user_id= user_id).all()
+        pt_list = PhysicalTopologyModel.query.filter_by(id=id).all()
     else:
-        pt_list = PhysicalTopologyModel.query.filter_by(id=id, user_id= user_id, version=version).all()
+        pt_list = PhysicalTopologyModel.query.filter_by(id=id, version=version).all()
 
-    if not pt_list:
-        return {"error_msg":"Physical Topology not found"}, 404
-    else:
-        schema = PhysicalTopologySchema(only=("data", "version", "name", "comment"), many= True)
-        return schema.dump(pt_list), 200
+    schema = PhysicalTopologySchema(only=("data", "version", "name", "comment"), many= True)
+    return schema.dump(pt_list), 200
 
 def create_physical_topology(body, user_id):
     # this endpoint creates a record in physical topology database with received object
@@ -83,6 +122,9 @@ def create_physical_topology(body, user_id):
     # Response: 
     #   1. id of the saved object in database
 
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
+
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
@@ -94,12 +136,8 @@ def create_physical_topology(body, user_id):
     if (comment:=body["comment"]) is None:
         return {"error_msg": "'comment' can not be None"}, 400
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
-
-    id = uuid.uuid4().hex
     pt_object = PhysicalTopologyModel(name=name, data=physical_topology, comment=comment, 
-                                        id=id, version=1)
+                                        version=1)
     pt_object.user_id = user_id
     db.session.add(pt_object)
     db.session.commit()
@@ -120,22 +158,28 @@ def update_physical_topology(body, user_id):
     #
     # Response:     200
 
-    if (name:=body["name"]) is None:
-        return {"error_msg": "'id' can not be None"}, 400
-    elif PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
-        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
-    
     if (id:=body["id"]) is None:
         return {"error_msg": "'id' can not be None"}, 400
+
+    """ if (auth_users:=get_authorized_users(id)) is None:
+        return {"error_msg":"Physical Topology not found"}, 404
+    elif not (user_id in auth_users):
+        return {"error_msg": "Not Authorized"}, 401 """
+    
+    info_tuple, _, user= get_authorized_user(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
+
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'id' can not be None"}, 400
+    elif PhysicalTopologyModel.query.filter_by(name=name).one_or_none() is not None:
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
     
     if (comment:=body["comment"]) is None:
         return {"error_msg": "'comment' can not be None"}, 400
     
     if (new_pt:=body["physical_topology"]) is None:
         return {"error_msg": "'physical topology' can not be None"}, 400
-
-    if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     if not (pt_list:=PhysicalTopologyModel.query.filter_by(id=id, user_id= user_id)\
                     .order_by(PhysicalTopologyModel.version.desc()).all()):
