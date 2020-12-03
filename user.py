@@ -28,9 +28,9 @@ def login(body):
     else:
         return {"user_id": user.id, "token": generate_token(user.id), 'role': user.role}, 200
 
-def register_designer():
+#def register_designer():
 
-def search_user():
+#def search_user():
 
 def add_designer_to_project(body, user_id):
     if (user:=UserModel.query.filter_by(user_id= user_id).one_or_none()) is None:

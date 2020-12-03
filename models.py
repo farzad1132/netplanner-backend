@@ -54,6 +54,7 @@ class UserModel(db.Model):
     traffic_matrices = db.relationship( "TrafficMatrixModel", back_populates= "owner")
     physical_topologies = db.relationship( "PhysicalTopologyModel", back_populates= "owner")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    shared_pts = db.relationship( "PhysicalTopologyUsersModel", back_populates= "user")
     role = db.Column("role", db.String, nullable= False)
     
     def __repr__(self):
@@ -87,7 +88,7 @@ class ProjectUsersModel(db.Model):
 
     id = db.Column( "id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = user_id = db.Column(db.String, db.ForeignKey("User.id"))
+    user_id = db.Column(db.String, db.ForeignKey("User.id"))
     project_id = db.Column(db.String, db.ForeignKey("Project.id"))
     project = db.relationship("ProjectModel", back_populates= "shared_users")
 
@@ -103,8 +104,9 @@ class PhysicalTopologyUsersModel(db.Model):
 
     id = id = db.Column("id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = user_id = db.Column(db.String, db.ForeignKey("User.id"))
+    user_id = db.Column(db.String, db.ForeignKey("User.id"))
     pt_id = db.Column("pt_id", db.String, nullable= False)
+    user = db.relationship("UserModel", back_populates= "shared_pts")
 
     def __repr__(self):
         return f"user_id= {self.user_id}, pt_id= {self.pt_id}"
@@ -118,7 +120,7 @@ class TrafficMatrixUsersModel(db.Model):
 
     id = id = db.Column("id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = user_id = db.Column(db.String, db.ForeignKey("User.id"))
+    user_id = db.Column(db.String, db.ForeignKey("User.id"))
     tm_id = db.Column("tm_id", db.String, nullable= False)
 
     def __repr__(self):

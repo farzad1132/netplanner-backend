@@ -921,8 +921,9 @@ paths:
           description: Project deleted
   
   /users/add_designer_to_project/{user_id}:
+    summary: adding designer to project
     post:
-      summery: adding existing user to project
+      summary: adding existing user to project
       tags:
         - User
       operationId: user.add_designer_to_project
@@ -937,9 +938,7 @@ paths:
                 id_list:
                   type: array
                   items:
-                    type: string
-                    schema:
-                      $ref: '#/components/schemas/id'
+                    $ref: '#/components/schemas/id'
                 project_id:
                   $ref: '#/components/schemas/id'
       responses:

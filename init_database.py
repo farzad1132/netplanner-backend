@@ -1,6 +1,7 @@
 import os
 from config import db, bcrypt
-from models import PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel
+from models import (PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel,
+                    PhysicalTopologyUsersModel)
 
 
 PHYSICALTOPOLOGY = {
@@ -54,10 +55,20 @@ TRAFFICMATRIX = {
     ]
 }
 
-USER = {
-    "username": "Test User",
-    "password": "1234"
-}
+USERS = [
+    {
+        "username": "Test User",
+        "password": "1234"
+    },
+    {
+        "username": "farzad",
+        "password": "1234"
+    },
+    {
+        "username": "amir",
+        "password": "1234"
+    }
+]
 
 PROJECTS = {
     "name": "Test Project"
@@ -86,15 +97,24 @@ if __name__ == "__main__":
     db.session.commit()
     #clear_data(db.session)
     db.create_all()
+
+    id = 3
+    users = {}
+    for USER in USERS:
+        user = UserModel(username=USER["username"], id=str(id), role="manager",
+                        password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
+        users[id] = user
+        id -= 1
     
-    user = UserModel(username=USER["username"], 
-                     password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'), id='1', role="manager")
     physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='1', comment="first pt")
     physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, id='1', comment="second pt")
-    physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=3, id='1', comment="third pt")
+    physical_topology_3 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='2', comment="third pt")
     user.physical_topologies.append(physical_topology)
     user.physical_topologies.append(physical_topology_2)
-    user.physical_topologies.append(physical_topology_3)
+    users[2].physical_topologies.append(physical_topology_3)
+    #user.shared_pts.append(physical_topology_3)
+    #db.session.add(physical_topology_3)
+    share_record_pt_1 = PhysicalTopologyUsersModel(user_id=users[1].id, pt_id='2')
     traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=1, comment="first tm")
     traffic_matrix_2 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=2, comment="second tm")
     traffic_matrix_3 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=3, comment="third tm")
@@ -112,7 +132,10 @@ if __name__ == "__main__":
     traffic_matrix_2.projects.append(project)
     physical_topology.projects.append(project)
 
-    db.session.add(user)
+    #db.session.add(user)
+    for user in users.values():
+        db.session.add(user)
+    db.session.add(share_record_pt_1)
     db.session.add(project)
     db.session.add(traffic_matrix)
     db.session.add(physical_topology)
