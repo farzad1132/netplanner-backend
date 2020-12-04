@@ -1,7 +1,7 @@
 import os
 from config import db, bcrypt
 from models import (PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel,
-                    PhysicalTopologyUsersModel)
+                    PhysicalTopologyUsersModel, TrafficMatrixUsersModel)
 
 
 PHYSICALTOPOLOGY = {
@@ -117,10 +117,12 @@ if __name__ == "__main__":
     share_record_pt_1 = PhysicalTopologyUsersModel(user_id=users[1].id, pt_id='2')
     traffic_matrix = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=1, comment="first tm")
     traffic_matrix_2 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=2, comment="second tm")
-    traffic_matrix_3 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='1', version=3, comment="third tm")
+    traffic_matrix_3 = TrafficMatrixModel(name="Test TM", data=TRAFFICMATRIX, id='2', version=1, comment="third tm")
     user.traffic_matrices.append(traffic_matrix)
     user.traffic_matrices.append(traffic_matrix_2)
-    user.traffic_matrices.append(traffic_matrix_3)
+    #user.traffic_matrices.append(traffic_matrix_3)
+    users[2].traffic_matrices.append(traffic_matrix_3)
+    share_record_tm_1 = TrafficMatrixUsersModel(user_id=users[1].id, tm_id='2')
     project = ProjectModel(name= "Test Project")
     project.current_pt_version = 1
     project.current_tm_version = 2
@@ -136,6 +138,7 @@ if __name__ == "__main__":
     for user in users.values():
         db.session.add(user)
     db.session.add(share_record_pt_1)
+    db.session.add(share_record_tm_1)
     db.session.add(project)
     db.session.add(traffic_matrix)
     db.session.add(physical_topology)

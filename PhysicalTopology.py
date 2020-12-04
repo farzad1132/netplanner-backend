@@ -189,7 +189,7 @@ def update_physical_topology(body, user_id):
 
     pt_object = PhysicalTopologyModel(id=id, comment=comment, version=pt.version+1,
                                         name=name, data=new_pt)
-    pt_object.user = user
+    pt_object.owner = user
     db.session.add(pt_object)
     db.session.commit()
     return 200
@@ -260,7 +260,8 @@ def read_from_excel(body, pt_binary, user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+    if PhysicalTopologyModel.query.filter_by(name=name)\
+        .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the physical topology has conflict with another record"}, 409 
 
     pt = {}

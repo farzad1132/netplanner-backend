@@ -55,6 +55,7 @@ class UserModel(db.Model):
     physical_topologies = db.relationship( "PhysicalTopologyModel", back_populates= "owner")
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     shared_pts = db.relationship( "PhysicalTopologyUsersModel", back_populates= "user")
+    shared_tms = db.relationship( "TrafficMatrixUsersModel", back_populates= "user")
     role = db.Column("role", db.String, nullable= False)
     
     def __repr__(self):
@@ -122,6 +123,7 @@ class TrafficMatrixUsersModel(db.Model):
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.String, db.ForeignKey("User.id"))
     tm_id = db.Column("tm_id", db.String, nullable= False)
+    user = db.relationship("UserModel", back_populates= "shared_tms")
 
     def __repr__(self):
         return f"user_id= {self.user_id}, tm_id= {self.tm_id}"
