@@ -1,7 +1,7 @@
 import os
 from config import db, bcrypt
 from models import (PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel,
-                    PhysicalTopologyUsersModel, TrafficMatrixUsersModel)
+                    PhysicalTopologyUsersModel, TrafficMatrixUsersModel, ProjectUsersModel)
 
 
 PHYSICALTOPOLOGY = {
@@ -126,11 +126,24 @@ if __name__ == "__main__":
     project = ProjectModel(name= "Test Project")
     project.current_pt_version = 1
     project.current_tm_version = 2
+    users[1].projects.append(project)
+
+    project_2 = ProjectModel(name="Test Project 2")
+    project_2.traffic_matrix = traffic_matrix_3
+    project_2.physical_topology = physical_topology_3
+    project_2.current_tm_version = 1
+    project_2.current_pt_version = 1
+    project_2.owner_id = users[2].id
+
+    share_record_project_1 = ProjectUsersModel(user_id=users[1].id)
+    share_record_project_1.project = project_2
+    db.session.add(share_record_project_1)
+
 
     cluster = ClusterModel(name="Test Cluster", data=CLUSTER)
     cluster.project = project
 
-    user.projects.append(project)
+    
     traffic_matrix_2.projects.append(project)
     physical_topology.projects.append(project)
 
@@ -140,6 +153,7 @@ if __name__ == "__main__":
     db.session.add(share_record_pt_1)
     db.session.add(share_record_tm_1)
     db.session.add(project)
+    db.session.add(project_2)
     db.session.add(traffic_matrix)
     db.session.add(physical_topology)
     db.session.add(cluster)

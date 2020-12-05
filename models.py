@@ -56,6 +56,7 @@ class UserModel(db.Model):
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     shared_pts = db.relationship( "PhysicalTopologyUsersModel", back_populates= "user")
     shared_tms = db.relationship( "TrafficMatrixUsersModel", back_populates= "user")
+    shared_projects = db.relationship( "ProjectUsersModel", back_populates= "user")
     role = db.Column("role", db.String, nullable= False)
     
     def __repr__(self):
@@ -90,6 +91,7 @@ class ProjectUsersModel(db.Model):
     id = db.Column( "id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = db.Column(db.String, db.ForeignKey("User.id"))
+    user = db.relationship("UserModel", back_populates= "shared_projects")
     project_id = db.Column(db.String, db.ForeignKey("Project.id"))
     project = db.relationship("ProjectModel", back_populates= "shared_users")
 

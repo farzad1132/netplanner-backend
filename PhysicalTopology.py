@@ -60,7 +60,7 @@ def get_user_pts_id(user_id, all=True):
     
     return id_list
 
-def get_authorized_user(pt_id, user_id):
+def authorization_check(pt_id, user_id, version=None):
 # this function handles user authorization for accessing physical topology endpoints,
 # it also returns user and physical topology object
     #
@@ -72,21 +72,24 @@ def get_authorized_user(pt_id, user_id):
     #   2. physical topology object (database object)
     #   3. user object (database object)
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+    if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return (False, f"user with id = {user_id} not found", 404), None, None
 
-    if (pt:=db.session.query(PhysicalTopologyModel).filter_by(id=pt_id)\
+    if version is None:
+        pt = db.session.query(PhysicalTopologyModel).filter_by(id=pt_id)\
             .distinct(PhysicalTopologyModel.version)\
-            .order_by(PhysicalTopologyModel.version.desc()).first()) is None:
+            .order_by(PhysicalTopologyModel.version.desc()).first()
+    else:
+        pt = db.session.query(PhysicalTopologyModel).filter_by(id=pt_id, version=version).one_or_none()
+    
+    if pt is None:
         return (False, "Physical Topology not found", 404), None, None
     elif user_id == pt.owner_id:
-        user = db.session.query(UserModel).filter_by(id=user_id).one_or_none()
         return (True, "", 0), pt, user
-    
+  
     if db.session.query(PhysicalTopologyUsersModel).filter_by(pt_id=pt_id, user_id=user_id).one_or_none() is None:
         return (False, "Not Authorized", 401), None, None
     else:
-        user = user = db.session.query(UserModel).filter_by(id=user_id).one_or_none()
         return (True, "", 0), pt, user
 
 
@@ -104,7 +107,7 @@ def get_physical_topology(id, user_id, version=None):
     #   1. physical topology object
     #   2. last version number
 
-    info_tuple, _, _= get_authorized_user(id, user_id)
+    info_tuple, _, _= authorization_check(id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
@@ -171,7 +174,7 @@ def update_physical_topology(body, user_id):
     if (id:=body["id"]) is None:
         return {"error_msg": "'id' can not be None"}, 400
     
-    info_tuple, pt, user= get_authorized_user(id, user_id)
+    info_tuple, pt, user= authorization_check(id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
 
