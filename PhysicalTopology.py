@@ -1,5 +1,5 @@
 from flask import abort, request
-from models import PhysicalTopologyModel, PhysicalTopologySchema, UserModel
+from models import PhysicalTopologyModel, PhysicalTopologySchema, UserModel, PhysicalTopologyUsersModel
 import json
 from config import db
 from pandas import read_excel, ExcelFile
@@ -71,11 +71,62 @@ def check_pt_format(pt):
             link["distance_error"] = "err_code:4, 'distance' must be float or integer"
     
     return flag
+def get_user_pts_id(user_id, all=True):
+# this function finds all of user's physical topologies id
+    #
+    # return value:
+    #   1. list of ids
+    #   2. all(boolean) if its false this function only returns shared ones
+    
+    id_list = []
+    if all is True:
+        owned_pts = db.session.query(PhysicalTopologyModel).filter_by(owner_id=user_id).all()
+        for pt in owned_pts:
+            id_list.append(pt.id)
+    
+    shared_pts = db.session.query(PhysicalTopologyUsersModel).filter_by(user_id=user_id).all()
+    for pt in shared_pts:
+        id_list.append(pt.pt_id)
+    
+    return id_list
+
+def authorization_check(pt_id, user_id, version=None):
+# this function handles user authorization for accessing physical topology endpoints,
+# it also returns user and physical topology object
+    #
+    # return values:
+    #   1. info tuple:
+    #       1. boolean indicating authorization
+    #       2. error_msg (default is "")
+    #       3. status code of error (default is 0)
+    #   2. physical topology object (database object)
+    #   3. user object (database object)
+
+    if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
+        return (False, f"user with id = {user_id} not found", 404), None, None
+
+    if version is None:
+        pt = db.session.query(PhysicalTopologyModel).filter_by(id=pt_id)\
+            .distinct(PhysicalTopologyModel.version)\
+            .order_by(PhysicalTopologyModel.version.desc()).first()
+    else:
+        pt = db.session.query(PhysicalTopologyModel).filter_by(id=pt_id, version=version).one_or_none()
+    
+    if pt is None:
+        return (False, "Physical Topology not found", 404), None, None
+    elif user_id == pt.owner_id:
+        return (True, "", 0), pt, user
+  
+    if db.session.query(PhysicalTopologyUsersModel).filter_by(pt_id=pt_id, user_id=user_id).one_or_none() is None:
+        return (False, "Not Authorized", 401), None, None
+    else:
+        return (True, "", 0), pt, user
+
 
 def get_physical_topology(id, user_id, version=None):
-    # this endpoint will send a physical topology to front
-    # if version is specified then this endpoint will only return that version but if version is not specified
-    # this endpoint will return all versions
+# this endpoint will send a physical topology to front
+# if version is specified then this endpoint will only return that version but if version is not specified
+# this endpoint will return all versions
     #
     # parameters:
     #   1. id
@@ -86,24 +137,22 @@ def get_physical_topology(id, user_id, version=None):
     #   1. physical topology object
     #   2. last version number
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
+    info_tuple, _, _= authorization_check(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
     
     if version is None:
-        pt_list = PhysicalTopologyModel.query.filter_by(id=id, user_id= user_id).all()
+        pt_list = PhysicalTopologyModel.query.filter_by(id=id).all()
     else:
-        pt_list = PhysicalTopologyModel.query.filter_by(id=id, user_id= user_id, version=version).all()
+        pt_list = PhysicalTopologyModel.query.filter_by(id=id, version=version).all()
 
-    if not pt_list:
-        return {"error_msg":"Physical Topology not found"}, 404
-    else:
-        schema = PhysicalTopologySchema(only=("data", "version", "name", "comment"), many= True)
-        return schema.dump(pt_list), 200
+    schema = PhysicalTopologySchema(only=("data", "version", "name", "comment"), many= True)
+    return schema.dump(pt_list), 200
 
 def create_physical_topology(body, user_id):
-    # this endpoint creates a record in physical topology database with received object
-    # NOTE: this endpoint will check physical topology and if it finds and error it will return a JSON
-    #       like from_excel endpoint ( and its err_codes ).
+# this endpoint creates a record in physical topology database with received object
+# NOTE: this endpoint will check physical topology and if it finds and error it will return a JSON
+#       like from_excel endpoint ( and its err_codes ).
     #
     # Parameters:
     #   1. user_id
@@ -116,9 +165,13 @@ def create_physical_topology(body, user_id):
     # Response: 
     #   1. id of the saved object in database
 
+    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
+        return {"error_msg": f"user with id = {user_id} not found"}, 404
+
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
-    elif PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
+    elif PhysicalTopologyModel.query.filter_by(name=name)\
+        .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the physical topology has conflict with another record"}, 409
         
     if (physical_topology:= body["physical_topology"]) is None:
@@ -127,23 +180,21 @@ def create_physical_topology(body, user_id):
     if (comment:=body["comment"]) is None:
         return {"error_msg": "'comment' can not be None"}, 400
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
-
     if not check_pt_format(physical_topology):
         return {"error_msg": "there is/are error(s) in physical toplogy", "physical_topology": physical_topology}, 400
 
+    id = uuid.uuid4().hex
     pt_object = PhysicalTopologyModel(name=name, data=physical_topology, comment=comment, 
-                                        version=1)
-    pt_object.user_id = user_id
+                                        version=1, id=id)
+    pt_object.owner_id = user_id
     db.session.add(pt_object)
     db.session.commit()
     
     return {"id": id}, 201
 
 def update_physical_topology(body, user_id):
-    # this endpoint will update a physical topology
-    # NOTE: this endpoint has error checking (like create_physical_toplogy and from_excel endpoints)
+# this endpoint will update a physical topology
+# NOTE: this endpoint has error checking (like create_physical_toplogy and from_excel endpoints)
     #
     # parameters:
     #   1. user_id
@@ -156,13 +207,18 @@ def update_physical_topology(body, user_id):
     #
     # Response:     200
 
-    if (name:=body["name"]) is None:
-        return {"error_msg": "'id' can not be None"}, 400
-    elif PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
-        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
-    
     if (id:=body["id"]) is None:
         return {"error_msg": "'id' can not be None"}, 400
+    
+    info_tuple, pt, user= authorization_check(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
+
+    if (name:=body["name"]) is None:
+        return {"error_msg": "'id' can not be None"}, 400
+    elif PhysicalTopologyModel.query.filter_by(name=name)\
+        .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id))).one_or_none() is not None:
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
     
     if (comment:=body["comment"]) is None:
         return {"error_msg": "'comment' can not be None"}, 400
@@ -173,22 +229,15 @@ def update_physical_topology(body, user_id):
     if not check_pt_format(new_pt):
         return {"error_msg": "there is/are error(s) in physical toplogy", "physical_topology": new_pt}, 400
 
-    if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
-
-    if not (pt_list:=PhysicalTopologyModel.query.filter_by(id=id, user_id= user_id)\
-                    .order_by(PhysicalTopologyModel.version.desc()).all()):
-        return {"error_msg": "Physical Topology not found"}, 404
-    else:
-        pt_object = PhysicalTopologyModel(id=id, comment=comment, version=pt_list[0].version+1,
-                                            name=name, data=new_pt)
-        pt_object.user = user
-        db.session.add(pt_object)
-        db.session.commit()
-        return 200
+    pt_object = PhysicalTopologyModel(id=id, comment=comment, version=pt.version+1,
+                                        name=name, data=new_pt)
+    pt_object.owner = user
+    db.session.add(pt_object)
+    db.session.commit()
+    return 200
 
 def delete_physical_topology(id, user_id):
-    # this endpoint will deletea physical topology
+# this endpoint will deletea physical topology
     #
     # parameters:
     #   1. id
@@ -207,8 +256,8 @@ def delete_physical_topology(id, user_id):
         return 200
 
 def read_all_pts(user_id):
-    # this endpoint will all of user's physical topologies id
-    # this endpoint will return latest version number of each record
+# this endpoint will all of user's physical topologies id
+# this endpoint will return latest version number of each record
     #
     # Parameters:
     #   1. user_id
@@ -223,7 +272,7 @@ def read_all_pts(user_id):
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
     if not (pt_list:=db.session.query(PhysicalTopologyModel)\
-                    .filter_by(user_id=user_id)\
+                    .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id)))\
                     .distinct(PhysicalTopologyModel.id)\
                     .order_by(PhysicalTopologyModel.id)\
                     .order_by(PhysicalTopologyModel.version.desc()).all()):
@@ -234,10 +283,10 @@ def read_all_pts(user_id):
         return schema.dump(pt_list), 200
 
 def read_from_excel(body, pt_binary, user_id):
-    # This end point will create a JSON object with received excel file and will send it for front
-    # and also will save it into database
-    # NOTE: if this endpoint detects an error in file, it will not save it in database and 
-    #       frontend have to save it with create_physical_topology endpoint.
+# This end point will create a JSON object with received excel file and will send it for front
+# and also will save it into database
+# NOTE: if this endpoint detects an error in file, it will not save it in database and 
+#       frontend have to save it with create_physical_topology endpoint.
     #
     # RequestBody:
     #   1. excel file
@@ -264,8 +313,9 @@ def read_from_excel(body, pt_binary, user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if PhysicalTopologyModel.query.filter_by(user_id=user_id, name=name).one_or_none() is not None:
-        return {"error_msg":"name of the physical topology has conflict with another record"}, 409
+    if PhysicalTopologyModel.query.filter_by(name=name)\
+        .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id))).one_or_none() is not None:
+        return {"error_msg":"name of the physical topology has conflict with another record"}, 409 
 
     flag = True # this flag is used later to check whether PT is correct of not
     pt = {}
@@ -351,8 +401,9 @@ def read_from_excel(body, pt_binary, user_id):
 
     pt["links"] = proper_list
     if flag is True:
-        pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1)
-        pt_object.user_id = user_id
+        id = uuid.uuid4().hex
+        pt_object = PhysicalTopologyModel(name=name, data=pt, comment="initial version", version=1, id=id)
+        pt_object.owner_id = user_id
 
         db.session.add(pt_object)
         db.session.commit()

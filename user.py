@@ -1,5 +1,5 @@
 from flask import abort, request
-from models import UserModel
+from models import UserModel, ProjectModel, UserSchema, ProjectUsersModel
 import json
 from config import db, bcrypt, app
 import time
@@ -26,7 +26,28 @@ def login(body):
     elif not bcrypt.check_password_hash(user.password, password):
         return {"wrong username or password"}, 404
     else:
-        return {"user_id": user.id, "token": generate_token(user.id)}, 200
+        return {"user_id": user.id, "token": generate_token(user.id), 'role': user.role}, 200
+
+#def register_designer():
+
+def search_user(search_string):
+# this method will search for users with given sub string (search_string)
+    #
+    # parameters:
+    #   1. sub string for search (search_string)
+    #
+    # returns:
+    #   1. username
+    #   2. user id
+    #   3. user role
+
+    if (results:=db.session.query(UserModel)\
+        .filter(UserModel.username.contains(search_string)).all()) is None:
+        return {"error_msg": "no user found"}, 404
+    else:
+        schema = UserSchema(only=('username', 'id', 'role'), many=True)
+        return schema.dump(results), 200
+
 
 def decode_token(token):
     try:
