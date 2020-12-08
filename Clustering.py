@@ -1,5 +1,6 @@
 from config import db
 from models import ClusterModel, ClusterSchema, ProjectModel, UserModel
+import Project
 
 def cluster_format_check(cluster):
     # this function checks whether cluster structure is ok or not
@@ -42,19 +43,16 @@ def create_cluster(body, user_id):
     #
     # response: 201
 
-    if db.session.query(UserModel).filter_by(id=user_id).one_or_none is None:
-        return {"error_msg": "user with given id not found"}, 404
+    if (project_id:=body["project_id"]) is None:
+        return {"error_msg": "'project_id' can not be None"}, 400
+    
+    info_tuple, _, _= Project.authorization_check(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
 
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
-    
-    if (project_id:=body["project_id"]) is None:
-        return {"error_msg": "'project_id' can not be None"}, 400
-
-    if db.session.query(ProjectModel).filter_by(user_id=user_id, id=project_id).one_or_none() is None:
-         return {"error_msg": "project with given id not found"}, 404
-    
-    if db.session.query(ClusterModel).filter_by(name=name, project_id=project_id).one_or_none() is not None:
+    elif db.session.query(ClusterModel).filter_by(name=name, project_id=project_id).one_or_none() is not None:
         return {"error_msg":"name of the cluster has conflict with another record"}, 409
     
     if (cluster:=body["cluster"]) is None:
@@ -82,11 +80,9 @@ def get_clusters(user_id, project_id):
     # responses:
     #   1. list of clusters (with name)
 
-    if db.session.query(UserModel).filter_by(id=user_id).one_or_none is None:
-        return {"error_msg": "user with given id not found"}, 404
-
-    if (project:=db.session.query(ProjectModel).filter_by(id=project_id, user_id=user_id).one_or_none()) is None:
-        return {"error_msg": "project with given id not found"}, 404
+    info_tuple, project, _= Project.authorization_check(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
     
     pt = project.physical_topology
     clusters = db.session.query(ClusterModel).filter_by(project_id=project_id).all()
@@ -120,11 +116,9 @@ def get_cluster(user_id, project_id, cluster_id):
     #                if you want to go second way ( changing cluster structure ), first you need to get this cluster
     #                (using this endpoint) and then edit it in frontend.
 
-    if db.session.query(UserModel).filter_by(id=user_id).one_or_none is None:
-        return {"error_msg": "user with given id not found"}, 404
-
-    if (db.session.query(ProjectModel).filter_by(id=project_id, user_id=user_id).one_or_none()) is None:
-        return {"error_msg": "project with given id not found"}, 404
+    info_tuple, _, _= Project.authorization_check(id, user_id)
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
 
     if (cluster:=db.session.query(ClusterModel)\
                     .filter_by(project_id=project_id, id=cluster_id).one_or_none()) is None:
