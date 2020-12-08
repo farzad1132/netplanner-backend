@@ -923,13 +923,114 @@ paths:
         200:
           description: Project deleted
   
-  /users/add_designer_to_project/{user_id}:
+  /users/search_for_users:
+    summary: searching for users
+    get:
+      summary: this endpoint will search in usernames with given sub string
+      tags:
+        - User
+      operationId: user.search_user
+      parameters:
+        - name: search_string
+          in: query
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: found users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      $ref: '#/components/schemas/id'
+                    username:
+                      type: string
+  
+  /sharing/physical_topology/{user_id}:
+    summary: sharing physical topology
+    post:
+      summary: sharing physical topology (owners only)
+      tags:
+        - Sharing
+      operationId: Sharing.share_physical_topology
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pt_id:
+                  $ref: '#/components/schemas/pt_id'
+                user_id_list:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/id'
+      responses:
+        200:
+            description: ok
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                required:
+                  - error_msg
+
+  /sharing/traffic_matrix/{user_id}:
+    summary: sharing traffic matrix
+    post:
+      summary: sharing traffic matrix (owners only)
+      tags:
+        - Sharing
+      operationId: Sharing.share_traffic_matrix
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                tm_id:
+                  $ref: '#/components/schemas/tm_id'
+                user_id_list:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/id'
+      responses:
+        200:
+            description: ok
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                required:
+                  - error_msg
+  
+  /sharing/add_designer_to_project/{user_id}:
     summary: adding designer to project
     post:
       summary: adding existing user to project
       tags:
+        - Sharing
         - User
-      operationId: user.add_designer_to_project
+      operationId: Sharing.add_designer_to_project
       parameters:
         - $ref: '#/components/parameters/user_id'
       requestBody:

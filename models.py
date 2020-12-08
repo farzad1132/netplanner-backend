@@ -86,7 +86,7 @@ class ProjectModel(db.Model):
 
 class ProjectUsersModel(db.Model):
     # this model is used to give other users access to project
-    __tablename__ = "ProjectUsersModel"
+    __tablename__ = "ProjectUsers"
     __table_args__ = {'extend_existing': True}
 
     id = db.Column( "id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
@@ -103,7 +103,7 @@ class PhysicalTopologyUsersModel(db.Model):
     # this model is used to give other users access to physical topology
     # NOTE: for pt_id we didn't use foreignkey because 'id' in physical topology is not unique (multiple
     #       versions have same id)
-    __tablename__ = "PhysicalTopologyUsersModel"
+    __tablename__ = "PhysicalTopologyUsers"
     __table_args__ = {'extend_existing': True}
 
     id = id = db.Column("id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
@@ -119,7 +119,7 @@ class TrafficMatrixUsersModel(db.Model):
     # this model is used to give other users access to traffic matrix
     # NOTE: for tm_id we didn't use foreignkey because 'id' in traffic matrix is not unique (multiple
     #       versions have same id)
-    __tablename__ = "TrafficMatrixUsersModel"
+    __tablename__ = "TrafficMatrixUsers"
     __table_args__ = {'extend_existing': True}
 
     id = id = db.Column("id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)

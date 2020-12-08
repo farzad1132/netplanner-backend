@@ -1,5 +1,5 @@
 from flask import abort, request
-from models import UserModel, ProjectModel
+from models import UserModel, ProjectModel, UserSchema, ProjectUsersModel
 import json
 from config import db, bcrypt, app
 import time
@@ -30,27 +30,24 @@ def login(body):
 
 #def register_designer():
 
-#def search_user():
+def search_user(search_string):
+# this method will search for users with given sub string (search_string)
+    #
+    # parameters:
+    #   1. sub string for search (search_string)
+    #
+    # returns:
+    #   1. username
+    #   2. user id
+    #   3. user role
 
-def add_designer_to_project(body, user_id):
-    if (user:=UserModel.query.filter_by(user_id= user_id).one_or_none()) is None:
-        return {"error_msg": "user not found"}, 404
-    elif user.role != "manager":
-        return {"error_msg": "user not authorized"}, 401
+    if (results:=db.session.query(UserModel)\
+        .filter(UserModel.username.contains(search_string)).all()) is None:
+        return {"error_msg": "no user found"}, 404
+    else:
+        schema = UserSchema(only=('username', 'id', 'role'), many=True)
+        return schema.dump(results), 200
 
-    if (project_id:=body["project"]) is None:
-        return {"error_msg": "project_id can not be None"}, 400
-    
-    if (id_list:=body["id_list"]) is None:
-        return {"error_msg": "id_list can not be None"}, 400
-    
-    if (project:=db.session.query(ProjectModel).filter_by(user_id=user_id, id=project_id).one_or_none()) is None:
-        return {"error_msg": "project not found"}, 404
-    
-    for id in id_list:
-        if db.session.query(UserModel).filter_by(id=id).one_or_none() is None:
-            return {"error_msg": f"user with id={id} not found from id_list"}, 404
-        # complete here
 
 def decode_token(token):
     try:
