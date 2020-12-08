@@ -14,6 +14,31 @@ import uuid
         4. DELETE
 """
 
+def check_tm_format(tm):
+    # this function is used for error checking in traffic matrix
+    # it also adds '<property>_error' properties in case that finds an error
+
+    ids = []
+    flag = True
+    for demand in tm["demands"]:
+        if not (isinstance(demand["id"], int) and (demand["id"] in ids)):
+            flag = False
+            demand["id_error"] = "err_code:5, 'id' must be integer and unique"
+        if not (demand["protection_type"] in ("NoProtection", "1+1_NodeDisjoint")):
+            flag = False
+            demand["protection_type_error"] = "err_code:6, 'protection_type' must be in ('NoProtection', '1+1_NodeDisjoint')"
+        if not (demand["restoration_type"] in ("JointSame", "None", "AdvJointSame")):
+            flag = False
+            demand["restoration_type_error"] = "err_code:7, 'restoration_type' must be from ('JointSame', 'None', 'AdvJointSame')"
+        
+        for service in demand["services"]:
+            if not isinstance(service["quantity"], int):
+                flag = False
+                service["quantity_error"] = "err_code:8, 'quantity' must be integer"
+    
+    return flag
+
+
 def get_traffic_matrix(id, user_id, version=None):
     # this endpoint will return a traffic matrix object to front
     # if version is specified then this endpoint will only return that version but if version is not specified
@@ -43,6 +68,8 @@ def get_traffic_matrix(id, user_id, version=None):
 
 def create_traffic_matrix(body, user_id):
     # this endpoint creates a new traffic matrix with received object
+    # NOTE: this endpoint will check traffic matrix and if it finds and error it will return a JSON
+    #       like from_excel endpoint ( and its err_codes ).
     #
     # Parameters:
     #   1. user_id
@@ -66,6 +93,9 @@ def create_traffic_matrix(body, user_id):
     if (traffic_matrix:=body["traffic_matrix"]) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
 
+    if not check_tm_format(traffic_matrix):
+        return {"error_msg": "there is/are error(s) in traffic matrix", "traffic_matrix": traffic_matrix}, 400
+
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
@@ -82,6 +112,7 @@ def create_traffic_matrix(body, user_id):
 
 def update_traffic_matrix(body, user_id):
     # this endpoint will update traffic matrix with received id
+    # NOTE: this endpoint has error checking (like create_traffic_matrix and from_excel endpoints)
     #
     # Parameters:
     #   2. user_id
@@ -104,6 +135,9 @@ def update_traffic_matrix(body, user_id):
     
     if (new_tm:=body["traffic_matrix"]) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
+
+    if not check_tm_format(new_tm):
+        return {"error_msg": "there is/are error(s) in traffic matrix", "traffic_matrix": new_tm}, 400
 
     if (comment:=body["comment"]) is None:
         return {"error_msg": "'comment' can not be None"}, 400
@@ -168,15 +202,27 @@ def read_all(user_id):
         return schema.dump(tm_list), 200
 
 def read_from_excel(tm_binary, user_id, body):
-    # this endpoint will return object of received traffic matrix excel file
+    # This end point will create a JSON object with received excel file and will send it for front
+    # and also will save it into database
+    # NOTE: if this endpoint detects an error in file, it will not save it in database and 
+    #       frontend have to save it with create_traffic_matrix endpoint
     #
     # Parameters:
     #   1. traffic matrix excel file
     #   2. user_id
     #   3. name of the traffic matrix
     #
+    # NOTE: in each item of json if the there is something wrong with one of properties, there is a '<property>_error'
+    #       in that item explaining problem along with error code.
+    #
     # Response:
     #   1. traffic matrix object
+    #
+    # error_codes:
+    #   err_code:5. X must be integer and unique
+    #   err_code:6. X must be in ('NoProtection', '1+1_NodeDisjoint')
+    #   err_code:7. X must be from ('JointSame', 'None', 'AdvJointSame')
+    #   err_code:8. X must be integer
 
     if (name:=body["name"]) is None:
         return {"error_msg": "'name' can not be None"}, 400
@@ -209,25 +255,33 @@ def read_from_excel(tm_binary, user_id, body):
         if not header in data:
             return {"error_msg": f"there is no {header} column"}, 400
 
-    demands_list = []    
+    demands_list = []
+    flag = True
     for row in data["ID"].keys():
         demand = {}
         try:
             demand["id"] = int(row)
         except:
-            return {"error_msg" : f"wrong ID format {row}"}, 400
+            demand["id"] = row
+            flag = False
+            demand["id_error"] = "err_code:5, 'id' must be integer and unique"
+            #return {"error_msg" : f"wrong ID format {row}"}, 400
 
-        demand["source"] = data["Source"][row].strip()
-        demand["destination"] = data["Destination"][row].strip()
+        demand["source"] = str(data["Source"][row]).strip()
+        demand["destination"] = str(data["Destination"][row]).strip()
         demand["type"] = None
 
-        demand["protection_type"] = data["Protection_Type"][row].strip()
+        demand["protection_type"] = str(data["Protection_Type"][row]).strip()
         if not demand["protection_type"] in ("NoProtection", "1+1_NodeDisjoint"):
-            return {"error_msg" : f"wrong entry for ProtectionType, ID = {row}"}, 400
+            #return {"error_msg" : f"wrong entry for ProtectionType, ID = {row}"}, 400
+            flag = False
+            demand["protection_type_error"] = "err_code:6, 'protection_type' must be in ('NoProtection', '1+1_NodeDisjoint')"
 
-        demand["restoration_type"] = data["Restoration_Type"][row].strip()
+        demand["restoration_type"] = str(data["Restoration_Type"][row]).strip()
         if not demand["restoration_type"] in ("JointSame", "None", "AdvJointSame"):
-            return {"error_msg" : f"wrong entry for RetorationType, ID = {row}"}, 400
+            #return {"error_msg" : f"wrong entry for RetorationType, ID = {row}"}, 400
+            flag = False
+            demand["restoration_type_error"] = "err_code:7, 'restoration_type' must be from ('JointSame', 'None', 'AdvJointSame')"
         
         demand["services"] = []
         for service in SERVICE_HEADERS:
@@ -239,16 +293,24 @@ def read_from_excel(tm_binary, user_id, body):
                         "quantity": quantity
                     })
             else:
-                return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
+                #return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
+                flag = False
+                demand["services"].append({
+                    "type": service[9::],
+                    "quantity": data[service][row],
+                    "quantity_error": "err_code:8, 'quantity' must be integer"
+                })
         
         demands_list.append(demand)
 
     tm["demands"] = demands_list
-    id = uuid.uuid4().hex
-    tm_object = TrafficMatrixModel(name=name, data=tm, comment="initial version", version=1, id=id)
-    tm_object.user_id = user_id
+    if flag is True:
+        tm_object = TrafficMatrixModel(name=name, data=tm, comment="initial version", version=1)
+        tm_object.user_id = user_id
 
-    db.session.add(tm_object)
-    db.session.commit()
+        db.session.add(tm_object)
+        db.session.commit()
 
-    return {"id": tm_object.id, "TM": tm}, 201
+        return {"id": tm_object.id, "traffic_matrix": tm}, 201
+    else:
+        return {"err_msg": "there is error(s) in this file", "traffic_matrix":tm}, 400
