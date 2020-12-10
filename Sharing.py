@@ -18,10 +18,10 @@ def add_designer_to_project(body, user_id):
     elif user.role != "manager":
         return {"error_msg": "user not authorized"}, 401
 
-    if (project_id:=body["project_id"]) is None:
+    if (project_id:=body.get("project_id")) is None:
         return {"error_msg": "project_id can not be None"}, 400
     
-    if (id_list:=body["id_list"]) is None:
+    if (id_list:=body.get("id_list")) is None:
         return {"error_msg": "id_list can not be None"}, 400
     
     if db.session.query(ProjectModel).filter_by(owner_id=user_id, id=project_id).one_or_none() is None:
@@ -49,10 +49,10 @@ def share_physical_topology(user_id, body):
     if UserModel.query.filter_by(id= user_id).one_or_none() is None:
         return {"error_msg": "user not found"}, 404
     
-    if (user_id_list:=body["user_id_list"]) is None:
+    if (user_id_list:=body.get("user_id_list")) is None:
         return {"error_msg": "'user_id_list' can not be None"}, 400
     
-    if (pt_id:=body["pt_id"]) is None:
+    if (pt_id:=body.get("pt_id")) is None:
         return {"error_msg": "pt_id can not be None"}, 400
     
     if not db.session.query(PhysicalTopologyModel)\
@@ -81,10 +81,10 @@ def share_traffic_matrix(user_id, body):
     if UserModel.query.filter_by(id= user_id).one_or_none() is None:
         return {"error_msg": "user not found"}, 404
     
-    if (user_id_list:=body["user_id_list"]) is None:
+    if (user_id_list:=body.get("user_id_list")) is None:
         return {"error_msg": "'user_id_list' can not be None"}, 400
     
-    if (tm_id:=body["tm_id"]) is None:
+    if (tm_id:=body.get("tm_id")) is None:
         return {"error_msg": "tm_id can not be None"}, 400
     
     if not db.session.query(TrafficMatrixModel)\

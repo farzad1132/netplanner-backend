@@ -14,10 +14,10 @@ JWT_ISSUER = 'sina.netplanner.flask'
 
 def login(body):
 
-    if (password:=body["password"]) is None:
+    if (password:=body.get("password")) is None:
         return {"error_msg":"'password' can not be none"}, 400
     
-    if (username:=body["username"]) is None:
+    if (username:=body.get("username")) is None:
         return {"error_msg":"'username' can not be none"}, 400
 
     if (user:=UserModel.query.filter_by(username= username).one_or_none()) is None:

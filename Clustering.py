@@ -47,19 +47,19 @@ def create_cluster(body, user_id):
     #
     # response: 201
 
-    if (project_id:=body["project_id"]) is None:
+    if (project_id:=body.get("project_id")) is None:
         return {"error_msg": "'project_id' can not be None"}, 400
     
     info_tuple, project, _= Project.authorization_check(id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif db.session.query(ClusterModel).filter_by(name=name, project_id=project_id).one_or_none() is not None:
         return {"error_msg":"name of the cluster has conflict with another record"}, 409
     
-    if (clusters:=body["clusters"]) is None:
+    if (clusters:=body.get("clusters")) is None:
         return {"error_msg": "'clusters' can not be None"}, 400
     
     for cluster_dict in clusters:

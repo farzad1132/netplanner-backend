@@ -108,16 +108,16 @@ def create_project(body, user_id):
     # Response:
     #   1. Project id
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif ProjectModel.query.filter_by(name=name)\
         .filter(ProjectModel.id.in_(get_user_projects_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
     
-    if (pt_id:=body["pt_id"]) is None:
+    if (pt_id:=body.get("pt_id")) is None:
         return {"error_msg": "'pt_id' can not be None"}, 400
     
-    if (tm_id:=body["tm_id"]) is None:
+    if (tm_id:=body.get("tm_id")) is None:
         return {"error_msg": "'tm_id' can not be None"}, 400
     
     pt_version = body.get("pt_version", 1)
@@ -178,33 +178,33 @@ def update_project(body, user_id):
     #  
     # Response:     200
 
-    if (id:=body["id"]) is None:
+    if (id:=body.get("id")) is None:
         return {"error_msg": "'id' can not be None"}, 400
 
     info_tuple, project, _= authorization_check(id, user_id, mode="UPDATE")
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif ProjectModel.query.filter_by(name=name)\
         .filter(ProjectModel.id.in_(get_user_projects_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
     
-    if (pt_id:=body["pt_id"]) is None:
+    if (pt_id:=body.get("pt_id")) is None:
         return {"error_msg": "'pt_id' can not be None"}, 400
 
-    if (tm_id:=body["tm_id"]) is None:
+    if (tm_id:=body.get("tm_id")) is None:
         return {"error_msg": "'tm_id' can not be None"}, 400
     
-    if (current_pt_version:=body["current_pt_version"]) is None:
+    if (current_pt_version:=body.get("current_pt_version")) is None:
         return {"error_msg": "'current_pt_version' can not be None"}, 400
     # Physical Topology authorization check
     info_tuple, pt, _= PhysicalTopology.authorization_check(pt_id, user_id, version=current_pt_version)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
-    if (current_tm_version:=body["current_tm_version"]) is None:
+    if (current_tm_version:=body.get("current_tm_version")) is None:
         return {"error_msg": "'current_tm_version' can not be None"}, 400
     # Traffic Matrix authorization check
     info_tuple, tm, _= TrafficMatrix.authorization_check(tm_id, user_id, version=current_pt_version)

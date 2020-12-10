@@ -168,16 +168,16 @@ def create_physical_topology(body, user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif PhysicalTopologyModel.query.filter_by(name=name)\
         .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the physical topology has conflict with another record"}, 409
         
-    if (physical_topology:= body["physical_topology"]) is None:
+    if (physical_topology:= body.get("physical_topology")) is None:
         return {"error_msg": "'physical_topology' can not be None"}, 400
     
-    if (comment:=body["comment"]) is None:
+    if (comment:=body.get("comment")) is None:
         return {"error_msg": "'comment' can not be None"}, 400
 
     if not check_pt_format(physical_topology):
@@ -207,23 +207,23 @@ def update_physical_topology(body, user_id):
     #
     # Response:     200
 
-    if (id:=body["id"]) is None:
+    if (id:=body.get("id")) is None:
         return {"error_msg": "'id' can not be None"}, 400
     
     info_tuple, pt, user= authorization_check(id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'id' can not be None"}, 400
     elif PhysicalTopologyModel.query.filter_by(name=name)\
         .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the physical topology has conflict with another record"}, 409
     
-    if (comment:=body["comment"]) is None:
+    if (comment:=body.get("comment")) is None:
         return {"error_msg": "'comment' can not be None"}, 400
     
-    if (new_pt:=body["physical_topology"]) is None:
+    if (new_pt:=body.get("physical_topology")) is None:
         return {"error_msg": "'physical topology' can not be None"}, 400
     
     if not check_pt_format(new_pt):
@@ -305,7 +305,7 @@ def read_from_excel(body, pt_binary, user_id):
     #   err_code:3. X must be one of the nodes
     #   err_code:4. X must be float for integer
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif pt_binary is None:
         return {"error_msg": "'pt_binary' can not be None"}, 400

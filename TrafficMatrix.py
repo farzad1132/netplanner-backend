@@ -133,16 +133,16 @@ def create_traffic_matrix(body, user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif TrafficMatrixModel.query.filter_by(name=name)\
         .filter(TrafficMatrixModel.id.in_(get_user_tms_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
     
-    if (comment:=body["comment"]) is None:
+    if (comment:=body.get("comment")) is None:
         return {"error_msg": "'comment' can not be None"}, 400
 
-    if (traffic_matrix:=body["traffic_matrix"]) is None:
+    if (traffic_matrix:=body.get("traffic_matrix")) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
 
     if not check_tm_format(traffic_matrix):
@@ -171,26 +171,26 @@ def update_traffic_matrix(body, user_id):
     #
     # Response:  200
 
-    if (id:=body["id"]) is None:
+    if (id:=body.get("id")) is None:
         return {"error_msg": "'id' can not be None"}, 400
     
     info_tuple, tm, user= authorization_check(id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif TrafficMatrixModel.query.filter_by(name=name)\
         .filter(TrafficMatrixModel.id.in_(get_user_tms_id(user_id))).one_or_none() is not None:
         return {"error_msg":"name of the traffic matrix has conflict with another record"}, 409
     
-    if (new_tm:=body["traffic_matrix"]) is None:
+    if (new_tm:=body.get("traffic_matrix")) is None:
         return {"error_msg": "'traffic matrix' can not be None"}, 400
 
     if not check_tm_format(new_tm):
         return {"error_msg": "there is/are error(s) in traffic matrix", "traffic_matrix": new_tm}, 400
 
-    if (comment:=body["comment"]) is None:
+    if (comment:=body.get("comment")) is None:
         return {"error_msg": "'comment' can not be None"}, 400
 
     tm_object = TrafficMatrixModel(name=name, data=new_tm, version=tm.version+1,
@@ -268,7 +268,7 @@ def read_from_excel(tm_binary, user_id, body):
     #   err_code:7. X must be from ('JointSame', 'None', 'AdvJointSame')
     #   err_code:8. X must be integer
 
-    if (name:=body["name"]) is None:
+    if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
     elif TrafficMatrixModel.query.filter_by(name=name)\
         .filter(TrafficMatrixModel.id.in_(get_user_tms_id(user_id))).one_or_none() is not None:
