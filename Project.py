@@ -146,7 +146,7 @@ def create_project(body, user_id):
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
-    if not pt_and_tm_compatibility(pt, tm):
+    if not pt_and_tm_compatibility(pt.data, tm.data):
         return {"err_msg": "given physical toplogy and traffic matrix are not compatible with each other",
                 "traffic_matrix": tm, "physical_toplogy": pt}, 400
     
@@ -211,7 +211,7 @@ def update_project(body, user_id):
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
-    if not pt_and_tm_compatibility(pt, tm):
+    if not pt_and_tm_compatibility(pt.data, tm.data):
         return {"err_msg": "given physical toplogy and traffic matrix are not compatible with each other",
                 "traffic_matrix": tm, "physical_toplogy": pt}, 400
     project.name = name
