@@ -24,11 +24,11 @@ def add_designer_to_project(body, user_id):
     if (id_list:=body.get("id_list")) is None:
         return {"error_msg": "id_list can not be None"}, 400
     
-    if db.session.query(ProjectModel).filter_by(owner_id=user_id, id=project_id).one_or_none() is None:
+    if ProjectModel.query.filter_by(owner_id=user_id, id=project_id).one_or_none() is None:
         return {"error_msg": "project not found"}, 404
     
     for id in id_list:
-        if db.session.query(UserModel).filter_by(id=id).one_or_none() is None:
+        if UserModel.query.filter_by(id=id).one_or_none() is None:
             return {"error_msg": f"user with id={id} not found from id_list"}, 404
         share_record = ProjectUsersModel(user_id=id, project_id=project_id)
         db.session.add(share_record)
@@ -55,12 +55,12 @@ def share_physical_topology(user_id, body):
     if (pt_id:=body.get("pt_id")) is None:
         return {"error_msg": "pt_id can not be None"}, 400
     
-    if not db.session.query(PhysicalTopologyModel)\
+    if not PhysicalTopologyModel.query\
         .filter_by(owner_id=user_id, id=pt_id, version=1).one_or_none():
         return {"error_msg":"Not Authorized"}, 401
     
     for id in user_id_list:
-        if db.session.query(UserModel).filter_by(id=id).one_or_none() is None:
+        if UserModel.query.filter_by(id=id).one_or_none() is None:
             return {"error_msg": f"user with id={id} not found from id_list"}, 404
         share_record = PhysicalTopologyUsersModel(pt_id=pt_id, user_id=id)
         db.session.add(share_record)
@@ -87,12 +87,12 @@ def share_traffic_matrix(user_id, body):
     if (tm_id:=body.get("tm_id")) is None:
         return {"error_msg": "tm_id can not be None"}, 400
     
-    if not db.session.query(TrafficMatrixModel)\
+    if not TrafficMatrixModel.query\
         .filter_by(owner_id=user_id, id=tm_id, version=1).one_or_none():
         return {"error_msg":"Not Authorized"}, 401
     
     for id in user_id_list:
-        if db.session.query(UserModel).filter_by(id=id).one_or_none() is None:
+        if UserModel.query.filter_by(id=id).one_or_none() is None:
             return {"error_msg": f"user with id={id} not found from id_list"}, 404
         share_record = TrafficMatrixUsersModel(tm_id=tm_id, user_id=id)
         db.session.add(share_record)

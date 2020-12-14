@@ -143,8 +143,10 @@ if __name__ == "__main__":
     cluster = ClusterModel(name="Test Cluster", data=CLUSTER)
     #physical_topology.clusters.append(cluster)
     cluster.pt_version = 1
-    cluster.project_id = project.id
     cluster.pt_id = "1"
+    #cluster.project_id = project.id
+    project.clusters.append(cluster)
+    
 
     
     traffic_matrix_2.projects.append(project)

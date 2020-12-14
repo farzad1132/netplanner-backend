@@ -723,7 +723,6 @@ paths:
         - Clustering
       parameters:
         - $ref: '#/components/parameters/user_id'
-        - $ref: '#/components/parameters/project_id'
         - $ref: '#/components/parameters/cluster_id'
       responses:
         200:
@@ -794,6 +793,29 @@ paths:
                     $ref: '#/components/schemas/error_msg'
                 required:
                   - error_msg
+    delete:
+      description: Deleting a cluster
+      tags:
+        - Clustering
+      operationId: Clustering.delete_cluster
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/cluster_id'
+      responses:
+        200:
+          description: cluster deleted
+        default:
+          description: error handling
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error_msg:
+                    $ref: '#/components/schemas/error_msg'
+                required:
+                  - error_msg
+        
 
   /projects/{user_id}:
     summary: This path job is to handle projects

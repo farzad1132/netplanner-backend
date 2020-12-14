@@ -41,7 +41,7 @@ def search_user(search_string):
     #   2. user id
     #   3. user role
 
-    if (results:=db.session.query(UserModel)\
+    if (results:=UserModel.query\
         .filter(UserModel.username.contains(search_string)).all()) is None:
         return {"error_msg": "no user found"}, 404
     else:

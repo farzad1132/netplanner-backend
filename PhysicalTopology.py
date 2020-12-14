@@ -80,11 +80,11 @@ def get_user_pts_id(user_id, all=True):
     
     id_list = []
     if all is True:
-        owned_pts = db.session.query(PhysicalTopologyModel).filter_by(owner_id=user_id).all()
+        owned_pts = PhysicalTopologyModel.query.filter_by(owner_id=user_id).all()
         for pt in owned_pts:
             id_list.append(pt.id)
     
-    shared_pts = db.session.query(PhysicalTopologyUsersModel).filter_by(user_id=user_id).all()
+    shared_pts = PhysicalTopologyUsersModel.query.filter_by(user_id=user_id).all()
     for pt in shared_pts:
         id_list.append(pt.pt_id)
     
@@ -106,11 +106,11 @@ def authorization_check(pt_id, user_id, version=None, mode="GET"):
         return (False, f"user with id = {user_id} not found", 404), None, None
 
     if version is None:
-        pt = db.session.query(PhysicalTopologyModel).filter_by(id=pt_id)\
+        pt = PhysicalTopologyModel.query.filter_by(id=pt_id)\
             .distinct(PhysicalTopologyModel.version)\
             .order_by(PhysicalTopologyModel.version.desc()).first()
     else:
-        pt = db.session.query(PhysicalTopologyModel).filter_by(id=pt_id, version=version).one_or_none()
+        pt = PhysicalTopologyModel.query.filter_by(id=pt_id, version=version).one_or_none()
     
     if pt is None:
         return (False, "Physical Topology not found", 404), None, None
@@ -119,7 +119,7 @@ def authorization_check(pt_id, user_id, version=None, mode="GET"):
     elif mode == "DELETE":
         return (False, "Not Authorized", 401), None, None
   
-    if db.session.query(PhysicalTopologyUsersModel).filter_by(pt_id=pt_id, user_id=user_id).one_or_none() is None:
+    if PhysicalTopologyUsersModel.query.filter_by(pt_id=pt_id, user_id=user_id).one_or_none() is None:
         return (False, "Not Authorized", 401), None, None
     else:
         return (True, "", 0), pt, user
@@ -256,7 +256,7 @@ def delete_physical_topology(id, user_id, version=None):
         return {"error_msg": info_tuple[1]}, info_tuple[2]
 
     if version is None:
-        pts = db.session.query(owner_id=user_id, id=id).all()
+        pts = PhysicalTopologyModel.query.filter_by(owner_id=user_id, id=id).all()
         for pt in pts:
             pt.is_deleted = True
     else:
@@ -281,7 +281,7 @@ def read_all_pts(user_id):
     if UserModel.query.filter_by(id=user_id).one_or_none() is None:
         return {"error_msg": f"user with id = {user_id} not found"}, 404
 
-    if not (pt_list:=db.session.query(PhysicalTopologyModel)\
+    if not (pt_list:=PhysicalTopologyModel.query\
                     .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user_id)))\
                     .distinct(PhysicalTopologyModel.id)\
                     .order_by(PhysicalTopologyModel.id)\

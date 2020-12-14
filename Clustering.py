@@ -56,7 +56,7 @@ def create_cluster(body, user_id):
 
     if (name:=body.get("name")) is None:
         return {"error_msg": "'name' can not be None"}, 400
-    elif db.session.query(ClusterModel).filter_by(name=name, project_id=project_id).one_or_none() is not None:
+    elif ClusterModel.query.filter_by(name=name, project_id=project_id).one_or_none() is not None:
         return {"error_msg":"name of the cluster has conflict with another record"}, 409
     
     if (clusters:=body.get("clusters")) is None:
@@ -65,7 +65,7 @@ def create_cluster(body, user_id):
     for cluster_dict in clusters:
         name = cluster_dict["name"]
         cluster = cluster_dict["cluster"]
-        if db.session.query(ClusterModel).filter_by(name=name, project_id=project_id,
+        if ClusterModel.query.filter_by(name=name, project_id=project_id,
             pt_version=project.current_pt_version, pt_id=project.physical_topology.id).one_or_none() is not None:
             return {"error_msg":"conflict. there is a record in database with these information"}, 409
         if not cluster_format_check(cluster):
@@ -94,12 +94,12 @@ def get_all_clusters(user_id, project_id):
     # responses:
     #   1. list of clusters (with name)
 
-    info_tuple, project, _= Project.authorization_check(id, user_id)
+    info_tuple, project, _= Project.authorization_check(project_id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
     #pt = project.physical_topology
-    clusters = db.session.query(ClusterModel).filter_by(project_id=project_id,
+    clusters = ClusterModel.query.filter_by(project_id=project_id,
                 pt_version=project.current_pt_version, pt_id=project.physical_topology.id).all()
     if not clusters:
         return {"error_msg": "there is no cluster in project"}, 404
@@ -113,25 +113,45 @@ def get_all_clusters(user_id, project_id):
     schema = ClusterSchema(only=('id', 'name', 'data', 'create_date'), many=True)
     return schema.dump(clusters), 200
 
-def get_cluster(user_id, project_id, cluster_id):
+def get_cluster(user_id, cluster_id):
     # this endpoint will return just one cluster in project **without compatibility check**
     #
     # parameters:
     #   1. user_id
-    #   2. project_id
-    #   3. cluster_id
+    #   2. cluster_id
     #
     # response:
     #   1. cluster dict
     #   2. cluster name
 
-    info_tuple, _, _= Project.authorization_check(id, user_id)
+    if (cluster:=ClusterModel.query\
+                    .filter_by(id=cluster_id).one_or_none()) is None:
+        return {"error_msg": "no cluster in project with given id"}, 404
+
+    info_tuple, _, _= Project.authorization_check(cluster.project_id, user_id)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
 
-    if (cluster:=db.session.query(ClusterModel)\
-                    .filter_by(project_id=project_id, id=cluster_id).one_or_none()) is None:
-        return {"error_msg": "no cluster in project with given id"}, 404
-
     schema = ClusterSchema(only=('name', 'data'), many=False)
     return schema.dump(cluster), 200
+
+def delete_cluster(user_id, cluster_id):
+# This endpoint will soft delete a cluster from project
+    #
+    # parameters:
+    #   1. user id
+    #   3. cluster id
+    #
+    # responses: 200
+
+    if (cluster:=ClusterModel.query\
+                    .filter_by(id=cluster_id).one_or_none()) is None:
+        return {"error_msg": "no cluster in project with given id"}, 404
+    
+    info_tuple, _, _= Project.authorization_check(cluster.project_id, user_id, mode="DELETE")
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
+    
+    cluster.is_deleted = True
+    db.session.commit()
+    return 200

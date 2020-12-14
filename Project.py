@@ -32,11 +32,11 @@ def get_user_projects_id(user_id, all=True):
     
     id_list = []
     if all is True:
-        owned_projects = db.session.query(ProjectModel).filter_by(owner_id=user_id).all()
+        owned_projects = ProjectModel.query.filter_by(owner_id=user_id).all()
         for project in owned_projects:
             id_list.append(project.id)
     
-    shared_projects = db.session.query(ProjectUsersModel).filter_by(user_id=user_id).all()
+    shared_projects = ProjectUsersModel.query.filter_by(user_id=user_id).all()
     for project in shared_projects:
         id_list.append(project.project_id)
     
@@ -57,14 +57,14 @@ def authorization_check(project_id, user_id, mode="GET"):
     if (user:=UserModel.query.filter_by(id=user_id).one_or_none()) is None:
         return (False, f"user with id = {user_id} not found", 404), None, None
 
-    if (project:=db.session.query(ProjectModel).filter_by(id=project_id).one_or_none()) is None:
+    if (project:=ProjectModel.query.filter_by(id=project_id).one_or_none()) is None:
         return (False, "project not found", 404), None, None
     elif user_id == project.owner_id:
         return (True, "", 0), project, user
     
     if (mode in ("DELETE", "CREATE")) and user.role != "manager":
         return (False, "Not Authorized", 401), None, None
-    elif db.session.query(ProjectUsersModel).filter_by(project_id=project_id, user_id=user_id).one_or_none() is None:
+    elif ProjectUsersModel.query.filter_by(project_id=project_id, user_id=user_id).one_or_none() is None:
         return (False, "Not Authorized", 401), None, None
     else:
         return (True, "", 0), project, user
