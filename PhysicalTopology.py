@@ -90,7 +90,7 @@ def get_user_pts_id(user_id, all=True):
     
     return id_list
 
-def authorization_check(pt_id, user_id, version=None):
+def authorization_check(pt_id, user_id, version=None, mode="GET"):
 # this function handles user authorization for accessing physical topology endpoints,
 # it also returns user and physical topology object
     #
@@ -116,6 +116,8 @@ def authorization_check(pt_id, user_id, version=None):
         return (False, "Physical Topology not found", 404), None, None
     elif user_id == pt.owner_id:
         return (True, "", 0), pt, user
+    elif mode == "DELETE":
+        return (False, "Not Authorized", 401), None, None
   
     if db.session.query(PhysicalTopologyUsersModel).filter_by(pt_id=pt_id, user_id=user_id).one_or_none() is None:
         return (False, "Not Authorized", 401), None, None
@@ -137,14 +139,14 @@ def get_physical_topology(id, user_id, version=None):
     #   1. physical topology object
     #   2. last version number
 
-    info_tuple, _, _= authorization_check(id, user_id)
+    info_tuple, pt, _= authorization_check(id, user_id, version=version)
     if info_tuple[0] is False:
         return {"error_msg": info_tuple[1]}, info_tuple[2]
     
     if version is None:
         pt_list = PhysicalTopologyModel.query.filter_by(id=id).all()
     else:
-        pt_list = PhysicalTopologyModel.query.filter_by(id=id, version=version).all()
+        pt_list = [pt]
 
     schema = PhysicalTopologySchema(only=("data", "version", "name", "comment"), many= True)
     return schema.dump(pt_list), 200
@@ -236,24 +238,32 @@ def update_physical_topology(body, user_id):
     db.session.commit()
     return 200
 
-def delete_physical_topology(id, user_id):
-# this endpoint will deletea physical topology
+def delete_physical_topology(id, user_id, version=None):
+# This endpoint will delete a physical topology
+# NOTE: this endpoint will not delete records from database, but will hide records from
+#       frontend (it can be retrieved from admin page)
     #
     # parameters:
     #   1. id
     #   2. user_id
+    #   3. version (optional)
+    #   NOTE: if no version is specified then all versions will be deleted
     #
     # Response:  200
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
+    info_tuple, pt, _= authorization_check(id, user_id, version=version, mode="DELETE")
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
 
-    if (pt:=PhysicalTopologyModel.query.filter_by(id=id, user_id=user_id).one_or_none()) is None:
-        return {"error_msg": "Physical Topology not found"}, 404
+    if version is None:
+        pts = db.session.query(owner_id=user_id, id=id).all()
+        for pt in pts:
+            pt.is_deleted = True
     else:
-        db.session.delete(pt)
-        db.session.commit()
-        return 200
+        pt.is_deleted = True
+
+    db.session.commit()
+    return 200
 
 def read_all_pts(user_id):
 # this endpoint will all of user's physical topologies id

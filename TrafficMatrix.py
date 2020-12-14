@@ -200,24 +200,32 @@ def update_traffic_matrix(body, user_id):
     db.session.commit()
     return 200
 
-def delete_traffic_matrix(id, user_id):
-    # this endpoint will delete a traffic matrix
+def delete_traffic_matrix(id, user_id, version=None):
+# This endpoint will delete a traffic matrix
+# NOTE: this endpoint will not delete records from database, but will hide records from
+#       frontend (it can be retrieved from admin page)
     #
-    # Parameters:
+    # parameters:
     #   1. id
     #   2. user_id
+    #   3. version (optional)
+    #   NOTE: if no version is specified then all versions will be deleted
     #
-    # Response:     200
+    # Response:  200
 
-    if UserModel.query.filter_by(id=user_id).one_or_none() is None:
-        return {"error_msg": f"user with id = {user_id} not found"}, 404
+    info_tuple, tm, _= authorization_check(id, user_id, version=version, mode="DELETE")
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
 
-    if (tm:=TrafficMatrixModel.query.filter_by(id= id).one_or_none()) is None:
-        return {"error_msg":"No Traffic Matrix found"}, 404
+    if version is None:
+        tms = db.session.query(owner_id=user_id, id=id).all()
+        for tm in tms:
+            tm.is_deleted = True
     else:
-        db.session.delete(tm)
-        db.session.commit()
-        return 200
+        tm.is_deleted = True
+
+    db.session.commit()
+    return 200
 
 def read_all(user_id):
 # this endpoint will return all of user's traffic matrices

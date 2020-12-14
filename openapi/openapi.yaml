@@ -327,6 +327,7 @@ paths:
       parameters: 
         - $ref: '#/components/parameters/id'
         - $ref: '#/components/parameters/user_id'
+        - $ref: '#/components/parameters/version'
       responses:
         200:
           description: Physical Topology deleted
@@ -573,6 +574,7 @@ paths:
       parameters: 
        - $ref: '#/components/parameters/id'
        - $ref: '#/components/parameters/user_id'
+       - $ref: '#/components/parameters/version'
       responses:
         200:
           description: Traffic Matrix deleted

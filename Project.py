@@ -224,9 +224,22 @@ def update_project(body, user_id):
     
     return 200
 
-# TODO: complete this endpoint
 def delete_project(id, user_id):
-    print("delete method")
+# This endpoint will soft delete a project
+    #
+    # parameters:
+    #   1. id
+    #   2. user_id
+    #
+    # responses: 200
+
+    info_tuple, project, _= authorization_check(id, user_id, mode="UPDATE")
+    if info_tuple[0] is False:
+        return {"error_msg": info_tuple[1]}, info_tuple[2]
+    
+    project.is_deleted = True
+    db.session.commit()
+    return 200
 
 
 def read_all(user_id):
