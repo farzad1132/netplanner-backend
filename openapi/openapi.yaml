@@ -170,11 +170,13 @@ components:
       in: query
       schema:
         type: string
+      required: true
     cluster_id:
       name: cluster_id
       in: query
       schema:
         type: string
+      required: true
     version:
       name: version
       in: query
