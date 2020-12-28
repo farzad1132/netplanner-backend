@@ -39,6 +39,8 @@ components:
       type: string
     version:
       type: integer
+    project_id:
+      type: string
     
     cluster:
       type: object
@@ -92,7 +94,7 @@ components:
                 type: string
               destination:
                 type: string
-              distance:
+              length:
                 type: number
                 format: float
               fiber_type:
@@ -100,7 +102,7 @@ components:
             required: 
               - source
               - destination
-              - distance
+              - length
               - fiber_type
     traffic_matrix:
       type: object
@@ -115,7 +117,7 @@ components:
               destination:
                 type: string
               id:
-                type: integer
+                type: string
               type:
                 type: string
               protection_type:
@@ -129,7 +131,10 @@ components:
                   properties:
                     quantity:
                       type: integer
-                      format: int32
+                    service_id_list:
+                      type: array
+                      items:
+                        type: string
                     sla:
                       type: string
                     type:
@@ -142,7 +147,7 @@ components:
                       type: string
                   required: 
                     - type
-                    - quantity
+                    - id
             required: 
               - source
               - destination
@@ -902,7 +907,7 @@ paths:
                 type: object
                 properties:
                   project_id:
-                    type: integer
+                    $ref: '#/components/schemas/project_id'
                 required: 
                   - project_id
         default:
@@ -1145,7 +1150,7 @@ paths:
                 type: object
                 properties:
                   user_id:
-                    type: integer
+                    $ref: '#/components/schemas/id'
                   token:
                     type: string
         default:
@@ -1180,7 +1185,7 @@ paths:
                   type: object
                   properties:
                     id:
-                      type: integer
+                      $ref: '#/components/schemas/project_id'
         default:
           description: error handling
           content:

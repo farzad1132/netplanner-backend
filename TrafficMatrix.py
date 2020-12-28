@@ -312,10 +312,11 @@ def read_from_excel(tm_binary, user_id, body):
 
     demands_list = []
     flag = True
+    service_id = 1
     for row in data["ID"].keys():
         demand = {}
         try:
-            demand["id"] = int(row)
+            demand["id"] = str(row)
         except:
             demand["id"] = row
             flag = False
@@ -345,15 +346,18 @@ def read_from_excel(tm_binary, user_id, body):
                 if quantity != 0:
                     demand["services"].append({
                         "type": service[9::],
-                        "quantity": quantity
+                        "quantity": quantity,
+                        "service_id_list": [i for i in range(service_id, service_id + quantity + 1)]
                     })
+                    service_id += quantity + 1
             else:
                 #return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
                 flag = False
                 demand["services"].append({
                     "type": service[9::],
                     "quantity": data[service][row],
-                    "quantity_error": "err_code:8, 'quantity' must be integer"
+                    "quantity_error": "err_code:8, 'quantity' must be integer",
+                    "service_id_list": []
                 })
         
         demands_list.append(demand)

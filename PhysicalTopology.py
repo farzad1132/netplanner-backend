@@ -34,7 +34,7 @@ PHYSICALTOPOLOGY = {
         {
             "source": "Tehran",
             "destination": "Qom",
-            "distance": 10.1,
+            "length": 10.1,
             "fiber_type" : "sm"
 
         }
@@ -66,9 +66,9 @@ def check_pt_format(pt):
         if not link["destination"] in nodes_name_list:
             flag = False
             link["destination_error"] = "err_code:3, link 'destination' must be one of the nodes"
-        if not (isinstance(link["distance"], int) or isinstance(link["distance"], float)):
+        if not (isinstance(link["length"], int) or isinstance(link["length"], float)):
             flag = False
-            link["distance_error"] = "err_code:4, 'distance' must be float or integer"
+            link["length_error"] = "err_code:4, 'length' must be float or integer"
     
     return flag
 def get_user_pts_id(user_id, all=True):
@@ -371,7 +371,7 @@ def read_from_excel(body, pt_binary, user_id):
 
     temp_data = read_excel(xls, 'Links')
     temp_dic ={}
-    headers = ["ID", "Source", "Destination", "Distance", "Fiber Type"]
+    headers = ["ID", "Source", "Destination", "Length", "Fiber Type"]
     for pointer in headers:
         temp_dic[pointer] = {}
         if pointer in temp_data:
@@ -393,12 +393,12 @@ def read_from_excel(body, pt_binary, user_id):
 
         # TODO: add multi-span support
         try:
-            distance = float(temp_dic["Distance"][row])
+            length = float(temp_dic["Length"][row])
         except:
             flag = False
-            item["distance_error"] = "err_code:4, 'distance' must be float or integer"
-            distance = temp_dic["Distance"][row]
-        item["distance"] = distance
+            item["length_error"] = "err_code:4, 'length' must be float or integer"
+            length = temp_dic["Length"][row]
+        item["length"] = length
 
         # TODO: complete fiber_type check
         try:

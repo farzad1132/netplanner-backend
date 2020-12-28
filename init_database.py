@@ -23,7 +23,7 @@ PHYSICALTOPOLOGY = {
         {
             "source": "Tehran",
             "destination": "Qom",
-            "distance": 10.1,
+            "length": 10.1,
             "fiber_type" : "sm"
 
         }
