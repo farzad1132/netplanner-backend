@@ -123,12 +123,12 @@ if __name__ == "__main__":
     #user.traffic_matrices.append(traffic_matrix_3)
     users[2].traffic_matrices.append(traffic_matrix_3)
     share_record_tm_1 = TrafficMatrixUsersModel(user_id=users[1].id, tm_id='2')
-    project = ProjectModel(name= "Test Project")
+    project = ProjectModel(name= "Test Project", id='1')
     project.current_pt_version = 1
     project.current_tm_version = 2
     users[1].projects.append(project)
 
-    project_2 = ProjectModel(name="Test Project 2")
+    project_2 = ProjectModel(name="Test Project 2", id='2')
     project_2.traffic_matrix = traffic_matrix_3
     project_2.physical_topology = physical_topology_3
     project_2.current_tm_version = 1

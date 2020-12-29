@@ -81,5 +81,8 @@ class Lightpath(BaseModel):
 class RWAIdList(BaseModel):
     rwa_id: List[str]
 
+class RWAId(BaseModel):
+    rwa_id: str
+
 class RWAResult(BaseModel):
     lightpath: Lightpath

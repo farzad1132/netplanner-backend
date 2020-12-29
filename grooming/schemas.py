@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Dict, List, Optional
 from enum import Enum
-from ..rwa.schemas import RoutingType, ProtectionType, RestorationType
+from rwa.schemas import RoutingType, ProtectionType, RestorationType
 
 class MP1HThreshold(int, Enum):
     t0 = 0
