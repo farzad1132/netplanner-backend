@@ -39,10 +39,14 @@ class RWAForm(BaseModel):
     history_window: int = Field(30, ge=1)
 
 class RWACheck(BaseModel):
+    id: str
     state: str
     current: int
     total: int
     status: str
+
+class RWACheckList(BaseModel):
+    rwa_check_list: List[RWACheck]
 
 class Path(BaseModel):
     path: List[str]
@@ -79,7 +83,7 @@ class Lightpath(BaseModel):
     capacity: float
 
 class RWAIdList(BaseModel):
-    rwa_id: List[str]
+    rwa_id_list: List[str]
 
 class RWAId(BaseModel):
     rwa_id: str

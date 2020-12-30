@@ -1,6 +1,7 @@
 .vscode/
 __pycache__/
 db.env
+celeryapp.env
 Dockerfile
 gunicorn_access_log.txt
 gunicorn_error_log.txt

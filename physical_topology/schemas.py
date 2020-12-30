@@ -12,6 +12,9 @@ class Node(BaseModel):
     lng: float
     roadm_type: ROADMType = ROADMType.cdc
 
+    class Config:
+        orm_mode = True
+
 class Link(BaseModel):
     source: str
     destination: str
@@ -24,6 +27,8 @@ class PhysicalTopologySchema(BaseModel):
 
 class PhysicalTopologyDB(BaseModel):
     data: PhysicalTopologySchema
+    id: str
+    version: int
 
     class Config:
         orm_mode = True

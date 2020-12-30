@@ -37,17 +37,19 @@ TRAFFICMATRIX = {
             "source": "Tehran",
             "destination": "Qom",
             "type": None,
-            "protection_type": "Protection",
+            "protection_type": "NoProtection",
             "restoration_type": "None",
             "services":[
                 {
                     "type": "100GE",
                     "quantity": 1,
+                    "service_id_list": ["1"]
 
                 },
                 {
                     "type": "1GE",
-                    "quantity": 5
+                    "quantity": 5,
+                    "service_id_list": ["2","3","7","4","91"]
                 }
                 
             ]

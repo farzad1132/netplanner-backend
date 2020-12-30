@@ -15,4 +15,20 @@ services:
       - .:/app
     container_name: service
     ports: 
-      - 5020:5000
+      - 5000:5000
+      - 50200:5020
+  
+  rabbitmq:
+    image: rabbitmq
+    env_file: 
+      - celeryapp.env
+    ports:
+      - 5672:5672
+      - 15672:15672
+  
+  workers:
+    build:
+      context: .
+    hostname: workers
+    entrypoint: celery
+    command: -A celery_app worker --loglevel=DEBUG
