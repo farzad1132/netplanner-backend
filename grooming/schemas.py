@@ -19,6 +19,16 @@ class MP1HThreshold(int, Enum):
 class GroomingForm(BaseModel):
     mp1h_threshold: MP1HThreshold = MP1HThreshold.t70
 
+class GroomingId(BaseModel):
+    grooming_id: str
+
+class GroomingCheck(BaseModel):
+    id: str
+    state: str
+    current: int
+    total: int
+    status: str
+
 class GroomingLightPath(BaseModel):
     id: str
     source: str

@@ -38,3 +38,10 @@ def rwa_result(rwa_id: RWAId, db: Session = Depends(get_db)):
         getting result of rwa algorithm
     """
     return None
+
+@router.get("/all/{user_id}", response_model=List[RWAId], status_code=200)
+def get_all(user_id: str):
+    """
+        getting all available rwa id's for user
+    """
+    return None
