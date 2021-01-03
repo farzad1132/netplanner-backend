@@ -8,12 +8,12 @@ from algorithms.template_worker import template_task
 from typing import List
 from rwa.utils import rwa_status_check
 
-router = APIRouter(
+rwa_router = APIRouter(
     prefix="/algorithms/rwa",
     tags=["Algorithms", "RWA"]
 )
 
-@router.post("/start/{user_id}", status_code=201, response_model=RWAId)
+@rwa_router.post("/start/{user_id}", status_code=201, response_model=RWAId)
 def rwa_start(user_id: str, project_id: str, grooming_id: str, rwa_form: RWAForm):
     """
         starting rwa algorithm
@@ -24,7 +24,7 @@ def rwa_start(user_id: str, project_id: str, grooming_id: str, rwa_form: RWAForm
     # accessing traffic matrix: project_db["traffic matrix"]["data"]
     return {"rwa_id": task.id}
 
-@router.post("/check/{user_id}", status_code=200, response_model=List[RWACheck])
+@rwa_router.post("/check/{user_id}", status_code=200, response_model=List[RWACheck])
 def rwa_check(rwa_id_list: RWAIdList, db: Session = Depends(get_db)):
     """
         checking running rwa algorithms
@@ -32,14 +32,14 @@ def rwa_check(rwa_id_list: RWAIdList, db: Session = Depends(get_db)):
     rwa_id_list = rwa_id_list.dict()
     return rwa_status_check(rwa_id_list["rwa_id_list"])
 
-@router.get("/result/{user_id}", response_model=RWAResult, status_code=200)
+@rwa_router.get("/result/{user_id}", response_model=RWAResult, status_code=200)
 def rwa_result(rwa_id: RWAId, db: Session = Depends(get_db)):
     """
         getting result of rwa algorithm
     """
     return None
 
-@router.get("/all/{user_id}", response_model=List[RWAId], status_code=200)
+@rwa_router.get("/all/{user_id}", response_model=List[RWAId], status_code=200)
 def get_all(user_id: str):
     """
         getting all available rwa id's for user

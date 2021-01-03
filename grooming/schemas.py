@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from enum import Enum
 from rwa.schemas import RoutingType, ProtectionType, RestorationType
 
@@ -30,10 +30,15 @@ class GroomingCheck(BaseModel):
     status: str
 
 class GroomingLightPath(BaseModel):
+# this schema describes lightpathes generated in grooming algorithm
+    # sub_tm_id: stands for sub traffic matrix id, sub traffic matrices are those one which
+    #            created from splitting original traffic matrix by clustering algorithm
     id: str
     source: str
     destination: str
     cluster_id: str
+    sub_tm_id: str
+    service_id_list: List[str]
     routing_type: RoutingType = RoutingType.GE100
     demand_id: str
     protection_type: ProtectionType = ProtectionType.node_dis
@@ -53,3 +58,13 @@ class TP1H(Device):
 
 class MP2X(Device):
     lightpath_id_list: List[str]
+
+class ShelfStructure(BaseModel):
+    shelves: List[Union[MP1H, TP1H, MP2X]]
+
+class NodeStructure(BaseModel):
+    nodes: Dict[str, ShelfStructure]
+
+class GroomingResult(BaseModel):
+    lightpathes: List[GroomingLightPath]
+    architecture: NodeStructure

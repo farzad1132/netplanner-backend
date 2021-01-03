@@ -347,9 +347,9 @@ def read_from_excel(tm_binary, user_id, body):
                     demand["services"].append({
                         "type": service[9::],
                         "quantity": quantity,
-                        "service_id_list": [i for i in range(service_id, service_id + quantity + 1)]
+                        "service_id_list": [i for i in range(service_id, service_id + quantity)]
                     })
-                    service_id += quantity + 1
+                    service_id += quantity
             else:
                 #return {"error_msg" : f"wrong entry of quantity at ID = {row} and service {service[9::]}"}, 400
                 flag = False

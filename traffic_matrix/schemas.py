@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 from pydantic import BaseModel
 from enum import Enum
 from rwa.schemas import ProtectionType, RestorationType
@@ -35,7 +35,7 @@ class Demand(BaseModel):
     services: List[Service]
 
 class TrafficMatrixSchema(BaseModel):
-    demands: List[Demand]
+    demands: Dict[str, Demand]
 
 class TrafficMatrixDB(BaseModel):
     data: TrafficMatrixSchema
