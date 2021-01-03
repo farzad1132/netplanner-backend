@@ -19,7 +19,7 @@ def rwa_start(user_id: str, project_id: str, grooming_id: str, rwa_form: RWAForm
         starting rwa algorithm
     """
     task = template_task.delay()
-    #project_db = ProjectSchema.from_orm(get_project(user_id, project_id)).dict()
+    # project_db = ProjectSchema.from_orm(get_project(user_id, project_id)).dict()
     # accessing physical topology: project_db["physical_topology"]["data"]
     # accessing traffic matrix: project_db["traffic matrix"]["data"]
     return {"rwa_id": task.id}

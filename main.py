@@ -16,4 +16,4 @@ app.include_router(rwa_router)
 app.include_router(grooming_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=5000, reload=True)
+    uvicorn.run("main:app", port=5020, reload=True)
