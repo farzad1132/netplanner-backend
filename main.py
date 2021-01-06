@@ -5,12 +5,14 @@ from grooming.routes import grooming_router
 from users.routes import user_router
 from dependencies import get_db, auth_user
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 # version 2 of netplanner api
 app = FastAPI(  version="2.0.0",
                 title="Netplanner",
                 dependencies=[Depends(get_db)])
 #                servers=[{"url":"/api/v2"}])
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(rwa_router)
 #                    prefix="/api/v2")

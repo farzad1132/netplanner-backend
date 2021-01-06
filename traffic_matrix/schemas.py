@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict
-from pydantic import BaseModel, validator, ValidationError
+from pydantic import BaseModel, validator
 from enum import Enum
 from rwa.schemas import ProtectionType, RestorationType
 
@@ -28,7 +28,7 @@ class Service(BaseModel):
     @validator('service_id_list')
     def validate_service_id_list(cls, v, values):
         if len(v) != values['quantity']:
-            raise ValidationError('service_id_list size must be equal to quantity')
+            raise ValueError('service_id_list size must be equal to quantity')
 
 class Demand(BaseModel):
     source: str
