@@ -60,15 +60,18 @@ TRAFFICMATRIX = {
 USERS = [
     {
         "username": "Test User",
-        "password": "1234"
+        "password": "1234",
+        "email": "x@y.com"
     },
     {
         "username": "farzad",
-        "password": "1234"
+        "password": "1234",
+        "email": "xy@y.com"
     },
     {
         "username": "amir",
-        "password": "1234"
+        "password": "1234",
+        "email": "xyz@y.com"
     }
 ]
 
@@ -103,7 +106,7 @@ if __name__ == "__main__":
     id = 3
     users = {}
     for USER in USERS:
-        user = UserModel(username=USER["username"], id=str(id), role="manager",
+        user = UserModel(username=USER["username"], id=str(id), role="manager", email=USER['email'],
                         password=bcrypt.generate_password_hash(USER["password"]).decode('utf-8'))
         users[id] = user
         id -= 1

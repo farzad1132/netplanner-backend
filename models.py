@@ -72,8 +72,9 @@ class UserModel(db.Model):
     query_class = QueryWithSoftDelete
 
     id = db.Column( "id", db.String, primary_key= True, default=lambda: uuid.uuid4().hex)
-    username = db.Column("username", db.String, nullable= False, unique= True)
-    password = db.Column("password", db.String, nullable= False)
+    username = db.Column("username", db.String, nullable=False, unique=True)
+    password = db.Column("password", db.String, nullable=False)
+    email = db.Column("email", db.String, nullable=False, unique=True)
     projects = db.relationship("ProjectModel", back_populates= "owner")
     traffic_matrices = db.relationship( "TrafficMatrixModel", back_populates= "owner")
     physical_topologies = db.relationship( "PhysicalTopologyModel", back_populates= "owner")

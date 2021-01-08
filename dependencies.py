@@ -51,6 +51,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
+def decode_token(token: str) -> str:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if (username:=payload.get('username')) is None:
+            return None
+        return username
+    except:
+        raise HTTPException(status_code=401, detail="Could not validate credentials")
+
 def get_db():
     db = session()
     try:

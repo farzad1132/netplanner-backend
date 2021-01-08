@@ -6,6 +6,9 @@ from users.routes import user_router
 from dependencies import get_db, auth_user
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from database import base, engine
+
+base.metadata.create_all(bind=engine)
 
 # version 2 of netplanner api
 app = FastAPI(  version="2.0.0",
