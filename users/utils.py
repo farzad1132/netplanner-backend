@@ -37,4 +37,3 @@ def create_message(token: str, request: Request):
     template = env.get_template("confirm_email.html")
     message = template.render(url=url)
     return message
-    

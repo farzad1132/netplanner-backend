@@ -7,6 +7,8 @@ from dependencies import get_db, auth_user
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import base, engine
+from physical_topology.routes import pt_router
+from projects.routes import project_router
 
 base.metadata.create_all(bind=engine)
 
@@ -21,6 +23,8 @@ app.include_router(rwa_router)
 #                    prefix="/api/v2")
 app.include_router(grooming_router)
 app.include_router(user_router)
+app.include_router(pt_router)
+app.include_router(project_router)
 
 app.add_middleware(CORSMiddleware,
                     allow_origins=['*'],

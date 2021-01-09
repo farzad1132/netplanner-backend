@@ -11,5 +11,6 @@ DB_USER = os.environ["DB_USER"]
 db_url = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB}"
 
 engine = create_engine(db_url)
-session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from query import QueryWithSoftDelete
+session = sessionmaker(autocommit=False, autoflush=False, bind=engine, query_cls=QueryWithSoftDelete)
 base = declarative_base()
