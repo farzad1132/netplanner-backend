@@ -45,6 +45,7 @@ def validate_email(token: str, db: Session = Depends(get_db)):
                                 password=record.password,
                                 email=record.email,
                                 role='designer')
+            db.delete(record)
             db.add(user)
             db.commit()
             return RedirectResponse(url='http://192.168.7.22')
