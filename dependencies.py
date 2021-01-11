@@ -68,7 +68,8 @@ def get_db():
         db.close()
 
 def get_user(username: str):
-    if (user:=session().query(UserModel).filter_by(username=username).one_or_none()):
+    db = next(get_db())
+    if (user:=db.query(UserModel).filter_by(username=username).one_or_none()):
         return user
 
 def auth_user(username: str, password: str):

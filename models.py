@@ -1,4 +1,3 @@
-from query import QueryWithSoftDelete
 from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
 import uuid
@@ -9,7 +8,7 @@ from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime
 class PhysicalTopologyModel(base):
     __tablename__ = "PhysicalTopology"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     primary_id = Column("primary_id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     id = Column("id", String, nullable=False)
@@ -31,7 +30,7 @@ class PhysicalTopologyModel(base):
 class TrafficMatrixModel(base):
     __tablename__ = "TrafficMatrix"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     primary_id = Column( "primary_id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     id = Column("id", String, nullable=False)
@@ -52,7 +51,7 @@ class TrafficMatrixModel(base):
 class UserModel(base):
     __tablename__ = "User"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     id = Column( "id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     username = Column("username", String, nullable=False, unique=True)
@@ -74,7 +73,7 @@ class UserModel(base):
 class ProjectModel(base):
     __tablename__ = "Project"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     id = Column( "id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     name = Column("name", String, nullable= False)
@@ -92,13 +91,13 @@ class ProjectModel(base):
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
 
     def __repr__(self):
-        return f"PROJECT(name= {self.name}, username= {self.user.name}, PT name={self.physical_topologies.name}, TM name={self.traffic_matrix.name})"
+        return f"PROJECT(name= {self.name}, username= {self.owner.name}, PT name={self.physical_topology.name}, TM name={self.traffic_matrix.name})"
 
 class ProjectUsersModel(base):
     # this model is used to give other users access to project
     __tablename__ = "ProjectUsers"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     id = Column( "id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -117,7 +116,7 @@ class PhysicalTopologyUsersModel(base):
     #       versions have same id)
     __tablename__ = "PhysicalTopologyUsers"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     id = id = Column("id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -135,7 +134,7 @@ class TrafficMatrixUsersModel(base):
     #       versions have same id)
     __tablename__ = "TrafficMatrixUsers"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     id = id = Column("id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     create_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -150,7 +149,7 @@ class TrafficMatrixUsersModel(base):
 class ClusterModel(base):
     __tablename__ = "Cluster"
     __table_args__ = {'extend_existing': True}
-    query_class = QueryWithSoftDelete
+    
 
     id = Column( "id", String, primary_key= True, default=lambda: uuid.uuid4().hex)
     name = Column("name", String, nullable= False)
