@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Optional
 from enum import Enum
 from datetime import datetime
@@ -66,10 +66,10 @@ class PhysicalTopologyPUT(PhysicalTopologyIn):
     id: str
 
 class PhysicalTopologyOut(BaseModel):
-    name: str
     id: str
-    create_date: datetime
     version: int
+    name: str
+    create_date: datetime
     comment: str
 
     class Config:

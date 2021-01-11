@@ -36,8 +36,8 @@ def create_physical_toplogy(pt: PhysicalTopologyPOST, user: User = Depends(get_c
 def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
     last_version = get_pt_last_version(pt.id)
-    pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version+1,
-                                        name=pt.name, data=pt.data.dict())
+    pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version.version+1,
+                                        name=last_version.name, data=pt.data.dict())
     pt_record.owner_id = user.id
     db.add(pt_record)
     db.commit()
@@ -45,8 +45,7 @@ def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_c
 
 get_pt_mode_delete = GetPT(mode="DELETE")
 @pt_router.delete('/', status_code=200)
-def delete_physical_topology(id: str, version: Optional[int] = None, 
-                            user: User = Depends(get_current_user),
+def delete_physical_topology(user: User = Depends(get_current_user),
                             db: Session = Depends(get_db), 
                             pt_list: PhysicalTopologyDB = Depends(get_pt_mode_delete)):
     for pt in pt_list:

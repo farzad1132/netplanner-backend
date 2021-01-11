@@ -12,7 +12,7 @@ class RoutingType(str, Enum):
     GE200 = "200GE"
 
 class ProtectionType(str, Enum):
-    node_dis = "1+1 NodeDisjoint"
+    node_dis = "1+1_NodeDisjoint"
     no_protection = "NoProtection"
 
 class RestorationType(str, Enum):
