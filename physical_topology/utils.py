@@ -18,12 +18,9 @@ class GetPT:
                  db: Session = Depends(get_db)) -> List[PhysicalTopologyDB]:
         user_id = user.id
         if version is None:
-            """ pt = db.query(PhysicalTopologyModel).filter_by(id=id)\
-                .distinct(PhysicalTopologyModel.version)\
-                .order_by(PhysicalTopologyModel.version.desc()).first() """
-            pt_list = db.query(PhysicalTopologyModel).filter_by(id=id).all()
+            pt_list = db.query(PhysicalTopologyModel).filter_by(id=id, is_deleted=False).all()
         else:
-            pt_list = db.query(PhysicalTopologyModel).filter_by(id=id, version=version).all()
+            pt_list = db.query(PhysicalTopologyModel).filter_by(id=id, version=version, is_deleted=False).all()
         
         if not pt_list:
             raise HTTPException(status_code=404, detail="physical topology not found")
@@ -32,7 +29,7 @@ class GetPT:
         elif self.mode == "DELETE":
             raise HTTPException(status_code=401, detail="not authorized")
     
-        if db.query(PhysicalTopologyUsersModel).filter_by(pt_id=id, user_id=user_id).one_or_none() is None:
+        if db.query(PhysicalTopologyUsersModel).filter_by(pt_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return pt_list
@@ -41,18 +38,19 @@ def check_pt_name_conflict(user_id: str, name: str):
     db = next(get_db())
     id_list = get_user_pts_id(user_id, db)
     if db.query(PhysicalTopologyModel).filter_by(name=name)\
-        .filter(PhysicalTopologyModel.id.in_(id_list)).one_or_none() is not None:
+        .filter(PhysicalTopologyModel.id.in_(id_list))\
+        .filter_by(is_deleted=False).one_or_none() is not None:
         raise HTTPException(status_code=409, detail="name of the physical topology has conflict with another record")
     
 def get_user_pts_id(user_id: str, db: Session, all: Optional[bool]= True)\
  -> List[str]:
     id_list = []
     if all is True:
-        owned_pts = db.query(PhysicalTopologyModel).filter_by(owner_id=user_id).all()
+        owned_pts = db.query(PhysicalTopologyModel).filter_by(owner_id=user_id, is_deleted=False).all()
         for pt in owned_pts:
             id_list.append(pt.id)
     
-    shared_pts = db.query(PhysicalTopologyUsersModel).filter_by(user_id=user_id).all()
+    shared_pts = db.query(PhysicalTopologyUsersModel).filter_by(user_id=user_id, is_deleted=False).all()
     for pt in shared_pts:
         id_list.append(pt.pt_id)
     
@@ -62,7 +60,8 @@ def get_pt_last_version(id: str) -> PhysicalTopologyDB:
     db = next(get_db())
     pt = db.query(PhysicalTopologyModel).filter_by(id=id)\
             .distinct(PhysicalTopologyModel.version)\
-            .order_by(PhysicalTopologyModel.version.desc()).first()
+            .order_by(PhysicalTopologyModel.version.desc())\
+            .filter_by(is_deleted=False).first()
     return pt
 
 def excel_to_pt(pt_binary: bytes) -> Tuple[bool, PhysicalTopologySchema]:

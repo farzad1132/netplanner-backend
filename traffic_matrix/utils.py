@@ -19,9 +19,9 @@ class GetTM:
                  db: Session = Depends(get_db)) -> List[TrafficMatrixDB]:
         user_id = user.id
         if version is None:
-            tm_list = db.query(TrafficMatrixModel).filter_by(id=id).all()
+            tm_list = db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=False).all()
         else:
-            tm_list = db.query(TrafficMatrixModel).filter_by(id=id, version=version).all()
+            tm_list = db.query(TrafficMatrixModel).filter_by(id=id, version=version, is_deleted=False).all()
         
         if not tm_list:
             raise HTTPException(status_code=404, detail="traffic matrix not found")
@@ -30,7 +30,7 @@ class GetTM:
         elif self.mode == "DELETE":
             raise HTTPException(status_code=401, detail="not authorized")
     
-        if db.query(TrafficMatrixUsersModel).filter_by(tm_id=id, user_id=user_id).one_or_none() is None:
+        if db.query(TrafficMatrixUsersModel).filter_by(tm_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return tm_list
@@ -39,18 +39,19 @@ def check_tm_name_conflict(user_id: str, name: str):
     db = next(get_db())
     id_list = get_user_tms_id(user_id, db)
     if db.query(TrafficMatrixModel).filter_by(name=name)\
-        .filter(TrafficMatrixModel.id.in_(id_list)).one_or_none() is not None:
+        .filter(TrafficMatrixModel.id.in_(id_list))\
+        .filter_by(is_deleted=False).one_or_none() is not None:
         raise HTTPException(status_code=409, detail="name of the traffic matrix has conflict with another record")
 
 def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
  -> List[str]:
     id_list = []
     if all is True:
-        owned_tms = db.query(TrafficMatrixModel).filter_by(owner_id=user_id).all()
+        owned_tms = db.query(TrafficMatrixModel).filter_by(owner_id=user_id, is_deleted=False).all()
         for tm in owned_tms:
             id_list.append(tm.id)
     
-    shared_tms = db.query(TrafficMatrixUsersModel).filter_by(user_id=user_id).all()
+    shared_tms = db.query(TrafficMatrixUsersModel).filter_by(user_id=user_id, is_deleted=False).all()
     for tm in shared_tms:
         id_list.append(tm.tm_id)
     
@@ -60,7 +61,8 @@ def get_tm_last_version(id: str) -> TrafficMatrixDB:
     db = next(get_db())
     tm = db.query(TrafficMatrixModel).filter_by(id=id)\
             .distinct(TrafficMatrixModel.version)\
-            .order_by(TrafficMatrixModel.version.desc()).first()
+            .order_by(TrafficMatrixModel.version.desc())\
+            .filter_by(is_deleted=False).first()
     return tm
 
 def excel_to_tm(tm_binary: bytes) -> Tuple[bool, TrafficMatrixSchema]:

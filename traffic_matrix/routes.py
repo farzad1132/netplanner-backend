@@ -60,7 +60,8 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
                     .filter(TrafficMatrixModel.id.in_(get_user_tms_id(user.id, db)))\
                     .distinct(TrafficMatrixModel.id)\
                     .order_by(TrafficMatrixModel.id)\
-                    .order_by(TrafficMatrixModel.version.desc()).all()):
+                    .order_by(TrafficMatrixModel.version.desc())\
+                    .filter_by(is_deleted=False).all()):
         raise HTTPException(status_code=404, detail="no traffic matrix found")
     return tm_list
 

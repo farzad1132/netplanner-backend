@@ -59,7 +59,8 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
                     .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user.id, db)))\
                     .distinct(PhysicalTopologyModel.id)\
                     .order_by(PhysicalTopologyModel.id)\
-                    .order_by(PhysicalTopologyModel.version.desc()).all()):
+                    .order_by(PhysicalTopologyModel.version.desc())\
+                    .filter_by(is_deleted=False).all()):
         raise HTTPException(status_code=404, detail="no physical topology found")
     return pt_list
 

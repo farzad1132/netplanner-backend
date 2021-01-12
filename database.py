@@ -12,5 +12,5 @@ db_url = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB}"
 
 engine = create_engine(db_url)
 from query import QueryWithSoftDelete
-session = sessionmaker(autocommit=False, autoflush=False, bind=engine, query_cls=QueryWithSoftDelete)
+session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 base = declarative_base()

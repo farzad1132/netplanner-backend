@@ -39,7 +39,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
 @user_router.get('/validate_email/{token}', status_code=200)
 def validate_email(token: str, db: Session = Depends(get_db)):
     if (username:=decode_token(token)) is not None:
-        if (record:=db.query(UserRegisterModel).filter_by(username=username)\
+        if (record:=db.query(UserRegisterModel).filter_by(username=username, is_deleted=False)\
             .one_or_none()) is not None:
             user = UserModel(   username=username,
                                 password=record.password,
