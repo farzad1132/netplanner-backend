@@ -10,6 +10,7 @@ from database import base, engine
 from physical_topology.routes import pt_router
 from projects.routes import project_router
 from traffic_matrix.routes import tm_router
+from clusters.routes import cluster_router
 
 base.metadata.create_all(bind=engine)
 
@@ -27,6 +28,7 @@ app.include_router(user_router)
 app.include_router(pt_router)
 app.include_router(project_router)
 app.include_router(tm_router)
+app.include_router(cluster_router)
 
 app.add_middleware(CORSMiddleware,
                     allow_origins=['*'],
