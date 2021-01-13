@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends
 from .schemas import RWAForm, RWAResult, RWAIdList, RWAId, RWACheck
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
-from projects.utils import get_project
 from projects.schemas import ProjectSchema
 from algorithms.template_worker import template_task
 from typing import List

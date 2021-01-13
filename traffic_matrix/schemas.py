@@ -42,6 +42,9 @@ class Demand(BaseModel):
     services: List[Service]
 
 class TrafficMatrixSchema(BaseModel):
+    """
+    dict keys in this model is demands id
+    """
     demands: Dict[str, Demand]
 
 class TrafficMatrixDB(BaseModel):

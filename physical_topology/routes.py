@@ -38,7 +38,7 @@ def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_c
     last_version = get_pt_last_version(pt.id)
     pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version.version+1,
                                         name=last_version.name, data=pt.data.dict())
-    pt_record.owner_id = user.id
+    pt_record.owner_id = last_version.owner_id
     db.add(pt_record)
     db.commit()
     return 200

@@ -30,9 +30,11 @@ class GroomingCheck(BaseModel):
     status: str
 
 class GroomingLightPath(BaseModel):
-# this schema describes lightpathes generated in grooming algorithm
-    # sub_tm_id: stands for sub traffic matrix id, sub traffic matrices are those one which
-    #            created from splitting original traffic matrix by clustering algorithm
+    """
+        this schema describes lightpathes generated in grooming algorithm\n
+        **sub_tm_id**: stands for sub traffic matrix id, sub traffic matrices are those one which
+                   created from splitting original traffic matrix by clustering algorithm
+    """
     id: str
     source: str
     destination: str
@@ -63,6 +65,9 @@ class ShelfStructure(BaseModel):
     shelves: List[Union[MP1H, TP1H, MP2X]]
 
 class NodeStructure(BaseModel):
+    """
+        dict keys in this model is nodes name
+    """
     nodes: Dict[str, ShelfStructure]
 
 class GroomingResult(BaseModel):

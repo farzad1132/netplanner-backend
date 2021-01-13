@@ -47,7 +47,7 @@ TRAFFICMATRIX = {
 
                             },
                             {
-                                "type": "1GE",
+                                "type": "GE",
                                 "quantity": 5,
                                 "service_id_list": ["2","3","7","4","91"]
                             }

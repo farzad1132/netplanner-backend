@@ -39,7 +39,7 @@ def update_traffic_matrix(tm: TrafficMatrixPUT, user: User = Depends(get_current
     last_version = get_tm_last_version(tm.id)
     tm_record = TrafficMatrixModel(id=tm.id, comment=tm.comment, version=last_version.version+1,
                                         name=last_version.name, data=tm.data.dict())
-    tm_record.owner_id = user.id
+    tm_record.owner_id = last_version.owner_id
     db.add(tm_record)
     db.commit()
     return 200

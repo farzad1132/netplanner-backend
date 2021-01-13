@@ -38,16 +38,18 @@ class GetTM:
 def check_tm_name_conflict(user_id: str, name: str):
     db = next(get_db())
     id_list = get_user_tms_id(user_id, db)
-    if db.query(TrafficMatrixModel).filter_by(name=name)\
-        .filter(TrafficMatrixModel.id.in_(id_list))\
-        .filter_by(is_deleted=False).one_or_none() is not None:
+    if db.query(TrafficMatrixModel).filter_by(name=name, is_deleted=False)\
+        .filter(TrafficMatrixModel.id.in_(id_list)).one_or_none() is not None:
         raise HTTPException(status_code=409, detail="name of the traffic matrix has conflict with another record")
 
 def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
  -> List[str]:
     id_list = []
     if all is True:
-        owned_tms = db.query(TrafficMatrixModel).filter_by(owner_id=user_id, is_deleted=False).all()
+        owned_tms = db.query(TrafficMatrixModel)\
+                    .filter_by(owner_id=user_id, is_deleted=False)\
+                    .distinct(TrafficMatrixModel.id)\
+                    .order_by(TrafficMatrixModel.id.desc()).all()
         for tm in owned_tms:
             id_list.append(tm.id)
     
@@ -59,10 +61,9 @@ def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
 
 def get_tm_last_version(id: str) -> TrafficMatrixDB:
     db = next(get_db())
-    tm = db.query(TrafficMatrixModel).filter_by(id=id)\
+    tm = db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=False)\
             .distinct(TrafficMatrixModel.version)\
-            .order_by(TrafficMatrixModel.version.desc())\
-            .filter_by(is_deleted=False).first()
+            .order_by(TrafficMatrixModel.version.desc()).first()
     return tm
 
 def excel_to_tm(tm_binary: bytes) -> Tuple[bool, TrafficMatrixSchema]:
