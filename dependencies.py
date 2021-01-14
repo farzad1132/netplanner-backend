@@ -68,12 +68,11 @@ def decode_token(token: str) -> str:
         raise HTTPException(status_code=401, detail="Could not validate credentials")
 
 def get_user(username: str, db: Session):
-    #db = next(get_db())
     if (user:=db.query(UserModel).filter_by(username=username, is_deleted=False).one_or_none()):
         return user
 
-def auth_user(username: str, password: str):
-    if (user:=get_user(username, next(get_db()))) is None:
+def auth_user(username: str, password: str, db: Session):
+    if (user:=get_user(username, db)) is None:
         raise HTTPException(status_code=404, detail='user not found')
     if not verify_password( plain_password=password,
                             hashed_password=user.password):

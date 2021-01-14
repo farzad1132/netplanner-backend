@@ -24,7 +24,7 @@ def get_physical_topology(pt_list: PhysicalTopologyDB = Depends(get_pt_mode_get)
 @pt_router.post('/', status_code=201, response_model=PTId)
 def create_physical_toplogy(pt: PhysicalTopologyPOST, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
-    check_pt_name_conflict(user.id, pt.name)
+    check_pt_name_conflict(user.id, pt.name, db=db)
     id = uuid4().hex
     pt_record = PhysicalTopologyModel(**pt.dict(), id=id, version=1)
     pt_record.owner_id = user.id
@@ -35,7 +35,7 @@ def create_physical_toplogy(pt: PhysicalTopologyPOST, user: User = Depends(get_c
 @pt_router.put('/', status_code=200)
 def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
-    last_version = get_pt_last_version(pt.id)
+    last_version = get_pt_last_version(pt.id, db=db)
     pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version.version+1,
                                         name=last_version.name, data=pt.data.dict())
     pt_record.owner_id = last_version.owner_id
@@ -68,7 +68,7 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
 def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
-    check_pt_name_conflict(user.id, name)
+    check_pt_name_conflict(user.id, name, db=db)
     flag, pt = excel_to_pt(pt_binary.file.read())
     if flag is True:
         id = uuid4().hex

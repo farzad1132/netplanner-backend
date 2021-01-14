@@ -46,3 +46,10 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+
+class UserSearch(BaseModel):
+    username: str
+    id: str
+
+    class Config:
+        orm_mode = True

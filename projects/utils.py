@@ -5,6 +5,8 @@ from typing import Optional, List
 from physical_topology.utils import methods
 from users.schemas import User
 from sqlalchemy.orm import Session
+from physical_topology.schemas import PhysicalTopologySchema
+from traffic_matrix.schemas import TrafficMatrixSchema
 
 
 class GetProject:
@@ -20,7 +22,7 @@ class GetProject:
         elif user_id == project.owner_id:
             return project
         
-        if (self.mode == "DELETE") and user.role != "manager":
+        if self.mode in ("DELETE", "SHARE") and user.role != "manager":
             raise HTTPException(status_code=401, detail="Not Authorized")
         elif db.query(ProjectUsersModel).filter_by(project_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=401, detail="Not Authorized")
@@ -48,3 +50,15 @@ def check_project_name_conflict(user_id: str, name: str, db: Session):
     if db.query(ProjectModel).filter_by(name=name, is_deleted=False)\
         .filter(ProjectModel.id.in_(id_list)).one_or_none() is not None:
         raise HTTPException(status_code=409, detail="name of the project has conflict with another record")
+
+def pt_and_tm_compatibility(pt: PhysicalTopologySchema, tm: TrafficMatrixSchema):
+    
+    nodes_name_list = []
+    for node in pt["nodes"]:
+        nodes_name_list.append(node["name"])
+    
+    for demand in tm["demands"].values():
+        if not (demand["source"] in nodes_name_list):
+            raise HTTPException(status_code=400, detail=f"node '{demand['source']}' does not exist in physical topology")
+        if not (demand["destination"] in nodes_name_list):
+            raise HTTPException(status_code=400, detail=f"node '{demand['destination']}' does not exist in physical topology")

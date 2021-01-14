@@ -25,7 +25,7 @@ def get_traffic_matrix(tm_list: TrafficMatrixDB = Depends(get_tm_mode_get)):
 @tm_router.post('/', status_code=201, response_model=TMId)
 def create_traffic_matrix(tm: TrafficMatrixPOST, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
-    check_tm_name_conflict(user.id, tm.name)
+    check_tm_name_conflict(user.id, tm.name, db=db)
     id = uuid4().hex
     tm_record = TrafficMatrixModel(**tm.dict(), id=id, version=1)
     tm_record.owner_id = user.id
@@ -36,7 +36,7 @@ def create_traffic_matrix(tm: TrafficMatrixPOST, user: User = Depends(get_curren
 @tm_router.put('/', status_code=200)
 def update_traffic_matrix(tm: TrafficMatrixPUT, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
-    last_version = get_tm_last_version(tm.id)
+    last_version = get_tm_last_version(tm.id, db=db)
     tm_record = TrafficMatrixModel(id=tm.id, comment=tm.comment, version=last_version.version+1,
                                         name=last_version.name, data=tm.data.dict())
     tm_record.owner_id = last_version.owner_id
@@ -69,7 +69,7 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
 def from_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
-    check_tm_name_conflict(user.id, name)
+    check_tm_name_conflict(user.id, name, db=db)
     flag, tm = excel_to_tm(tm_binary.file.read())
     if flag is True:
         id = uuid4().hex

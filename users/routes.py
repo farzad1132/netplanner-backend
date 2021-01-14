@@ -1,14 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
-from users.schemas import RegisterForm
+from fastapi import APIRouter, Depends, HTTPException, Request, Query
+from users.schemas import RegisterForm, Token, UserSearch, User
 from fastapi.security import OAuth2PasswordRequestForm
-from dependencies import ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, auth_user, get_password_hash, get_db, decode_token
-from users.schemas import Token
+from dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, auth_user,
+ get_password_hash, get_db, decode_token, get_current_user)
 from datetime import timedelta
 from starlette.responses import RedirectResponse
 from users.utils import send_mail
 from users.models import UserRegisterModel
 from sqlalchemy.orm import Session
 from models import UserModel
+from typing import List
 
 user_router = APIRouter(
     prefix="/users",
@@ -28,8 +29,9 @@ def register_user(register_form: RegisterForm, request: Request, db: Session = D
     return None
 
 @user_router.post("/login", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = auth_user(form_data.username, form_data.password)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
+                            db: Session = Depends(get_db)):
+    user = auth_user(form_data.username, form_data.password, db=db)
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
@@ -49,3 +51,12 @@ def validate_email(token: str, db: Session = Depends(get_db)):
             db.add(user)
             db.commit()
             return RedirectResponse(url='http://192.168.7.22')
+
+@user_router.get('/search_for_users', status_code=200, response_model=List[UserSearch])
+def search_user(search_string: str = Query(..., min_length=3),
+                db: Session = Depends(get_db),
+                _: User = Depends(get_current_user)):
+    results = db.query(UserModel)\
+        .filter(UserModel.username.contains(search_string))\
+        .filter_by(is_deleted=False).all()
+    return results

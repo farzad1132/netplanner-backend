@@ -22,11 +22,25 @@ class ProjectSchema(BaseModel):
         orm_mode = True
 
 class ProjectPOST(BaseModel):
+    name: str
     tm_id: str
     pt_id: str
     current_pt_version: Optional[int] = 1
     current_tm_version: Optional[int] = 1
+
+    class Config:
+        orm_mode = True
+
+class ProjectPUT(BaseModel):
+    """
+        traffic matrix and physical topology id are missing here, this means user can not\n
+        change project physical topology and traffic matrix but only their versions.\n
+        **This allows backend to be able to pre calculate traffic matrix and physical topology compatibilities**
+    """
     name: str
+    current_pt_version: Optional[int] = 1
+    current_tm_version: Optional[int] = 1
+    
 
 class ProjectId(BaseModel):
     id: str

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from projects.schemas import ProjectSchema, ProjectId, ProjectPOST, ProjectOut
-from projects.utils import GetProject, check_project_name_conflict, get_user_projects_id
+from projects.schemas import ProjectSchema, ProjectId, ProjectPOST, ProjectOut, ProjectPUT
+from projects.utils import GetProject, check_project_name_conflict, get_user_projects_id, pt_and_tm_compatibility
 from users.schemas import User
 from dependencies import get_current_user, get_db
 from sqlalchemy.orm import Session
@@ -37,7 +37,7 @@ def create_project( project: ProjectPOST, user: User = Depends(get_current_user)
     tm_list = get_tm_mode_get(id=project.tm_id, version=project.current_tm_version,
                                 user=user, db=db)
     
-    # TODO: handle compatibility
+    pt_and_tm_compatibility(pt=pt_list[0].data, tm=tm_list[0].data)
     project_record = ProjectModel(name= project.name)
     project_record.owner = user
     project_record.traffic_matrix = tm_list[0]
@@ -50,7 +50,7 @@ def create_project( project: ProjectPOST, user: User = Depends(get_current_user)
     return project_record
 
 @project_router.put('/', status_code=200)
-def update_project( new_project: ProjectPOST,
+def update_project( new_project: ProjectPUT,
                     old_project: ProjectSchema = Depends(get_project_mode_get),
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
@@ -59,7 +59,7 @@ def update_project( new_project: ProjectPOST,
                             user=user, db=db)
     tm_list = get_tm_mode_get(id=new_project.tm_id, version=new_project.current_tm_version,
                                 user=user, db=db)
-    
+    pt_and_tm_compatibility(pt=pt_list[0].data, tm=tm_list[0].data)
     old_project.name = new_project.name
     old_project.physical_topology = pt_list[0]
     old_project.current_pt_version = new_project.current_pt_version

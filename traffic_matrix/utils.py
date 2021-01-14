@@ -27,7 +27,7 @@ class GetTM:
             raise HTTPException(status_code=404, detail="traffic matrix not found")
         elif user_id == tm_list[0].owner_id:
             return tm_list
-        elif self.mode == "DELETE":
+        elif self.mode in ("DELETE", "SHARE"):
             raise HTTPException(status_code=401, detail="not authorized")
     
         if db.query(TrafficMatrixUsersModel).filter_by(tm_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
@@ -35,12 +35,11 @@ class GetTM:
         else:
             return tm_list
 
-def check_tm_name_conflict(user_id: str, name: str):
-    db = next(get_db())
+def check_tm_name_conflict(user_id: str, name: str, db: Session):
     id_list = get_user_tms_id(user_id, db)
     if db.query(TrafficMatrixModel).filter_by(name=name, is_deleted=False)\
         .filter(TrafficMatrixModel.id.in_(id_list)).one_or_none() is not None:
-        raise HTTPException(status_code=409, detail="name of the traffic matrix has conflict with another record")
+        raise HTTPException(status_code=409, detail=f"name of the traffic matrix '{name}' has conflict with another record")
 
 def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
  -> List[str]:
@@ -59,8 +58,7 @@ def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
     
     return id_list
 
-def get_tm_last_version(id: str) -> TrafficMatrixDB:
-    db = next(get_db())
+def get_tm_last_version(id: str, db: Session) -> TrafficMatrixDB:
     tm = db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=False)\
             .distinct(TrafficMatrixModel.version)\
             .order_by(TrafficMatrixModel.version.desc()).first()

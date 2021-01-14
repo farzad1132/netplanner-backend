@@ -8,6 +8,7 @@ class methods(str, Enum):
     post = "POST"
     put = "PUT"
     delete = "DELETE"
+    share = "SHARE"
 
 class ROADMType(str, Enum):
     cdc = "CDC"
