@@ -7,20 +7,23 @@ from algorithms.template_worker import template_task
 from typing import List
 from rwa.utils import rwa_status_check
 from users.schemas import User
+from projects.utils import GetProject
 
 rwa_router = APIRouter(
     prefix="/algorithms/rwa",
     tags=["Algorithms", "RWA"]
 )
 
+get_project_mode_get = GetProject()
 @rwa_router.post("/start", status_code=201, response_model=RWAId)
 def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
-                user: User = Depends(get_current_user)):
+                user: User = Depends(get_current_user),
+                db: Session = Depends(get_db)):
     """
         starting rwa algorithm
     """
     task = template_task.delay()
-    # project_db = ProjectSchema.from_orm(get_project(user.id, project_id)).dict()
+    # project_db = ProjectSchema.from_orm(get_project_mode_get(id=project_id, user=user, db=db)).dict()
     # accessing physical topology: project_db["physical_topology"]["data"]
     # accessing traffic matrix: project_db["traffic matrix"]["data"]
     return {"rwa_id": task.id}
