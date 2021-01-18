@@ -3,7 +3,7 @@ import uvicorn
 from rwa.routes import rwa_router
 from grooming.routes import grooming_router
 from users.routes import user_router
-from dependencies import get_db
+from dependencies import get_db, PREFIX
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database import base, engine
@@ -22,15 +22,22 @@ app = FastAPI(  version="2.0.0",
 #                servers=[{"url":"/api/v2"}])
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-app.include_router(rwa_router)
-#                    prefix="/api/v2")
-app.include_router(grooming_router)
-app.include_router(user_router)
-app.include_router(pt_router)
-app.include_router(project_router)
-app.include_router(tm_router)
-app.include_router(cluster_router)
-app.include_router(sharing_router)
+app.include_router(rwa_router,
+                    prefix=PREFIX)
+app.include_router(grooming_router,
+                    prefix=PREFIX)
+app.include_router(user_router,
+                    prefix=PREFIX)
+app.include_router(pt_router,
+                    prefix=PREFIX)
+app.include_router(project_router,
+                    prefix=PREFIX)
+app.include_router(tm_router,
+                    prefix=PREFIX)
+app.include_router(cluster_router,
+                    prefix=PREFIX)
+app.include_router(sharing_router,
+                    prefix=PREFIX)
 
 app.add_middleware(CORSMiddleware,
                     allow_origins=['*'],
