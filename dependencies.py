@@ -13,7 +13,7 @@ from users.schemas import TokenData
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALGORITHM = os.environ.get('ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
-PREFIX = "/api/v2"
+PREFIX = "/api/v2.0.0"
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=PREFIX + '/users/login')

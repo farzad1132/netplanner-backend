@@ -68,6 +68,11 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
 def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
+    """
+        In this path we are converting excel file to JSON, if there is an error in the excel file\n
+        this path will return a JSON containing errors otherwise it will save it into database and will\n
+        return physical topology id
+    """
     check_pt_name_conflict(user.id, name, db=db)
     flag, pt = excel_to_pt(pt_binary.file.read())
     if flag is True:
@@ -77,6 +82,21 @@ def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
         db.add(pt_record)
         db.commit()
         return pt_record
+    else:
+        raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
+                            headers={"physical_topology": json.dumps(pt)})
+
+@pt_router.post('/check_excel', status_code=200)
+def check_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
+                user: User = Depends(get_current_user),
+                db: Session = Depends(get_db)):
+    """
+        In this path we are only validating excel file, if there exist an error it will return a JSON containing errors
+    """
+    check_pt_name_conflict(user.id, name, db=db)
+    flag, pt = excel_to_pt(pt_binary.file.read())
+    if flag is True:
+        return 200
     else:
         raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
                             headers={"physical_topology": json.dumps(pt)})

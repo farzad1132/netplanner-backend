@@ -69,6 +69,11 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
 def from_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
+    """
+        In this path we are converting excel file to JSON, if there is an error in the excel file\n
+        this path will return a JSON containing errors otherwise it will save it into database and will\n
+        return traffic matrix id
+    """
     check_tm_name_conflict(user.id, name, db=db)
     flag, tm = excel_to_tm(tm_binary.file.read())
     if flag is True:
@@ -78,6 +83,21 @@ def from_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
         db.add(tm_record)
         db.commit()
         return tm_record
+    else:
+        raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
+                            headers={"traffic_matrix": json.dumps(tm)})
+
+@tm_router.post('/check_excel', status_code=200)
+def check_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
+                user: User = Depends(get_current_user),
+                db: Session = Depends(get_db)):
+    """
+        In this path we are only validating excel file, if there exist an error it will return a JSON containing errors
+    """
+    check_tm_name_conflict(user.id, name, db=db)
+    flag, tm = excel_to_tm(tm_binary.file.read())
+    if flag is True:
+        return 200
     else:
         raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
                             headers={"traffic_matrix": json.dumps(tm)})
