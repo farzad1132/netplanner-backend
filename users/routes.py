@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Query
-from users.schemas import RegisterForm, Token, UserSearch, User
+from fastapi import APIRouter, Depends, HTTPException, Request, Query, Body
+from users.schemas import RegisterForm, Token, UserSearch, User, RefreshToken
 from fastapi.security import OAuth2PasswordRequestForm
 from dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, auth_user,
- get_password_hash, get_db, decode_token, get_current_user)
+ get_password_hash, get_db, decode_token, get_current_user, create_refresh_token, decode_refresh_token)
 from datetime import timedelta
 from starlette.responses import RedirectResponse
 from users.utils import send_mail
@@ -36,7 +36,25 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token_expire = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES*4)
+    refresh_token = create_refresh_token(
+        data={"sub": user.username}, expires_delta=refresh_token_expire
+    )
+    return {"access_token": access_token,
+            "refresh_token": refresh_token,
+            "expire": ACCESS_TOKEN_EXPIRE_MINUTES*60,
+            "token_type": "bearer"}
+
+@user_router.post("/refresh_token", response_model=Token)
+def refresh_token(  refresh_token: RefreshToken,
+                    db: Session = Depends(get_db)):
+    username = decode_refresh_token(refresh_token, db=db)
+    access_token = create_access_token(data={"sub": username})
+    refresh_token = create_refresh_token(data={"sub": username})
+    return {"access_token": access_token,
+            "refresh_token": refresh_token,
+            "expire": ACCESS_TOKEN_EXPIRE_MINUTES*60,
+            "token_type": "bearer"}
 
 @user_router.get('/validate_email/{token}', status_code=200)
 def validate_email(token: str, db: Session = Depends(get_db)):
