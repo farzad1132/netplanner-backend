@@ -33,7 +33,7 @@ PHYSICALTOPOLOGY = {
 TRAFFICMATRIX = {
     "demands":{"1":
                     {
-                        "id": 1,
+                        "id": "1",
                         "source": "Tehran",
                         "destination": "Qom",
                         "type": None,
