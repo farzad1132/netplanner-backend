@@ -47,4 +47,4 @@ app.add_middleware(CORSMiddleware,
                     )
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=5020, reload=True)
+    uvicorn.run("main:app", port=5020, reload=True, host='0.0.0.0')
