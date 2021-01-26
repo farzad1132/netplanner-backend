@@ -36,8 +36,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES*4)
+    to_encode.update({  "exp": expire,
+                        "refresh": True})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -66,7 +77,24 @@ def decode_token(token: str) -> str:
             return None
         return username
     except:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+        raise HTTPException(status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
+
+def decode_refresh_token(token: str, db: Session):
+    validation_exception = HTTPException(status_code=401,
+                                detail='could not validate refresh token',
+                                headers={"WWW-Authenticate": "Bearer"})
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get('refresh') is not True:
+            raise validation_exception
+        if (username:= payload.get('sub')) is None:
+            raise validation_exception
+        if db.query(UserModel).filter_by(username=username, is_deleted=False)\
+            .one_or_none() is None:
+            raise validation_exception
+        return username
+    except:
+        raise validation_exception
 
 def get_user(username: str, db: Session):
     if (user:=db.query(UserModel).filter_by(username=username, is_deleted=False).one_or_none()):
