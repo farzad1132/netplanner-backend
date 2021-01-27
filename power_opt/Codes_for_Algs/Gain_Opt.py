@@ -6,7 +6,6 @@ Created on Tue Dec  8 19:33:30 2020
 """
 from numpy import exp,array,prod
 from scipy.optimize import minimize
-
 '''
 Code Spec:
 
@@ -111,102 +110,139 @@ def Constraints(NodeDict,LinkDict,LightPathDict,ParameterDict):
     ConstraintsOutput['sat']={}
     ConstraintsOutput['sen']={}
 
-#    cons_count=0
-#    par_term_count=0
+#    print(LinkIDSet_from_LPs)
 
     for iLinkID in LinkIDSet_from_LPs:
 
         iLink=LinkDict[iLinkID]
 
+        ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'pre-amp']={}
+        ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'pre-amp']={}
+
+        ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'boost']={}
+        ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'boost']={}
+
+        ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'pre-amp']['terms_and_factors']=[]
+        ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'pre-amp']['terms_and_factors']=[]
+
+        ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'boost']['terms_and_factors']=[]
+        ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'boost']['terms_and_factors']=[]
+
+        ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'pre-amp']['const']=\
+        ParameterDict['LINK_SPAN_POWER_SENSITIVITY'][iLinkID[0],iLinkID[1],'pre-amp']
+        ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'pre-amp']['const']=\
+        ParameterDict['LINK_SPAN_POWER_SATURATION'][iLinkID[0],iLinkID[1],'pre-amp']
+
+        ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'boost']['const']=\
+        ParameterDict['LINK_SPAN_POWER_SENSITIVITY'][iLinkID[0],iLinkID[1],'boost']
+        ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'boost']['const']=\
+        ParameterDict['LINK_SPAN_POWER_SATURATION'][iLinkID[0],iLinkID[1],'boost']
+
+#        print('dfkdfjkdf')
+
         for iSpanID in range(len(iLink)):
 
-            term_count=0
             ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]={}
             ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]={}
 
-            ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]['terms']={}
-            ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]['terms']={}
-#            ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]=[]
-#            ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]=[]
-            ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID][
-                    'const']=ParameterDict['LINK_SPAN_POWER_SENSITIVITY'][iLinkID[0],iLinkID[1],iSpanID]
+            ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]['terms_and_factors']=[]
+            ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]['terms_and_factors']=[]
 
-            ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID][
-                    'const']=ParameterDict['LINK_SPAN_POWER_SATURATION'][iLinkID[0],iLinkID[1],iSpanID]
+            ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]['constant']=\
+            ParameterDict['LINK_SPAN_POWER_SENSITIVITY'][iLinkID[0],iLinkID[1],iSpanID]
+
+            ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]['constant']=\
+            ParameterDict['LINK_SPAN_POWER_SATURATION'][iLinkID[0],iLinkID[1],iSpanID]
 
             for LPID in LightPathDict:
 
-                iLP=LightPathDict[LPID]
-
-                LPNodeList=iLP['NodeList']
-
-                if iLinkID not in list(zip(LPNodeList,LPNodeList[1:])):
-                    continue
-
-                LPNodes_to_Link=list(filter(lambda ind: LPNodeList.index(ind)<=LPNodeList.index(iLinkID[1]),LPNodeList))
-
-                LPTripleNodes_at_Link=list(zip(LPNodes_to_Link,LPNodes_to_Link[1:],LPNodes_to_Link[2:]))
-
-
-
-
+                ''' Recursing over all the lightpaths in the spans of the link '''
 
                 temp_vars=[]
 
                 temp_pars=[]
 
+                iLP=LightPathDict[LPID]
+
+                iLPNodeList=iLP['NodeList']
+
+                if iLinkID not in list(zip(iLPNodeList,iLPNodeList[1:])):
+                    continue
+
+#                print('asasasasas')
+
+                iLP_add_port_index=iLP['add_port_index']
+
+                iLP_add_transponder_index=iLP['add_transponder_index']
+
+                LPNodes_to_Link=list(filter(lambda ind: iLPNodeList.index(ind)<=iLPNodeList.index(iLinkID[1]),iLPNodeList))
+
+                LPTripleNodes_at_Link=list(zip(LPNodes_to_Link,LPNodes_to_Link[1:],LPNodes_to_Link[2:]))
+
+#                if iLinkID==(1,2):
+#                    print(LPTripleNodes_at_Link)
+
+
+
+
+
+
+
                 temp_vars.append(Translate_VariableDict_2_x['power_tx'][
-                        iLP['NodeList'][0],
-                        iLP['add_port_index'],
-                        iLP['add_transponder_index']
+                        iLPNodeList[0],
+                        iLP_add_port_index,
+                        iLP_add_transponder_index
                         ])
 
                 temp_vars.append(
                         Translate_VariableDict_2_x['node_voag_tx_1'][
-                        iLP['NodeList'][0],
-                        iLP['add_port_index'],
-                        iLP['add_transponder_index']
+                        iLPNodeList[0],
+                        iLP_add_port_index,
+                        iLP_add_transponder_index
                         ])
 
                 temp_vars.append(
                         Translate_VariableDict_2_x['node_voag_tx_2'][
-                        iLP['NodeList'][0],
-                        iLP['add_port_index'],
-                        iLP['add_transponder_index']
+                        iLPNodeList[0],
+                        iLP_add_port_index,
+                        iLP_add_transponder_index
                         ])
 
                 temp_vars.append(
                         Translate_VariableDict_2_x['node_voag_wss_a2l'][
-                        iLP['add_port_index'],
-                        iLP['NodeList'][0],
-                        iLP['NodeList'][1]
+                        iLP_add_port_index,
+                        iLPNodeList[0],
+                        iLPNodeList[1]
                         ])
 
                 temp_vars.append(
                         Translate_VariableDict_2_x['node_ampg_out'][
-                        iLP['NodeList'][0],
-                        iLP['NodeList'][1]
+                        iLPNodeList[0],
+                        iLPNodeList[1]
                         ])
 
                 temp_vars.append(
                         Translate_VariableDict_2_x['node_voag_out'][
-                        iLP['NodeList'][0],
-                        iLP['NodeList'][1]
+                        iLPNodeList[0],
+                        iLPNodeList[1]
                         ])
 
                 ################################################
 
                 temp_pars.append(
                         Translate_ParameterDict_2_y['NODE_SPLITTER_LOSS_A'][
-                        iLP['NodeList'][0],
-                        iLP['add_port_index']
+                        iLPNodeList[0],
+                        iLP_add_port_index
                         ])
 
-                temp_pars.append(Translate_ParameterDict_2_y['NODE_INSLOSS_WSS_A2L'][
-                                iLP['add_port_index'],
-                                iLP['NodeList'][0],
-                                iLP['NodeList'][1]
+                temp_pars.append(
+                        Translate_ParameterDict_2_y['NODE_INSLOSS_WSS_A2L'][
+                        iLP_add_port_index,
+                        iLPNodeList[0],
+                        iLPNodeList[1]
                         ])
+
+#                print(temp_vars)
 
                 for iNodeID1,iNodeID2,iNodeID3 in LPTripleNodes_at_Link:
 
@@ -275,6 +311,8 @@ def Constraints(NodeDict,LinkDict,LightPathDict,ParameterDict):
 
 
 
+#                print(iSpanID)
+#                print(temp_vars)
 
                 for iSpanID_temp in range(iSpanID):
 
@@ -290,13 +328,44 @@ def Constraints(NodeDict,LinkDict,LightPathDict,ParameterDict):
                             iSpanID_temp
                             ])
 
-                    #################################################
-
                     temp_pars.append(Translate_ParameterDict_2_y['LINK_SPAN_ATTENUATION'][
                             iLinkID[0],
                             iLinkID[1],
                             iSpanID_temp
                             ])
+
+
+#                print(temp_vars)
+
+                if iSpanID==0:
+
+                    ''' booster '''
+
+                    temp_PAR_PROD=prod([ParameterDict[key1][key2] for temp_par_index in temp_pars for key1,key2 in [Translate_y_2_ParameterDict[temp_par_index]]])
+
+                    temp_vars_boost=temp_vars.copy()
+
+                    temp_vars_boost.remove(
+                            Translate_VariableDict_2_x['node_voag_out'][
+                                    iLinkID[0],
+                                    iLinkID[1],
+                                    ])
+
+                    ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'boost']['terms_and_factors'].append((
+                        temp_vars_boost.copy(),
+                        temp_PAR_PROD
+                        ))
+
+                    temp_vars_boost.remove(
+                            Translate_VariableDict_2_x['node_ampg_out'][
+                                    iLinkID[0],
+                                    iLinkID[1],
+                                    ])
+
+                    ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'boost']['terms_and_factors'].append((
+                        temp_vars_boost.copy(),
+                        temp_PAR_PROD
+                        ))
 
                 temp_pars.append(Translate_ParameterDict_2_y['LINK_SPAN_ATTENUATION'][
                         iLinkID[0],
@@ -304,37 +373,14 @@ def Constraints(NodeDict,LinkDict,LightPathDict,ParameterDict):
                         iSpanID
                         ])
 
-    #            temp_pars_for_sat_cons=temp_pars
-
-    #            temp_pars_for_sat_cons.append()
-
-#                print(temp_pars)
-#                print(ParameterDict)
-
-#                for temp_par_index in temp_pars:
-#                    print('=================')
-#                    print(Translate_y_2_ParameterDict[temp_par_index])
-#                    for key1,key2 in Translate_y_2_ParameterDict[temp_par_index]:
-#                        print(ParameterDict[key1][key2])
-#                print('***************')
-#                print([ParameterDict[key1][key2] for temp_par_index in temp_pars for key1,key2 in [Translate_y_2_ParameterDict[temp_par_index]]])
-
-
                 temp_PAR_PROD=prod([ParameterDict[key1][key2] for temp_par_index in temp_pars for key1,key2 in [Translate_y_2_ParameterDict[temp_par_index]]])
 
-#                print(temp_PAR_PROD)
+#                print(temp_vars)
 
-                ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]['terms'][
-                        'term'+str(term_count)]=(
-                        temp_vars,
+                ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]['terms_and_factors'].append((
+                        temp_vars.copy(),
                         temp_PAR_PROD
-                        )
-
-#                ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],iSpanID]['terms'][
-#                        'term'+str(term_count)]=(
-#                        temp_vars,
-#                        temp_pars,
-#                        )
+                        ))
 
                 temp_vars.append(Translate_VariableDict_2_x['link_span_ampg'][
                         iLinkID[0],
@@ -342,72 +388,73 @@ def Constraints(NodeDict,LinkDict,LightPathDict,ParameterDict):
                         iSpanID
                         ])
 
-#                temp_PAR_PROD=prod([ParameterDict[key1][key2] for temp_par_index in temp_pars for key1,key2 in [Translate_y_2_ParameterDict[temp_par_index]]])
-
-#                print(temp_PAR_PROD)
-
-                ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]['terms'][
-                        'term'+str(term_count)]=(
-                        temp_vars,
+                ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]['terms_and_factors'].append((
+                        temp_vars.copy(),
                         temp_PAR_PROD
-                        )
+                        ))
 
-#                ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],iSpanID]['terms'][
-#                        'term'+str(term_count)]=(
-#                        temp_vars,
-#                        temp_pars,
-#                        )
+#                print(temp_vars)
 
-                term_count+=1
+                ''' pre-amplifier '''
+
+                temp_vars.append(Translate_VariableDict_2_x['link_span_voag'][
+                        iLinkID[0],
+                        iLinkID[1],
+                        iSpanID
+                        ])
+
+                ConstraintsOutput['sen'][iLinkID[0],iLinkID[1],'pre-amp']['terms_and_factors'].append((
+                        temp_vars.copy(),
+                        temp_PAR_PROD
+                        ))
+
+                temp_vars.append(Translate_VariableDict_2_x['node_ampg_in'][
+                        iLinkID[0],
+                        iLinkID[1],
+                        ])
+
+                ConstraintsOutput['sat'][iLinkID[0],iLinkID[1],'pre-amp']['terms_and_factors'].append((
+                        temp_vars.copy(),
+                        temp_PAR_PROD
+                        ))
 
     return ConstraintsOutput,VariableDict,Translate_x_2_VariableDict
 #%%
-def FuncConstraints(ConstraintsObj):
+def FuncConstraints(ConstraintsOutput):
 
     FuncConstraintsOutput={}
 
-    for cons_type in ConstraintsObj:
+    for cons_type in ConstraintsOutput:
 
         '''cons_type is either 'sen' or 'sat'  '''
 
         FuncConstraintsOutput[cons_type]={}
 
-        for key in ConstraintsObj[cons_type]:
+        for key in ConstraintsOutput[cons_type]:
 
             '''keys are link+span IDs'''
 
             if cons_type=='sen':
-                FuncConstraintsOutput[cons_type][key]=lambda x: -ConstraintsObj[cons_type][key]['const']+sum([
-                        term[1]*prod(array(x)[term[0]]) for term in ConstraintsObj[cons_type][key]['terms'].values()
+                FuncConstraintsOutput[cons_type][key]=lambda x: -ConstraintsOutput[cons_type][key]['constant']+sum([
+                        term[1]*prod(array(x)[term[0]]) for term in ConstraintsOutput[cons_type][key]['terms_and_factors']
                         ])
             elif cons_type=='sat':
-                FuncConstraintsOutput[cons_type][key]=lambda x: ConstraintsObj[cons_type][key]['const']-sum([
-                        term[1]*prod(array(x)[term[0]]) for term in ConstraintsObj[cons_type][key]['terms'].values()
+                FuncConstraintsOutput[cons_type][key]=lambda x: ConstraintsOutput[cons_type][key]['constant']-sum([
+                        term[1]*prod(array(x)[term[0]]) for term in ConstraintsOutput[cons_type][key]['terms_and_factors']
                         ])
             else:
                 raise Exception('Unexpected error!')
-
-#            print('\n\n\n')
-#
-#            for term in ConstraintsObj[cons_type][key]['terms'].values():
-#                print('==========')
-##                FuncConstraintsOutput[cons_type][key]=\
-##                lambda x: FuncConstraintsOutput[cons_type][key](x)+npsum(array(x)[term[0]])*term[1]
-#
-#                print(cons_type,key,term)
-#
-#                print(ConstraintsObj[cons_type][key]['terms'])
 
     return FuncConstraintsOutput
 #%%
 def SolveOptimizationProblem(FuncConstraintsOutput,MaxMinBoundsDict,NumVar):
     '''For now, the obj function is constantly zero'''
-    x0=[0]*NumVar
+    x0=[1]*NumVar
     obj_func=lambda x: 0
     constraints_list=[]
 
     _bounds_=tuple([
-            (1,100)
+            (0,10)
             ]*NumVar)
 
     for key1 in FuncConstraintsOutput:
@@ -507,6 +554,7 @@ if __name__=='__main__':
             }
 
     LinkDict={
+#            (1,2): [(0.2,100)],
             (1,2): [(0.2,100),(0.2,100),(0.2,100)],
             (2,3): [(0.22,100),(0.22,100)],
             (4,2): [(0.25,100),(0.25,100),(0.25,100),(0.25,100)],
@@ -514,6 +562,14 @@ if __name__=='__main__':
             }
 
     LightPathDict={
+#            1: {
+#                    'Wavelength': 50e9,
+#                    'NodeList': [1,2],
+#                    'add_port_index': 0,
+#                    'add_transponder_index': 1,
+#                    'drop_port_index': 0,
+#                    'drop_transponder_index': 0,
+#                    },
             1: {
                     'Wavelength': 50e9,
                     'NodeList': [1,2,3],
@@ -522,7 +578,6 @@ if __name__=='__main__':
                     'drop_port_index': 0,
                     'drop_transponder_index': 0,
                     },
-
             2: {
                     'Wavelength': 100e9,
                     'NodeList': [4,2,3],
@@ -531,7 +586,6 @@ if __name__=='__main__':
                     'drop_port_index': 1,
                     'drop_transponder_index': 0,
                     },
-
             3: {
                     'Wavelength': 150e9,
                     'NodeList': [2,3],
@@ -548,10 +602,7 @@ if __name__=='__main__':
                     'drop_port_index': 2,
                     'drop_transponder_index': 0,
                     },
-
             }
-
-
 
     LinkIDSet_from_LPs=set()
 
@@ -582,6 +633,12 @@ if __name__=='__main__':
         iLink=LinkDict[iLinkID]
 
         ParameterDict['LINK_NET_ATTENUATION'][iLinkID]=1
+
+        ParameterDict['LINK_SPAN_POWER_SENSITIVITY'][iLinkID[0],iLinkID[1],'pre-amp']=1e-3
+        ParameterDict['LINK_SPAN_POWER_SATURATION'][iLinkID[0],iLinkID[1],'pre-amp']=1e-2
+
+        ParameterDict['LINK_SPAN_POWER_SENSITIVITY'][iLinkID[0],iLinkID[1],'boost']=1e-3
+        ParameterDict['LINK_SPAN_POWER_SATURATION'][iLinkID[0],iLinkID[1],'boost']=1e-2
 
         for iSpanID in range(len(iLink)):
 
@@ -629,8 +686,18 @@ if __name__=='__main__':
 
     #%%
     u=GainOpt(NodeDict,LinkDict,LightPathDict,ParameterDict,[])
+
 #    for i in x['sen']:
+#        if i[0]==1 and i[1]==2:
+##            print(i)
+#            print('\n\n')
 #
+#            for term in x['sen'][i]['terms_and_factors']:
+#
+#                print('{}\n{}'.format(i,term))
+#    for i in x['sen']:
+#    for i in x['sen'][1,2,0]['terms_and_factors'][0][0]:
+#        print(tran[i])
 #        print('')
 #        print(i)
 #        print(len(x['sen'][i]))
