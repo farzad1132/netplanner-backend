@@ -154,39 +154,76 @@ def FuncSingleConstraintCreator_RHS(
 
         if n_s=='booster':
             x_indices=[var2x['og',(i,j)],var2x['ov',(i,j)]]
-            factor=ParameterDict['P_SEN']['boost'][i,j]
+            factor=ParameterDict['P_SEN'][i,j,'booster']
 
         elif n_s=='pre-amp':
             x_indices=[var2x['B',(i,j,LinkDict[i,j]['numspan'])]]
-            factor=ParameterDict['P_SEN']['pre-amp'][i,j]
+            factor=ParameterDict['P_SEN'][i,j,'pre-amp']
 
         else:
             if n_s==1:
                 x_indices=[]
             else:
                 x_indices=[var2x['B',(i,j,n_s-1)]]
-            factor=ParameterDict['P_SEN']['inline'][i,j,n_s]/\
+            factor=ParameterDict['P_SEN'][i,j,n_s]/\
             ParameterDict['span-attenuation'][i,j,n_s]
 
     elif constraint_type=='sat':
 
         if n_s=='booster':
             x_indices=[var2x['ov',(i,j)]]
-            factor=ParameterDict['P_SAT']['boost'][i,j]
+            factor=ParameterDict['P_SAT'][i,j,'booster']
 
         elif n_s=='pre-amp':
             x_indices=[var2x['B',(i,j,LinkDict[i,j]['numspan'])]]
-            factor=ParameterDict['P_SAT']['pre-amp'][i,j]
+            factor=ParameterDict['P_SAT'][i,j,'pre-amp']
 
         else:
             if n_s==1:
                 x_indices=[]
             else:
                 x_indices=[var2x['B',(i,j,n_s-1)]]
-            factor=ParameterDict['P_SAT']['inline'][i,j,n_s]/\
+            factor=ParameterDict['P_SAT'][i,j,n_s]/\
             ParameterDict['span-attenuation'][i,j,n_s]
 
     return lambda x: prod(array(x)[x_indices])*factor
+#%%
+def BoundConstraint(LinkDict,var2x,ParameterDict):
+
+    BoundConstraintDict={}
+    BoundConstraintDict['maxgain_voa']={}
+    BoundConstraintDict['mingain_voa']={}
+
+    for i,j in LinkDict:
+        for n_s in range(1,1+LinkDict[i,j]['numspan']):
+
+            if n_s==1:
+
+                BoundConstraintDict['maxgain_voa'][i,j,n_s]=\
+                lambda x: ParameterDict['maxgain_voa'][i,j,n_s]*\
+                ParameterDict['span-attenuation'][i,j,n_s]*\
+                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])-1
+
+                BoundConstraintDict['mingain_voa'][i,j,n_s]=\
+                lambda x: -ParameterDict['mingain_voa'][i,j,n_s]*\
+                ParameterDict['span-attenuation'][i,j,n_s]*\
+                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])+1
+
+            else:
+
+                BoundConstraintDict['maxgain_voa'][i,j,n_s]=\
+                lambda x: ParameterDict['maxgain_voa'][i,j,n_s]*\
+                ParameterDict['span-attenuation'][i,j,n_s]*\
+                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])-\
+                array(x)[var2x['B',(i,j,n_s-1)]]
+
+                BoundConstraintDict['mingain_voa'][i,j,n_s]=\
+                lambda x: -ParameterDict['mingain_voa'][i,j,n_s]*\
+                ParameterDict['span-attenuation'][i,j,n_s]*\
+                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])+\
+                array(x)[var2x['B',(i,j,n_s-1)]]
+
+    return BoundConstraintDict
 #%%
 def SumConstraint(SingleConstraint_LHS,SingleConstraint_RHS,constraint_type):
     if constraint_type=='sen':
@@ -215,23 +252,45 @@ def Extract_Params(
     ParameterDict['P_SEN']={}
     ParameterDict['P_SAT']={}
 
-    ParameterDict['P_SEN']['boost']={}
-    ParameterDict['P_SEN']['pre-amp']={}
-    ParameterDict['P_SEN']['inline']={}
+    ParameterDict['maxgain_voa']={}
+    ParameterDict['mingain_voa']={}
+    ParameterDict['maxgain_amp']={}
+    ParameterDict['mingain_amp']={}
 
-    ParameterDict['P_SAT']['boost']={}
-    ParameterDict['P_SAT']['pre-amp']={}
-    ParameterDict['P_SAT']['inline']={}
+#    ParameterDict['P_SEN']['booster']={}
+#    ParameterDict['P_SEN']['pre-amp']={}
+#    ParameterDict['P_SEN']['span']={}
+
+#    ParameterDict['P_SAT']['booster']={}
+#    ParameterDict['P_SAT']['pre-amp']={}
+#    ParameterDict['P_SAT']['span']={}
 
     for i,j in set_of_all_links:
-        ParameterDict['P_SEN']['boost'][i,j]=10**(NodeDict[i]['booster'][i,j]['P_SEN']/10-3)
-        ParameterDict['P_SAT']['boost'][i,j]=10**(NodeDict[i]['booster'][i,j]['P_SAT']/10-3)
-        ParameterDict['P_SEN']['pre-amp'][i,j]=10**(NodeDict[j]['pre-amp'][i,j]['P_SEN']/10-3)
-        ParameterDict['P_SAT']['pre-amp'][i,j]=10**(NodeDict[j]['pre-amp'][i,j]['P_SAT']/10-3)
+
+        ParameterDict['P_SEN'][i,j,'booster']=10**(NodeDict[i]['booster'][i,j]['P_SEN_dBm']/10-3)
+        ParameterDict['P_SAT'][i,j,'booster']=10**(NodeDict[i]['booster'][i,j]['P_SAT_dBm']/10-3)
+        ParameterDict['P_SEN'][i,j,'pre-amp']=10**(NodeDict[j]['pre-amp'][i,j]['P_SEN_dBm']/10-3)
+        ParameterDict['P_SAT'][i,j,'pre-amp']=10**(NodeDict[j]['pre-amp'][i,j]['P_SAT_dBm']/10-3)
+
+        ParameterDict['maxgain_amp'][i,j,'booster']=10**(NodeDict[i]['booster'][i,j]['maxgain_dB']/10)
+        ParameterDict['mingain_amp'][i,j,'booster']=10**(NodeDict[i]['booster'][i,j]['mingain_dB']/10)
+        ParameterDict['mingain_voa'][i,j,'booster']=10**(-NodeDict[i]['booster'][i,j]['maxatt_dB']/10)
+        ParameterDict['maxgain_voa'][i,j,'booster']=10**(-NodeDict[i]['booster'][i,j]['minatt_dB']/10)
+
+        ParameterDict['maxgain_amp'][i,j,'pre-amp']=10**(NodeDict[j]['pre-amp'][i,j]['maxgain_dB']/10)
+        ParameterDict['mingain_amp'][i,j,'pre-amp']=10**(NodeDict[j]['pre-amp'][i,j]['mingain_dB']/10)
+        ParameterDict['mingain_voa'][i,j,'pre-amp']=10**(-NodeDict[j]['pre-amp'][i,j]['maxatt_dB']/10)
+        ParameterDict['maxgain_voa'][i,j,'pre-amp']=10**(-NodeDict[j]['pre-amp'][i,j]['minatt_dB']/10)
 
         for n_s in range(1,1+LinkDict[i,j]['numspan']):
-            ParameterDict['P_SEN']['inline'][i,j,n_s]=10**(LinkDict[i,j][n_s]['AmpPSEN']/10-3)
-            ParameterDict['P_SAT']['inline'][i,j,n_s]=10**(LinkDict[i,j][n_s]['AmpPSAT']/10-3)
+
+            ParameterDict['P_SEN'][i,j,n_s]=10**(LinkDict[i,j][n_s]['AmpPSEN_dBm']/10-3)
+            ParameterDict['P_SAT'][i,j,n_s]=10**(LinkDict[i,j][n_s]['AmpPSAT_dBm']/10-3)
+
+            ParameterDict['maxgain_amp'][i,j,n_s]=10**(LinkDict[i,j][n_s]['maxgain_dB']/10)
+            ParameterDict['mingain_amp'][i,j,n_s]=10**(LinkDict[i,j][n_s]['mingain_dB']/10)
+            ParameterDict['mingain_voa'][i,j,n_s]=10**(-LinkDict[i,j][n_s]['maxatt_dB']/10)
+            ParameterDict['maxgain_voa'][i,j,n_s]=10**(-LinkDict[i,j][n_s]['minatt_dB']/10)
 
     VariableDict={}
     VariableDict['P_net']={}
@@ -448,6 +507,8 @@ def FullConstraintCreator(
                                         constraint_part='span',
                                         ))
 
+    BoundConstraintDict=BoundConstraint(LinkDict,var2x,ParameterDict)
+
     FullConstraint={}
 #    FullConstraint_={}
 #    FullConstraint['sen']={}
@@ -456,17 +517,17 @@ def FullConstraintCreator(
     constraint_index=0
 
     for constraint_type in Constraint_RHS:
-        for i,j,n_s in Constraint_RHS['sat']:
-#            FullConstraint[constraint_type][i,j,n_s]=SumConstraint(
-#                    Constraint_LHS[constraint_type][i,j,n_s],
-#                    Constraint_RHS[constraint_type][i,j,n_s],
-#                    constraint_type,
-#                    )
+        for i,j,n_s in Constraint_RHS[constraint_type]:
             FullConstraint[constraint_index]=SumConstraint(
                     Constraint_LHS[constraint_type][i,j,n_s],
                     Constraint_RHS[constraint_type][i,j,n_s],
                     constraint_type,
                     )
+            constraint_index+=1
+
+    for constraint_type in BoundConstraintDict:
+        for i,j,n_s in BoundConstraintDict[constraint_type]:
+            FullConstraint[constraint_index]=BoundConstraintDict[constraint_type][i,j,n_s]
             constraint_index+=1
 
     return FullConstraint
@@ -494,8 +555,6 @@ def SolveOptimizationProblem(FullConstraint,NumVar):
     for constraint in FullConstraint.values():
         constraints_list=ConstraintAppender(constraints_list,constraint)
 
-    constraints_list.append({'type': 'ineq','fun': lambda x: x[1]*x[6]-100})
-
     opt_result = minimize(
             obj_func,
             x0,
@@ -511,6 +570,7 @@ if __name__=='__main__':
     # Insertion Loss
     # VOA indexing (nodeID,input_degreeID,output_degreeID)
     # All scales must be linear!
+    # NF is linear
     '''
     LinkDict={
             linkID: [(span1alpha(dB/km),span1len(km)),(span2alpha(dB/km),span2len(km))]
