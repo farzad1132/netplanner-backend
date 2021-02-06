@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
-from clusters.schemas import ClusterSchema, ClusterIn, ClusterOut
+from clusters.schemas import ClusterSchema, ClusterIn, ClusterOut, ClusterDict
 from typing import List
 from projects.utils import GetProject
 from users.schemas import User
 from dependencies import get_current_user, get_db
 from sqlalchemy.orm import Session
-from clusters.utils import check_cluster_name_conflict, check_pt_cluster_compatibility
+from clusters.utils import check_cluster_name_conflict, check_pt_cluster_compatibility, cluster_list_to_cluster_dict
 from models import ClusterModel
 
 cluster_router = APIRouter(
@@ -31,7 +31,7 @@ def create_cluster(clusters: List[ClusterIn], project_id: str = Body(...),
     
     db.commit()
 
-@cluster_router.get('/v2.0.0/clustering/manual/read_all', status_code=200, response_model=List[ClusterOut])
+@cluster_router.get('/v2.0.0/clustering/manual/read_all', status_code=200, response_model=List[ClusterOut], deprecated=True)
 def read_all_clusters(  project_id: str,
                         user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
@@ -42,6 +42,22 @@ def read_all_clusters(  project_id: str,
                                 is_deleted=False).all()):
         raise HTTPException(status_code=404, detail="cluster not found")
     return clusters
+
+@cluster_router.get('/v2.1.0/clustering/manual/read_all', status_code=200, response_model=ClusterDict)
+def read_all_clusters(  project_id: str,
+                        user: User = Depends(get_current_user),
+                        db: Session = Depends(get_db)):
+    """
+        ***Whats New:***\n
+        1. respone changed to JSON (it was a array), but each item (clusters) didn't changed at all.
+    """
+    project = get_project_mode_get(id=project_id, user=user, db=db)
+    if not (clusters:=db.query(ClusterModel).filter_by(project_id=project_id,
+                                pt_version=project.current_pt_version, 
+                                pt_id=project.physical_topology.id,
+                                is_deleted=False).all()):
+        raise HTTPException(status_code=404, detail="cluster not found")
+    return cluster_list_to_cluster_dict(clusters)
 
 @cluster_router.get('/v2.0.0/clustering/manual', status_code=200, response_model=ClusterIn)
 def read_cluster(   cluster_id: str,
