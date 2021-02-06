@@ -2,6 +2,7 @@ version: '3.8'
 services:
   service:
     image: service:v2
+    restart: on-failure
     container_name: service
     environment: 
       - DB_HOST=db
@@ -13,6 +14,8 @@ services:
       - db
     ports: 
       - 5020:5020
+    volumes: 
+      - .:/app/
     command: ['python3', 'main.py']
   
   db:
