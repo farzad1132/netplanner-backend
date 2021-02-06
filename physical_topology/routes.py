@@ -13,15 +13,14 @@ from uuid import uuid4
 import json
 
 pt_router = APIRouter(
-    prefix="/physical_topologies",
     tags=["Physical Topology"]
 )
 get_pt_mode_get = GetPT()
-@pt_router.get('/', status_code=200, response_model=List[PhysicalTopologyDB])
+@pt_router.get('/v2.0.0/physical_topologies', status_code=200, response_model=List[PhysicalTopologyDB])
 def get_physical_topology(pt_list: PhysicalTopologyDB = Depends(get_pt_mode_get)):
     return pt_list
 
-@pt_router.post('/', status_code=201, response_model=PTId)
+@pt_router.post('/v2.0.0/physical_topologies', status_code=201, response_model=PTId)
 def create_physical_toplogy(pt: PhysicalTopologyPOST, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
     check_pt_name_conflict(user.id, pt.name, db=db)
@@ -32,7 +31,7 @@ def create_physical_toplogy(pt: PhysicalTopologyPOST, user: User = Depends(get_c
     db.commit()
     return pt_record
 
-@pt_router.put('/', status_code=200)
+@pt_router.put('/v2.0.0/physical_topologies', status_code=200)
 def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
     last_version = get_pt_last_version(pt.id, db=db)
@@ -44,7 +43,7 @@ def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_c
     return 200
 
 get_pt_mode_delete = GetPT(mode="DELETE")
-@pt_router.delete('/', status_code=200)
+@pt_router.delete('/v2.0.0/physical_topologies', status_code=200)
 def delete_physical_topology(user: User = Depends(get_current_user),
                             db: Session = Depends(get_db), 
                             pt_list: PhysicalTopologyDB = Depends(get_pt_mode_delete)):
@@ -53,7 +52,7 @@ def delete_physical_topology(user: User = Depends(get_current_user),
     db.commit()
     return 200
 
-@pt_router.get('/read_all', status_code=200, response_model=List[PhysicalTopologyOut])
+@pt_router.get('/v2.0.0/physical_topologies/read_all', status_code=200, response_model=List[PhysicalTopologyOut])
 def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if not (pt_list:=db.query(PhysicalTopologyModel)\
                     .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user.id, db)))\
@@ -64,7 +63,7 @@ def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="no physical topology found")
     return pt_list
 
-@pt_router.post('/from_excel', status_code=200, response_model=PTId)
+@pt_router.post('/v2.0.0/physical_topologies/from_excel', status_code=200, response_model=PTId)
 def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
@@ -86,7 +85,7 @@ def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
         raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
                             headers={"physical_topology": json.dumps(pt)})
 
-@pt_router.post('/check_excel', status_code=200)
+@pt_router.post('/v2.0.0/physical_topologies/check_excel', status_code=200)
 def check_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):

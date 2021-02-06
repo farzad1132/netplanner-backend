@@ -7,11 +7,10 @@ from users.schemas import User
 
 
 grooming_router = APIRouter(
-    prefix="/algorithms/grooming",
     tags=["Algorithms", "Grooming"]
 )
 
-@grooming_router.post("/start/automatic", status_code=201, response_model=GroomingId)
+@grooming_router.post("/v2.0.0/algorithms/grooming/start/automatic", status_code=201, response_model=GroomingId)
 def start_automatic(project_id: str, grooming_form: GroomingForm,
                     user: User = Depends(get_current_user)):
     """
@@ -19,7 +18,7 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     """
     return None
 
-@grooming_router.post("/check", status_code=200, response_model=GroomingCheck)
+@grooming_router.post("/v2.0.0/algorithms/grooming/check", status_code=200, response_model=GroomingCheck)
 def check_automatic(grooming_id_list: List[GroomingId],
                     user: User = Depends(get_current_user)):
     """
@@ -27,7 +26,7 @@ def check_automatic(grooming_id_list: List[GroomingId],
     """
     return None
 
-@grooming_router.get("/result", status_code=200, response_model=GroomingResult)
+@grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200, response_model=GroomingResult)
 def result_automatic(grooming_id: GroomingId, db: Session = Depends(get_db),
                         user: User = Depends(get_current_user)):
     """
@@ -35,7 +34,7 @@ def result_automatic(grooming_id: GroomingId, db: Session = Depends(get_db),
     """
     return None
 
-@grooming_router.get("/all", response_model=List[GroomingId], status_code=200)
+@grooming_router.get("/v2.0.0/algorithms/grooming/all", response_model=List[GroomingId], status_code=200)
 def get_all(user: User = Depends(get_current_user)):
     """
         getting all available grooming id's for user

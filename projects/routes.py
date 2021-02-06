@@ -10,12 +10,11 @@ from models import ProjectModel
 from typing import List
 
 project_router = APIRouter(
-    prefix="/projects",
     tags=["Project"]
 )
 
 get_project_mode_get = GetProject(mode="GET")
-@project_router.get('/', status_code=200)
+@project_router.get('/v2.0.0/projects', status_code=200)
 def read_project(project: ProjectSchema = Depends(get_project_mode_get),
                     user: User = Depends(get_current_user)):
     return {"pt_id": project.physical_topology.id,
@@ -26,7 +25,7 @@ def read_project(project: ProjectSchema = Depends(get_project_mode_get),
 
 get_pt_mode_get = GetPT()
 get_tm_mode_get = GetTM()
-@project_router.post('/', status_code=201, response_model=ProjectId)
+@project_router.post('/v2.0.0/projects', status_code=201, response_model=ProjectId)
 def create_project( project: ProjectPOST, user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
     if user.role == "designer":
@@ -49,7 +48,7 @@ def create_project( project: ProjectPOST, user: User = Depends(get_current_user)
     db.commit()
     return project_record
 
-@project_router.put('/', status_code=200)
+@project_router.put('/v2.0.0/projects', status_code=200)
 def update_project( new_project: ProjectPUT,
                     old_project: ProjectSchema = Depends(get_project_mode_get),
                     user: User = Depends(get_current_user),
@@ -70,13 +69,13 @@ def update_project( new_project: ProjectPUT,
     return 200
 
 get_project_mode_delete = GetProject(mode="DELETE")
-@project_router.delete('/', status_code=200)
+@project_router.delete('/v2.0.0/projects', status_code=200)
 def delete_project(project: ProjectSchema = Depends(get_project_mode_delete),
                     db: Session = Depends(get_db)):
     project.is_deleted = True
     db.commit()
 
-@project_router.get('/read_all', status_code=200, response_model=List[ProjectOut])
+@project_router.get('/v2.0.0/projects/read_all', status_code=200, response_model=List[ProjectOut])
 def read_all(   user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     if not (project_list:=db.query(ProjectModel)\

@@ -9,12 +9,11 @@ from clusters.utils import check_cluster_name_conflict, check_pt_cluster_compati
 from models import ClusterModel
 
 cluster_router = APIRouter(
-    prefix="/clustering",
     tags=["Clustering"]
 )
 
 get_project_mode_get = GetProject()
-@cluster_router.post('/manual', status_code=201)
+@cluster_router.post('/v2.0.0/clustering/manual', status_code=201)
 def create_cluster(clusters: List[ClusterIn], project_id: str = Body(...),
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
@@ -32,7 +31,7 @@ def create_cluster(clusters: List[ClusterIn], project_id: str = Body(...),
     
     db.commit()
 
-@cluster_router.get('/manual/read_all', status_code=200, response_model=List[ClusterOut])
+@cluster_router.get('/v2.0.0/clustering/manual/read_all', status_code=200, response_model=List[ClusterOut])
 def read_all_clusters(  project_id: str,
                         user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
@@ -44,7 +43,7 @@ def read_all_clusters(  project_id: str,
         raise HTTPException(status_code=404, detail="cluster not found")
     return clusters
 
-@cluster_router.get('/manual', status_code=200, response_model=ClusterIn)
+@cluster_router.get('/v2.0.0/clustering/manual', status_code=200, response_model=ClusterIn)
 def read_cluster(   cluster_id: str,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
@@ -55,7 +54,7 @@ def read_cluster(   cluster_id: str,
     _ = get_project_mode_get(id=cluster.project_id, user=user, db=db)
     return cluster
 
-@cluster_router.delete('/')
+@cluster_router.delete('/v2.0.0/clustering')
 def delete_cluster( cluster_id: str,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):

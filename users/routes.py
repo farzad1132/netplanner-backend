@@ -12,11 +12,10 @@ from models import UserModel
 from typing import List
 
 user_router = APIRouter(
-    prefix="/users",
     tags=['Users']
 )
 
-@user_router.post('/register', status_code=200)
+@user_router.post('/v2.0.0/users/register', status_code=200)
 def register_user(register_form: RegisterForm, request: Request, db: Session = Depends(get_db)):
     record = UserRegisterModel( username=register_form.username,
                                 password=get_password_hash(register_form.password),
@@ -28,7 +27,7 @@ def register_user(register_form: RegisterForm, request: Request, db: Session = D
     send_mail(token, register_form.email, request)
     return None
 
-@user_router.post("/login", response_model=Token)
+@user_router.post("/v2.0.0/users/login", response_model=Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
                             db: Session = Depends(get_db)):
     user = auth_user(form_data.username, form_data.password, db=db)
@@ -45,7 +44,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
             "expire": ACCESS_TOKEN_EXPIRE_MINUTES*60,
             "token_type": "bearer"}
 
-@user_router.post("/refresh_token", response_model=Token)
+@user_router.post("/v2.0.0/users/refresh_token", response_model=Token)
 def refresh_token(  refresh_token: RefreshToken,
                     db: Session = Depends(get_db)):
     username = decode_refresh_token(refresh_token, db=db)
@@ -56,7 +55,7 @@ def refresh_token(  refresh_token: RefreshToken,
             "expire": ACCESS_TOKEN_EXPIRE_MINUTES*60,
             "token_type": "bearer"}
 
-@user_router.get('/validate_email/{token}', status_code=200)
+@user_router.get('/v2.0.0/users/validate_email/{token}', status_code=200)
 def validate_email(token: str, db: Session = Depends(get_db)):
     if (username:=decode_token(token)) is not None:
         if (record:=db.query(UserRegisterModel).filter_by(username=username, is_deleted=False)\
@@ -70,7 +69,7 @@ def validate_email(token: str, db: Session = Depends(get_db)):
             db.commit()
             return RedirectResponse(url='http://192.168.7.22')
 
-@user_router.get('/search_for_users', status_code=200, response_model=List[UserSearch])
+@user_router.get('/v2.0.0/users/search_for_users', status_code=200, response_model=List[UserSearch])
 def search_user(search_string: str = Query(..., min_length=3),
                 db: Session = Depends(get_db),
                 _: User = Depends(get_current_user)):
