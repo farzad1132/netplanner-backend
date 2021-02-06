@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from enum import Enum
-from typing import List
+from typing import List, Dict
 
 class ClusterType(str, Enum):
     ge100 = "100GE"
@@ -24,3 +24,9 @@ class ClusterIn(BaseModel):
 
 class ClusterOut(ClusterIn):
     id: str
+
+class ClusterDict(BaseModel):
+    """
+        keys are cluster_id
+    """
+    clusters: Dict[str, ClusterOut]
