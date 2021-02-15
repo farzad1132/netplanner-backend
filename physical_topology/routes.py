@@ -82,8 +82,8 @@ def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
         db.commit()
         return pt_record
     else:
-        raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
-                            headers={"physical_topology": json.dumps(pt)})
+        raise HTTPException(status_code=400, detail={"detail": "there is(are) error(s) in this file",
+                                                     "physical_topology": pt})
 
 @pt_router.post('/v2.0.0/physical_topologies/check_excel', status_code=200)
 def check_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
@@ -97,5 +97,5 @@ def check_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
     if flag is True:
         return 200
     else:
-        raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
-                            headers={"physical_topology": json.dumps(pt)})
+        raise HTTPException(status_code=400, detail={"detail": "there is(are) error(s) in this file",
+                                                     "physical_topology": pt})

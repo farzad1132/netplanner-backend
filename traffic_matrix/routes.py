@@ -83,8 +83,7 @@ def from_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
         db.commit()
         return tm_record
     else:
-        raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
-                            headers={"traffic_matrix": json.dumps(tm)})
+        raise HTTPException(status_code=400, detail={"detail":"there is(are) error(s) in this file","traffic_matrix": tm})
 
 @tm_router.post('/v2.0.0/traffic_matrices/check_excel', status_code=200)
 def check_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
@@ -98,5 +97,4 @@ def check_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
     if flag is True:
         return 200
     else:
-        raise HTTPException(status_code=400, detail="there is(are) error(s) in this file",
-                            headers={"traffic_matrix": json.dumps(tm)})
+        raise HTTPException(status_code=400, detail={"detail":"there is(are) error(s) in this file","traffic_matrix": tm})
