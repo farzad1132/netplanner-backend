@@ -4,6 +4,7 @@ import uuid
 from sqlalchemy.orm import relationship
 from database import base
 from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime
+from grooming.models import GroomingModel, GroomingRegisterModel
 
 class PhysicalTopologyModel(base):
     __tablename__ = "PhysicalTopology"
@@ -65,6 +66,8 @@ class UserModel(base):
     shared_tms = relationship( "TrafficMatrixUsersModel", back_populates= "user")
     shared_projects = relationship( "ProjectUsersModel", back_populates= "user")
     role = Column("role", String, nullable= False)
+    grooming_registers = relationship("GroomingRegisterModel", back_populates="manager")
+    grooming_algorithms = relationship("GroomingModel", back_populates="manager")
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
     
     def __repr__(self):
