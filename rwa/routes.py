@@ -3,9 +3,7 @@ from .schemas import RWAForm, RWAResult, RWAIdList, RWAId, RWACheck
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
 from projects.schemas import ProjectSchema
-from algorithms.template_worker import template_task
 from typing import List
-from rwa.utils import rwa_status_check
 from users.schemas import User
 from projects.utils import GetProject
 
@@ -21,11 +19,11 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
     """
         starting rwa algorithm
     """
-    task = template_task.delay()
+    #task = template_task.delay()
     # project_db = ProjectSchema.from_orm(get_project_mode_get(id=project_id, user=user, db=db)).dict()
     # accessing physical topology: project_db["physical_topology"]["data"]
     # accessing traffic matrix: project_db["traffic matrix"]["data"]
-    return {"rwa_id": task.id}
+    #return {"rwa_id": task.id}
 
 @rwa_router.post("/v2.0.0/algorithms/rwa/check", status_code=200, response_model=List[RWACheck])
 def rwa_check(rwa_id_list: RWAIdList, user: User = Depends(get_current_user)):
