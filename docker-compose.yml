@@ -1,5 +1,23 @@
 version: '3.8'
 services:
+  service:
+    image: service:v2
+    restart: on-failure
+    container_name: service
+    environment: 
+      - DB_HOST=db
+      - BROKER_HOST=rabbitmq
+    links: 
+      - db
+      - rabbitmq
+    depends_on: 
+      - db
+    ports: 
+      - 5020:5020
+    volumes: 
+      - .:/app/
+    command: ['python3', 'main.py']
+  
   db:
     image: postgres
     restart: on-failure
@@ -9,10 +27,22 @@ services:
     ports:
       - 5432:5432
   
-  service:
-    build: .
-    volumes: 
-      - .:/app
-    container_name: service
-    ports: 
-      - 5020:5000
+  rabbitmq:
+    image: rabbitmq
+    environment: 
+      - RABBITMQ_DEFAULT_USER=sina
+      - RABBITMQ_DEFAULT_PASS=sina
+    ports:
+      - 5672:5672
+      - 15672:15672
+  
+  workers:
+    image: service:v2
+    environment: 
+      - BROKER_HOST=rabbitmq
+    links: 
+      - rabbitmq
+    depends_on: 
+      - rabbitmq
+      - db
+    command: ['celery', '-A', 'celery_app', 'worker', '-l', 'DEBUG']
