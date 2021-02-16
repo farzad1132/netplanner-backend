@@ -43,8 +43,16 @@ class GroomingInformation(BaseModel):
     class Config:
         orm_mode = True
 
-class FailedGroomingInfo(GroomingInformation):
+class FailedGroomingInfo(BaseModel):
+    id: str
+    pt_id: str
+    tm_id: str
+    pt_version: int
+    tm_version: int
+    start_date: datetime
     exception: str
+    with_clustering: bool
+    comment: str
 
     class Config:
         orm_mode = True
