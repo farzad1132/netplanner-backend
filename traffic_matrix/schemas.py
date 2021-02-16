@@ -32,20 +32,23 @@ class Service(BaseModel):
             raise ValueError('service_id_list size must be equal to quantity')
         return v
 
-class Demand(BaseModel):
+class BaseDemand(BaseModel):
     id: str
     source: str
     destination: str
     type: Optional[str] = None
     protection_type: ProtectionType = ProtectionType.node_dis
     restoration_type: RestorationType = RestorationType.none
+    
+
+class NormalDemand(BaseDemand):
     services: List[Service]
 
 class TrafficMatrixSchema(BaseModel):
     """
-    dict keys in this model is demands id
+        dict keys in this model is demands id
     """
-    demands: Dict[str, Demand]
+    demands: Dict[str, NormalDemand]
 
 class TrafficMatrixDB(BaseModel):
     data: TrafficMatrixSchema
