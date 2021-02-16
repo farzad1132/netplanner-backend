@@ -20,6 +20,9 @@ grooming_router = APIRouter(
 )
 
 get_project_mode_get = GetProject()
+
+# SHARE access is only for managers so we can use it for checking authorization in running algorithm mode
+get_project_mode_share = GetProject(mode="SHARE")
 @grooming_router.post("/v2.0.0/algorithms/grooming/start/automatic", status_code=201, response_model=GroomingId)
 def start_automatic(project_id: str, grooming_form: GroomingForm,
                     user: User = Depends(get_current_user),
@@ -29,7 +32,7 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     """
 
     # fetching project and traffic matrix
-    project_db = ProjectSchema.from_orm(get_project_mode_get(id=project_id, user=user, db=db)).dict()
+    project_db = ProjectSchema.from_orm(get_project_mode_share(id=project_id, user=user, db=db)).dict()
     traffic_matrix = project_db["traffic_matrix"]
 
     # fetching clusters
