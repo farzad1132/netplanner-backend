@@ -20,7 +20,8 @@ def read_project(project: ProjectSchema = Depends(get_project_mode_get),
     return {"pt_id": project.physical_topology.id,
             "tm_id": project.traffic_matrix.id,
             "current_pt_version": project.current_pt_version,
-            "current_tm_version": project.current_tm_version}
+            "current_tm_version": project.current_tm_version,
+            "name": project.name}
 
 
 get_pt_mode_get = GetPT()
@@ -54,9 +55,9 @@ def update_project( new_project: ProjectPUT,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
     check_project_name_conflict(user.id, new_project.name, db)
-    pt_list = get_pt_mode_get(id= new_project.pt_id, version= new_project.current_pt_version,
+    pt_list = get_pt_mode_get(id= old_project.physical_topology.id, version= new_project.current_pt_version,
                             user=user, db=db)
-    tm_list = get_tm_mode_get(id=new_project.tm_id, version=new_project.current_tm_version,
+    tm_list = get_tm_mode_get(id=old_project.traffic_matrix.id, version=new_project.current_tm_version,
                                 user=user, db=db)
     pt_and_tm_compatibility(pt=pt_list[0].data, tm=tm_list[0].data)
     old_project.name = new_project.name
