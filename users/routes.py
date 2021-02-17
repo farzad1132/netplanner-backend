@@ -47,7 +47,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
 @user_router.post("/v2.0.0/users/refresh_token", response_model=Token)
 def refresh_token(  refresh_token: RefreshToken,
                     db: Session = Depends(get_db)):
-    username = decode_refresh_token(refresh_token, db=db)
+    username = decode_refresh_token(refresh_token.refresh_token, db=db)
     access_token = create_access_token(data={"sub": username})
     refresh_token = create_refresh_token(data={"sub": username})
     return {"access_token": access_token,
@@ -58,7 +58,7 @@ def refresh_token(  refresh_token: RefreshToken,
 @user_router.get('/v2.0.0/users/validate_email/{token}', status_code=200)
 def validate_email(token: str, db: Session = Depends(get_db)):
     if (username:=decode_token(token)) is not None:
-        if (record:=db.query(UserRegisterModel).filter_by(username=username, is_deleted=False)\
+        if (record:=db.query(UserRegisterModel).filter_by(username=username)\
             .one_or_none()) is not None:
             user = UserModel(   username=username,
                                 password=record.password,

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, validator
 from typing import Optional, List
 from models import UserModel
+from database import session
 
 class Token(BaseModel):
     access_token: str
@@ -22,8 +23,11 @@ class RegisterForm(BaseModel):
 
     @validator('username')
     def validate_username(cls, v):
-        if UserModel.query.filter_by(username=v).one_or_none() is not None:
+        db = session()
+        if db.query(UserModel).filter_by(username=v).one_or_none() is not None:
+            db.close()
             raise ValueError('another user exist with this username')
+        db.close()
         return v
 
     @validator('confirm_password')
@@ -34,8 +38,11 @@ class RegisterForm(BaseModel):
     
     @validator('email')
     def validate_email(cls, v):
-        if UserModel.query.filter_by(email=v).one_or_none() is not None:
+        db = session()
+        if db.query(UserModel).filter_by(email=v).one_or_none() is not None:
+            db.close()
             raise ValueError('another user exist with this email address')
+        db.close()
         if  not '@' in v:
             raise ValueError('wrong email format')
         # TODO: uncomment block below
