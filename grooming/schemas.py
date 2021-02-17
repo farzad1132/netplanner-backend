@@ -4,6 +4,7 @@ from enum import Enum
 from rwa.schemas import RoutingType, ProtectionType, RestorationType
 from traffic_matrix.schemas import BaseDemand, TrafficMatrixSchema
 from datetime import datetime
+from clusters.schemas import ClusterDict
 
 class MP1HThreshold(int, Enum):
     t0 = 0
@@ -216,6 +217,7 @@ class GroomingDBOut(GroomingInformation):
     service_devices: NodeStructure
     clustered_tms: ClusteredTMs
     service_mapping: ServiceMapping
+    clusters: ClusterDict
 
     class Config:
         orm_mode = True

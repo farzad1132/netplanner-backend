@@ -26,6 +26,7 @@ class GroomingHandle(Task):
                                             manager_id=register.manager_id,
                                             comment=register.comment,
                                             with_clustering=register.with_clustering,
+                                            clusters=register.clusters,
                                             is_finished=True,
                                             start_date=register.start_date,
                                             traffic=retval["grooming_result"]["traffic"],

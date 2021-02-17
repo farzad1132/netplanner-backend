@@ -43,10 +43,10 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     
     # converting cluster_list to cluster_dict
     cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters)
-
+    clusters = ClusterDict.parse_obj(cluster_dict).dict()
     # starting algorithm
     task = grooming_task.delay(traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(), mp1h_threshold=0,
-                                    clusters=ClusterDict.parse_obj(cluster_dict).dict())
+                                    clusters=clusters)
     if not clusters:
         with_clustering = False
     else:
@@ -60,7 +60,8 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
                                                 tm_version=project_db["traffic_matrix"]["version"],
                                                 manager_id=user.id,
                                                 comment=grooming_form.comment,
-                                                with_clustering=with_clustering)
+                                                with_clustering=with_clustering,
+                                                clusters=clusters)
     db.add(grooming_register)
     db.commit()
     return {"grooming_id": task.id}

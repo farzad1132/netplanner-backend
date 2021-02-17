@@ -33,6 +33,7 @@ class GroomingRegisterModel(base):
     start_date = Column(DateTime, default=datetime.utcnow)
     comment = Column("comment", String, nullable=False)
     with_clustering = Column("with_clustering", Boolean, nullable=False)
+    clusters = Column("clusters", JSON, nullable=null_condition)
     is_failed = Column("is_failed", Boolean, nullable=False, default=False)
     exception = Column("exception", String, nullable=exception_null_condition)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
@@ -55,6 +56,7 @@ class GroomingModel(base):
     end_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     comment = Column("comment", String, nullable=False)
     with_clustering = Column("with_clustering", Boolean, nullable=False)
+    clusters = Column("clusters", JSON, nullable=null_condition)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
 
