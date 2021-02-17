@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
-from clusters.schemas import ClusterSchema, ClusterIn, ClusterOut, ClusterDict
+from clusters.schemas import ClusterSchema, ClusterIn, ClusterOut, ClusterDict, ClusterId
 from typing import List
 from projects.utils import GetProject
 from users.schemas import User
@@ -13,11 +13,12 @@ cluster_router = APIRouter(
 )
 
 get_project_mode_get = GetProject()
-@cluster_router.post('/v2.0.0/clustering/manual', status_code=201)
+@cluster_router.post('/v2.0.0/clustering/manual', status_code=201, response_model=List[ClusterId])
 def create_cluster(clusters: List[ClusterIn], project_id: str = Body(...),
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
     project = get_project_mode_get(id=project_id, user=user, db=db)
+    cluster_list = []
     for cluster in clusters:
         check_pt_cluster_compatibility(pt=project.physical_topology.data, cluster=cluster.data)
         check_cluster_name_conflict(user_id=user.id, name=cluster.name, pt_id=project.physical_topology.id,
@@ -28,8 +29,10 @@ def create_cluster(clusters: List[ClusterIn], project_id: str = Body(...),
         cluster_record.pt_version = project.current_pt_version
         cluster_record.project_id = project_id
         db.add(cluster_record)
+        cluster_list.append(cluster_record)
     
     db.commit()
+    return cluster_list
 
 @cluster_router.get('/v2.0.0/clustering/manual/read_all', status_code=200, response_model=List[ClusterOut], deprecated=True)
 def read_all_clusters(  project_id: str,
@@ -44,7 +47,7 @@ def read_all_clusters(  project_id: str,
     return clusters
 
 @cluster_router.get('/v2.1.0/clustering/manual/read_all', status_code=200, response_model=ClusterDict)
-def read_all_clusters(  project_id: str,
+def read_all_clusters_v2_1_0(  project_id: str,
                         user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
     """
