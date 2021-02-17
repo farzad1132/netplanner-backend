@@ -30,3 +30,9 @@ class ClusterDict(BaseModel):
         keys are cluster_id
     """
     clusters: Dict[str, ClusterOut]
+
+class ClusterId(BaseModel):
+    id: str
+
+    class Config:
+        orm_mode = True
