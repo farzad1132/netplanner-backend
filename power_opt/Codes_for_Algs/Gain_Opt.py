@@ -317,7 +317,8 @@ def BoundsListCreator(ParameterDict,var2x):
     '''
     for i in range(len(var2x)):
         if i not in BoundsDict:
-            BoundsDict[i]=(0,100)
+#            BoundsDict[i]=(0,100)
+            BoundsDict[i]=(1e-4,1e-2)
 
     ''''''
     BoundsList=[]
@@ -328,6 +329,69 @@ def BoundsListCreator(ParameterDict,var2x):
                 )
 
     return BoundsList
+#%%
+def InitialPointsListCreator(LinkDict,ParameterDict,var2x,set_of_all_triple_links):
+
+    InitialPointsDict={}
+
+    for i,j,n_s in ParameterDict['initial-point-amp']:
+
+        if n_s=='booster':
+
+            InitialPointsDict[var2x['ig',(i,j)]]=ParameterDict['initial-point-amp'][i,j,n_s]
+            InitialPointsDict[var2x['iv',(i,j)]]=ParameterDict['initial-point-voa'][i,j,n_s]
+
+        elif n_s=='pre-amp':
+
+            InitialPointsDict[var2x['og',(i,j)]]=ParameterDict['initial-point-amp'][i,j,n_s]
+            InitialPointsDict[var2x['ov',(i,j)]]=ParameterDict['initial-point-voa'][i,j,n_s]
+
+        else:
+
+            InitialPointsDict[var2x['lsg',(i,j,n_s)]]=ParameterDict['initial-point-amp'][i,j,n_s]
+
+        if n_s==1:
+
+            InitialPointsDict[var2x['B',(i,j,n_s)]]=1/\
+            ParameterDict['span-attenuation'][i,j,n_s]/\
+            ParameterDict['initial-point-amp'][i,j,n_s]/\
+            ParameterDict['initial-point-voa'][i,j,n_s]
+
+        elif not n_s=='booster' and not n_s=='pre-amp':
+
+            InitialPointsDict[var2x['B',(i,j,n_s)]]=\
+            InitialPointsDict[var2x['B',(i,j,n_s-1)]]/\
+            ParameterDict['span-attenuation'][i,j,n_s]/\
+            ParameterDict['initial-point-amp'][i,j,n_s]/\
+            ParameterDict['initial-point-voa'][i,j,n_s]
+
+    for i,j,k in set_of_all_triple_links:
+        InitialPointsDict[var2x['T',(i,j,k)]]=1/\
+        InitialPointsDict[var2x['B',(i,j,LinkDict[i,j]['numspan'])]]*\
+        InitialPointsDict[var2x['ig',(i,j)]]*\
+        InitialPointsDict[var2x['iv',(i,j)]]*\
+        InitialPointsDict[var2x['og',(j,k)]]*\
+        InitialPointsDict[var2x['ov',(j,k)]]*\
+        ParameterDict['initial-point-voa-WSS'][i,j,k]*\
+        ParameterDict['splitter-gain'][i,j]*\
+        ParameterDict['WSS-gain'][i,j,k]
+
+    ''' Temporary; for any index NOT in BoundsDict, set the bounds to
+    (0,100) by default. To be replaced with more accurate ones.
+    '''
+    for i in range(len(var2x)):
+        if i not in InitialPointsDict:
+            InitialPointsDict[i]=1e-3
+
+    ''''''
+    InitialPointsList=[]
+
+    for i in range(len(var2x)):
+        InitialPointsList.append(
+                InitialPointsDict[i]
+                )
+
+    return InitialPointsList
 #%%
 def SumConstraint(SingleConstraint_LHS,SingleConstraint_RHS,constraint_type):
     if constraint_type=='sen':
@@ -367,6 +431,12 @@ def Extract_Params(
     ParameterDict['mingain_voa_WSS']={}
     ParameterDict['maxgain_voa_WSS']={}
 
+    ParameterDict['initial-point-amp']={}
+    ParameterDict['initial-point-voa']={}
+    ParameterDict['initial-point-voa-WSS']={}
+
+    ParameterDict['initial-point-power']={}
+
     for i in NodeDict:
 
         if not NodeDict[i]['splitter']==None:
@@ -396,6 +466,22 @@ def Extract_Params(
         ParameterDict['mingain_voa'][i,j,'pre-amp']=10**(-NodeDict[j]['pre-amp'][i,j]['maxatt_dB']/10)
         ParameterDict['maxgain_voa'][i,j,'pre-amp']=10**(-NodeDict[j]['pre-amp'][i,j]['minatt_dB']/10)
 
+        ParameterDict['initial-point-amp'][i,j,'booster']=(\
+        ParameterDict['maxgain_amp'][i,j,'booster']*\
+        ParameterDict['mingain_amp'][i,j,'booster'])**0.5
+
+        ParameterDict['initial-point-voa'][i,j,'booster']=(\
+        ParameterDict['maxgain_voa'][i,j,'booster']*\
+        ParameterDict['mingain_voa'][i,j,'booster'])**0.5
+
+        ParameterDict['initial-point-amp'][i,j,'pre-amp']=(\
+        ParameterDict['maxgain_amp'][i,j,'pre-amp']*\
+        ParameterDict['mingain_amp'][i,j,'pre-amp'])**0.5
+
+        ParameterDict['initial-point-voa'][i,j,'pre-amp']=(\
+        ParameterDict['maxgain_voa'][i,j,'pre-amp']*\
+        ParameterDict['mingain_voa'][i,j,'pre-amp'])**0.5
+
         for n_s in range(1,1+LinkDict[i,j]['numspan']):
 
             ParameterDict['P_SEN'][i,j,n_s]=10**(LinkDict[i,j][n_s]['AmpPSEN_dBm']/10-3)
@@ -406,13 +492,26 @@ def Extract_Params(
             ParameterDict['mingain_voa'][i,j,n_s]=10**(-LinkDict[i,j][n_s]['maxatt_dB']/10)
             ParameterDict['maxgain_voa'][i,j,n_s]=10**(-LinkDict[i,j][n_s]['minatt_dB']/10)
 
+            ParameterDict['initial-point-amp'][i,j,n_s]=(\
+            ParameterDict['maxgain_amp'][i,j,n_s]*\
+            ParameterDict['mingain_amp'][i,j,n_s])**0.5
+
+            ParameterDict['initial-point-voa'][i,j,n_s]=(\
+            ParameterDict['maxgain_voa'][i,j,n_s]*\
+            ParameterDict['mingain_voa'][i,j,n_s])**0.5
+
     for i,j1 in set_of_all_links:
         for j2,k in set_of_all_links:
             if j1==j2 and not i==k:
+
                 ParameterDict['maxgain_voa_WSS'][i,j1,k]=\
                 10**(-NodeDict[j1]['WSS'][i,j1,k]['VOA']['minatt_dB']/10)
                 ParameterDict['mingain_voa_WSS'][i,j1,k]=\
                 10**(-NodeDict[j1]['WSS'][i,j1,k]['VOA']['maxatt_dB']/10)
+
+                ParameterDict['initial-point-voa-WSS'][i,j1,k]=(\
+                ParameterDict['maxgain_voa_WSS'][i,j1,k]*\
+                ParameterDict['mingain_voa_WSS'][i,j1,k])**0.5
 
     VariableDict={}
     VariableDict['P_net']={}
@@ -655,11 +754,11 @@ def ConstraintAppender(ConstraintList,SingleConstraint):
             })
     return ConstraintList
 #%%
-def SolveOptimizationProblem(FullConstraint,BoundsList):
+def SolveOptimizationProblem(FullConstraint,BoundsList,InitialPointsList):
     '''For now, the obj function is constantly zero'''
     print('Optimization Started!')
-    NumVar=len(BoundsList)
-    x0=[10]*NumVar
+#    NumVar=len(BoundsList)
+#    x0=[10]*NumVar
     obj_func=lambda x: 0
     constraints_list=[]
 
@@ -679,7 +778,8 @@ def SolveOptimizationProblem(FullConstraint,BoundsList):
 
     opt_result = minimize(
             obj_func,
-            x0,
+#            x0,
+            InitialPointsList,
             method='COBYLA',
 #            bounds=tuple(bounds),
             bounds=tuple(BoundsList),
@@ -859,7 +959,13 @@ def GainOptSolver(NodeDict,LinkDict,LightPathDict):
 
     BoundsList=BoundsListCreator(ParameterDict,var2x)
 
-    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList)
+#    InitialPointsList=InitialPointsListCreator(ParameterDict,var2x)
+
+    InitialPointsList=InitialPointsListCreator(LinkDict,ParameterDict,var2x,set_of_all_triple_links)
+
+    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList,InitialPointsList)
+
+#    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList)
 
     OptimalPoint=OptProblemOutput.x
 
