@@ -27,7 +27,7 @@ class GetProject:
         elif db.query(ProjectUsersModel).filter_by(project_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=401, detail="Not Authorized")
         else:
-            project
+            return project
 
 def get_user_projects_id(user_id: str, db: Session, all: Optional[bool] = True)\
     -> List[str]:
