@@ -9,11 +9,11 @@ from projects.utils import GetProject, check_project_name_conflict
 from models import UserModel, PhysicalTopologyUsersModel, TrafficMatrixUsersModel, ProjectUsersModel
 
 sharing_router = APIRouter(
-    tags=['Sharing']
+    tags=['Sharing', 'Users']
 )
 
 get_pt_mode_share = GetPT(mode="SHARE")
-@sharing_router.post('/v2.0.0/sharing/physical_topology/add', status_code=200, tags=['Physical Topology', 'Users'])
+@sharing_router.post('/v2.0.0/sharing/physical_topology/add', status_code=200, tags=['Physical Topology'])
 def share_physical_topology_add(pt_id: str = Body(...), user_id_list: List[str] = Body(...),
                             user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
@@ -30,7 +30,7 @@ def share_physical_topology_add(pt_id: str = Body(...), user_id_list: List[str] 
     db.commit()
     return 200
 
-@sharing_router.post('/v2.0.0/sharing/physical_topology/remove', status_code=200, tags=['Physical Topology', 'Users'])
+@sharing_router.post('/v2.0.0/sharing/physical_topology/remove', status_code=200, tags=['Physical Topology'])
 def share_physical_topology_remove(pt_id: str = Body(...), user_id_list: List[str] = Body(...),
                             user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
@@ -47,7 +47,7 @@ def share_physical_topology_remove(pt_id: str = Body(...), user_id_list: List[st
     return 200
 
 get_tm_mode_share = GetTM(mode="SHARE")
-@sharing_router.post('/v2.0.0/sharing/traffic_matrix/add', status_code=200, tags=['Traffic Matrix', 'Users'])
+@sharing_router.post('/v2.0.0/sharing/traffic_matrix/add', status_code=200, tags=['Traffic Matrix'])
 def share_traffic_matrix_add(tm_id: str = Body(...), user_id_list: List[str] = Body(...),
                         user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
@@ -64,7 +64,7 @@ def share_traffic_matrix_add(tm_id: str = Body(...), user_id_list: List[str] = B
     db.commit()
     return 200
 
-@sharing_router.post('/v2.0.0/sharing/traffic_matrix/remove', status_code=200, tags=['Traffic Matrix', 'Users'])
+@sharing_router.post('/v2.0.0/sharing/traffic_matrix/remove', status_code=200, tags=['Traffic Matrix'])
 def share_traffic_matrix_remove(tm_id: str = Body(...), user_id_list: List[str] = Body(...),
                         user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
@@ -81,7 +81,7 @@ def share_traffic_matrix_remove(tm_id: str = Body(...), user_id_list: List[str] 
     return 200
 
 get_project_mode_share = GetProject(mode="SHARE")
-@sharing_router.post('/v2.0.0/sharing/project/add', status_code=200, tags=['Project', 'Users'])
+@sharing_router.post('/v2.0.0/sharing/project/add', status_code=200, tags=['Project'])
 def share_project_add(project_id: str = Body(...), user_id_list: List[str] = Body(...),
                             user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
@@ -97,7 +97,7 @@ def share_project_add(project_id: str = Body(...), user_id_list: List[str] = Bod
     db.commit()
     return 200
 
-@sharing_router.post('/v2.0.0/sharing/project/remove', status_code=200, tags=['Project', 'Users'])
+@sharing_router.post('/v2.0.0/sharing/project/remove', status_code=200, tags=['Project'])
 def share_project_remove(project_id: str = Body(...), user_id_list: List[str] = Body(...),
                             user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
