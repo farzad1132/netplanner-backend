@@ -22,9 +22,11 @@ def share_physical_topology_add(pt_id: str = Body(...), user_id_list: List[str] 
     for id in user_id_list:
         if db.query(UserModel).filter_by(id=id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=404, detail=f"user with id={id} not found from id_list")
-        #check_pt_name_conflict(user_id=id, name=pt[0].name, db=db)
-        share_record = PhysicalTopologyUsersModel(pt_id=pt_id, user_id=id)
-        db.add(share_record)
+        if db.query(PhysicalTopologyUsersModel)\
+            .filter_by(pt_id=pt_id, user_id=id, is_deleted=False) is None:
+            #check_pt_name_conflict(user_id=id, name=pt[0].name, db=db)
+            share_record = PhysicalTopologyUsersModel(pt_id=pt_id, user_id=id)
+            db.add(share_record)
     db.commit()
     return 200
 
@@ -54,9 +56,11 @@ def share_traffic_matrix_add(tm_id: str = Body(...), user_id_list: List[str] = B
     for id in user_id_list:
         if db.query(UserModel).filter_by(id=id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=404, detail=f"user with id={id} not found from id_list")
-        #check_tm_name_conflict(user_id=id, name=tm.name, db=db)
-        share_record = TrafficMatrixUsersModel(tm_id=tm_id, user_id=id)
-        db.add(share_record)
+        if db.query(TrafficMatrixUsersModel)\
+            .filter_by(tm_id=tm_id, user_id=id, is_deleted=False) is None:
+            #check_tm_name_conflict(user_id=id, name=tm.name, db=db)
+            share_record = TrafficMatrixUsersModel(tm_id=tm_id, user_id=id)
+            db.add(share_record)
     db.commit()
     return 200
 
@@ -78,21 +82,23 @@ def share_traffic_matrix_remove(tm_id: str = Body(...), user_id_list: List[str] 
 
 get_project_mode_share = GetProject(mode="SHARE")
 @sharing_router.post('/v2.0.0/sharing/project/add', status_code=200, tags=['Project', 'Users'])
-def add_designer_to_project_add(project_id: str = Body(...), user_id_list: List[str] = Body(...),
+def share_project_add(project_id: str = Body(...), user_id_list: List[str] = Body(...),
                             user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
     _ = get_project_mode_share(id=project_id, user=user, db=db)
     for id in user_id_list:
         if db.query(UserModel).filter_by(id=id, is_deleted=False).one_or_none() is None:
             raise HTTPException(status_code=404, detail=f"user with id={id} not found from id_list")
-        #check_project_name_conflict(user_id=id, name=project.name, db=db)
-        share_record = ProjectUsersModel(user_id=id, project_id=project_id)
-        db.add(share_record)
+        if db.query(PhysicalTopologyUsersModel)\
+            .filter_by(user_id=id, project_id=project_id, is_deleted=False) is None:
+            #check_project_name_conflict(user_id=id, name=project.name, db=db)
+            share_record = ProjectUsersModel(user_id=id, project_id=project_id)
+            db.add(share_record)
     db.commit()
     return 200
 
 @sharing_router.post('/v2.0.0/sharing/project/remove', status_code=200, tags=['Project', 'Users'])
-def add_designer_to_project_remove(project_id: str = Body(...), user_id_list: List[str] = Body(...),
+def share_project_remove(project_id: str = Body(...), user_id_list: List[str] = Body(...),
                             user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
     _ = get_project_mode_share(id=project_id, user=user, db=db)
