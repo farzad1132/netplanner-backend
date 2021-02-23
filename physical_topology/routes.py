@@ -86,13 +86,16 @@ def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
                                                      "physical_topology": pt})
 
 @pt_router.post('/v2.0.0/physical_topologies/check_excel', status_code=200)
-def check_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
+def check_excel(name: str = Body(...), pt_binary: UploadFile = File(None),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     """
-        In this path we are only validating excel file, if there exist an error it will return a JSON containing errors
+        In this path we are only validating excel file, if there exist an error it will return a JSON containing errors\n
+        pt_binary is not required is case you want to just check the name
     """
     check_pt_name_conflict(user.id, name, db=db)
+    if pt_binary is None:
+        return 200
     flag, pt = excel_to_pt(pt_binary.file.read())
     if flag is True:
         return 200

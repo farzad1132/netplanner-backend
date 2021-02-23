@@ -86,13 +86,16 @@ def from_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
         raise HTTPException(status_code=400, detail={"detail":"there is(are) error(s) in this file","traffic_matrix": tm})
 
 @tm_router.post('/v2.0.0/traffic_matrices/check_excel', status_code=200)
-def check_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
+def check_excel(name: str = Body(...), tm_binary: UploadFile = File(None),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     """
-        In this path we are only validating excel file, if there exist an error it will return a JSON containing errors
+        In this path we are only validating excel file, if there exist an error it will return a JSON containing errors\n
+        tm_binary is not required is case you want to just check the name
     """
     check_tm_name_conflict(user.id, name, db=db)
+    if tm_binary is None:
+        return None
     flag, tm = excel_to_tm(tm_binary.file.read())
     if flag is True:
         return 200

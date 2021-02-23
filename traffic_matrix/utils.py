@@ -37,7 +37,7 @@ class GetTM:
 
 def check_tm_name_conflict(user_id: str, name: str, db: Session):
     id_list = get_user_tms_id(user_id, db)
-    if db.query(TrafficMatrixModel).filter_by(name=name, is_deleted=False)\
+    if db.query(TrafficMatrixModel).filter_by(name=name, owner_id=user_id, version=1, is_deleted=False)\
         .filter(TrafficMatrixModel.id.in_(id_list)).one_or_none() is not None:
         raise HTTPException(status_code=409, detail=f"name of the traffic matrix '{name}' has conflict with another record")
 

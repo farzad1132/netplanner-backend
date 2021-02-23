@@ -36,7 +36,7 @@ class GetPT:
 
 def check_pt_name_conflict(user_id: str, name: str, db: Session):
     id_list = get_user_pts_id(user_id, db)
-    if db.query(PhysicalTopologyModel).filter_by(name=name, is_deleted=False)\
+    if db.query(PhysicalTopologyModel).filter_by(name=name, owner_id=user_id, version=1, is_deleted=False)\
         .filter(PhysicalTopologyModel.id.in_(id_list)).one_or_none() is not None:
         raise HTTPException(status_code=409, detail=f"name of the physical topology '{name}' has conflict with another record")
     

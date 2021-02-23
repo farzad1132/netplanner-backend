@@ -47,7 +47,7 @@ def get_user_projects_id(user_id: str, db: Session, all: Optional[bool] = True)\
 def check_project_name_conflict(user_id: str, name: str, db: Session):
     id_list = get_user_projects_id(user_id, db)
 
-    if db.query(ProjectModel).filter_by(name=name, is_deleted=False)\
+    if db.query(ProjectModel).filter_by(name=name, owner_id=user_id, is_deleted=False)\
         .filter(ProjectModel.id.in_(id_list)).one_or_none() is not None:
         raise HTTPException(status_code=409, detail="name of the project has conflict with another record")
 
