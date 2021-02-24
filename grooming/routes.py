@@ -11,6 +11,7 @@ from clusters.utils import cluster_list_to_cluster_dict
 from grooming.grooming_worker import grooming_task
 from models import ClusterModel
 from traffic_matrix.schemas import TrafficMatrixDB
+from physical_topology.schemas import PhysicalTopologyDB
 from clusters.schemas import ClusterDict
 from algorithms.utils import status_check
 from grooming.models import GroomingRegisterModel, GroomingModel
@@ -34,6 +35,7 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     # fetching project and traffic matrix
     project_db = ProjectSchema.from_orm(get_project_mode_share(id=project_id, user=user, db=db)).dict()
     traffic_matrix = project_db["traffic_matrix"]
+    physical_topology = project_db["physical_topology"]
 
     # fetching clusters
     clusters = db.query(ClusterModel).filter_by(project_id=project_id,
@@ -45,8 +47,10 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters)
     clusters = ClusterDict.parse_obj(cluster_dict).dict()
     # starting algorithm
-    task = grooming_task.delay(traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(), mp1h_threshold=0,
-                                    clusters=clusters)
+    task = grooming_task.delay( traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(),
+                                mp1h_threshold=0,
+                                clusters=clusters, 
+                                Physical_topology=PhysicalTopologyDB.parse_obj(physical_topology).dict())
     if not clusters:
         with_clustering = False
     else:
