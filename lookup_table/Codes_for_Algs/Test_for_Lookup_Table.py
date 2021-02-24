@@ -15,7 +15,7 @@ if __name__=='__main__':
     ampgain=None
     ampNF=5.5-10000
 #    ChBandwidth=50e9
-    
+
     dict_of_links={
             (1,2): {
                     'alpha': alpha,
@@ -36,7 +36,7 @@ if __name__=='__main__':
                     'AmpNF': ampNF,
                     }
             }
-            
+
 #    dict_of_LPs={
 #            2: {
 #                    'NodeList':[1,2],
@@ -45,7 +45,7 @@ if __name__=='__main__':
 #                    'LaunchPower':0,
 #                },
 #            }
-    
+
     dict_of_LPs={
             1: {
                     'NodeList':[1,2,3],
@@ -66,7 +66,7 @@ if __name__=='__main__':
                     'LaunchPower':2,
                 }
             }
-    
+
     #%%
     x={}
 #    x=LookUpTableEntryAdder(x,4.6e-5,-21e-27,1.3e-3,100e3,5)

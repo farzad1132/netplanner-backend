@@ -218,8 +218,8 @@ def LookUpTableEntryAdder(
 
     return LookUpTable
 #%%
-def LookUpTablefromLinkSpec(
-        LinkSpecDict,
+def LookUpTableCreator(
+        LinkDict,
         SYMBOLRATE,
         CHANNELBANDWIDTH,
         _NMC=10000,printlog=False,
@@ -227,7 +227,7 @@ def LookUpTablefromLinkSpec(
         ROLL_OFF_FACTOR=0):
 
     LinkParamsList=[]
-    for linkparams in LinkSpecDict.values():
+    for linkparams in LinkDict.values():
         if linkparams not in LinkParamsList:
             LinkParamsList.append(linkparams)
 
@@ -257,7 +257,7 @@ def LookUpTablefromLinkSpec(
 
     return LookUpTable
 #%%
-def SNRfromLookUpTable(LPID,LookUpTable,LightPathSpecDict,LinkSpecDict):
+def SNRCalculator(LPID,LookUpTable,LightPathDict,LinkDict):
 
     '''Constants'''
     h=6.62607004e-34
@@ -269,15 +269,15 @@ def SNRfromLookUpTable(LPID,LookUpTable,LightPathSpecDict,LinkSpecDict):
     TotalNoise_Var=0
     LinkLPIDDict={}
 
-    COINodes=LightPathSpecDict[LPID]['NodeList']
+    COINodes=LightPathDict[LPID]['NodeList']
     COILinks=list(zip(COINodes,COINodes[1:]))
-    COIlambda=LightPathSpecDict[LPID]['Wavelength']
+    COIlambda=LightPathDict[LPID]['Wavelength']
 
 #    print(COILinks)
     for iLinkID in COILinks:
         LinkLPIDDict[iLinkID]=[]
 
-    for iLightPath in LightPathSpecDict.values():
+    for iLightPath in LightPathDict.values():
 
         if iLightPath['ModulationType']=='QPSK':
             iLightPath_Phi=-1
@@ -326,7 +326,7 @@ def SNRfromLookUpTable(LPID,LookUpTable,LightPathSpecDict,LinkSpecDict):
 #    print('aaaaaaaaa',LinkTripleLPIDDict)
 
     for iLink in COILinks:
-        LinkSpec=LinkSpecDict[iLink]
+        LinkSpec=LinkDict[iLink]
         NLI_terms=LookUpTable[
                 LinkSpec['alpha'],
                 LinkSpec['beta2'],
@@ -376,13 +376,13 @@ def SNRfromLookUpTable(LPID,LookUpTable,LightPathSpecDict,LinkSpecDict):
 
 #    for iLink in
 
-#    for iLink in LinkSpecDict:
+#    for iLink in LinkDict:
 #        LinkLambdaDict[iLink]=set()
-#    for iLink in LinkSpecDict:
+#    for iLink in LinkDict:
 #        LinkLambdaDict[iLink].add()
 
-    return LightPathSpecDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_Var)
-#    return LightPathSpecDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_PSD*LookUpTable['specdict']['ChannelBandwidth'])
+    return LightPathDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_Var)
+#    return LightPathDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_PSD*LookUpTable['specdict']['ChannelBandwidth'])
 #    return LinkLPIDDict,LinkTripleLPIDDict,NLI_terms
 #%%
 def LookUpTable2CSV(LookUpTable,filename):
@@ -391,12 +391,12 @@ def LookUpTable2CSV(LookUpTable,filename):
     csvfile.writelines('Numoflambdas,{}\n'.format(LookUpTable['specdict']['Numoflambdas']))
     csvfile.writelines('NumofMonteCarloPoints,{}\n'.format(LookUpTable['specdict']['NumofMonteCarloPoints']))
     csvfile.writelines('alpha,beta2,gamma,Lspan,Nspan,kappa_1,kappa_t,kappa_2,COI,D,E,F,G\n')
-    for i in u:
+    for i in LookUpTable:
 #        print(i)
         if not i=='spec' and not i=='specdict':
-            for j in u[i]:
+            for j in LookUpTable[i]:
 #                print(j)
-                data=u[i][j]
+                data=LookUpTable[i][j]
 #                print(data)
                 csvfile.writelines('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(
                         i[0],i[1],i[2],i[3],i[4],j[0],j[1],j[2],j[3],
@@ -415,71 +415,71 @@ def SNRfromFile(filename,filetype):
         raise Exception('Valid filetypes: CSV, JSON')
     return
 #%%
-if __name__=='__main__':
-    alpha=0.2/4.343e3
-    beta2=-21e-27
-    gamma=1.3e-3*1
-    Lspan=80e3
-    ampgain=None
-    ampNF=5.5-10000
-#    ChBandwidth=50e9
-
-    dict_of_links={
-            (1,2): {
-                    'alpha': alpha,
-                    'beta2': beta2,
-                    'gamma': gamma,
-                    'Lspan': Lspan,
-                    'Nspan': 20,
-                    'AmpGain': ampgain,
-                    'AmpNF': ampNF,
-                    },
-            (2,3): {
-                    'alpha': alpha,
-                    'beta2': beta2,
-                    'gamma': gamma,
-                    'Lspan': Lspan,
-                    'Nspan': 20,
-                    'AmpGain': ampgain,
-                    'AmpNF': ampNF,
-                    }
-            }
-
+#if __name__=='__main__':
+#    alpha=0.2/4.343e3
+#    beta2=-21e-27
+#    gamma=1.3e-3*1
+#    Lspan=80e3
+#    ampgain=None
+#    ampNF=5.5-10000
+##    ChBandwidth=50e9
+#
+#    dict_of_links={
+#            (1,2): {
+#                    'alpha': alpha,
+#                    'beta2': beta2,
+#                    'gamma': gamma,
+#                    'Lspan': Lspan,
+#                    'Nspan': 20,
+#                    'AmpGain': ampgain,
+#                    'AmpNF': ampNF,
+#                    },
+#            (2,3): {
+#                    'alpha': alpha,
+#                    'beta2': beta2,
+#                    'gamma': gamma,
+#                    'Lspan': Lspan,
+#                    'Nspan': 20,
+#                    'AmpGain': ampgain,
+#                    'AmpNF': ampNF,
+#                    }
+#            }
+#
+##    dict_of_LPs={
+##            2: {
+##                    'NodeList':[1,2],
+##                    'Wavelength':5,
+##                    'ModulationType':'QPSK',
+##                    'LaunchPower':0,
+##                },
+##            }
+#
 #    dict_of_LPs={
+#            1: {
+#                    'NodeList':[1,2,3],
+#                    'Wavelength':4,
+#                    'ModulationType':'QPSK',
+#                    'LaunchPower':3,
+#                },
 #            2: {
 #                    'NodeList':[1,2],
 #                    'Wavelength':5,
 #                    'ModulationType':'QPSK',
 #                    'LaunchPower':0,
 #                },
+#            4: {
+#                    'NodeList':[2,3],
+#                    'Wavelength':6,
+#                    'ModulationType':'QPSK',
+#                    'LaunchPower':2,
+#                }
 #            }
-
-    dict_of_LPs={
-            1: {
-                    'NodeList':[1,2,3],
-                    'Wavelength':4,
-                    'ModulationType':'QPSK',
-                    'LaunchPower':3,
-                },
-            2: {
-                    'NodeList':[1,2],
-                    'Wavelength':5,
-                    'ModulationType':'QPSK',
-                    'LaunchPower':0,
-                },
-            4: {
-                    'NodeList':[2,3],
-                    'Wavelength':6,
-                    'ModulationType':'QPSK',
-                    'LaunchPower':2,
-                }
-            }
-
-    #%%
-    x={}
-    x=LookUpTableEntryAdder(x,4.6e-5,-21e-27,1.3e-3,100e3,5)
-    u=LookUpTablefromLinkSpec(dict_of_links,32e9,32e9,printlog=True)
-    #%%
-    LookUpTable2CSV(u,'L1')
-    #%%
-    t=SNRfromLookUpTable(2,u,dict_of_LPs,dict_of_links)
+#
+#    #%%
+#    x={}
+#    x=LookUpTableEntryAdder(x,4.6e-5,-21e-27,1.3e-3,100e3,5)
+#    u=LookUpTablefromLinkSpec(dict_of_links,32e9,32e9,printlog=True)
+#    #%%
+#    LookUpTable2CSV(u,'L1')
+#    #%%
+#    t=SNRfromLookUpTable(2,u,dict_of_LPs,dict_of_links)
