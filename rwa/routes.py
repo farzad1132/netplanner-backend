@@ -34,19 +34,9 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
         .filter_by(id=grooming_id).one_or_none()) is None:
         raise HTTPException(status_code=404, detail="grooming result not found")
 
-    # fetching clusters
-    clusters = db.query(ClusterModel).filter_by(project_id=project_id,
-                                pt_version=project_db["current_pt_version"], 
-                                pt_id=project_db["physical_topology"]["id"],
-                                is_deleted=False).all()
-    
-    # converting cluster_list to cluster_dict
-    cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters)
-    cluster_info = ClusterDict.parse_obj(cluster_dict).dict()
-
     # starting rwa algorithm
     task = rwa_task.delay(  physical_topology= physical_topology,
-                            cluster_info= cluster_info,
+                            cluster_info= grooming_result.clusters,
                             grooming_result=GroomingResult(**{"traffic":grooming_result.traffic,
                                     "service_devices":grooming_result.service_devices}).dict(),
                             rwa_form= rwa_form.dict())
