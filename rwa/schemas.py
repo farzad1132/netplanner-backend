@@ -20,6 +20,10 @@ class RestorationType(str, Enum):
     jointsame = "JointSame"
     advjointsame = "AdvJointSame"
 
+class RestorationAlgorithm(str, Enum):
+        Basic = "Basic"
+        Advanced = "Advanced"
+
 class RWAForm(BaseModel):
     class ModulationType(str, Enum):
         BPSK = "BPSK"
@@ -43,7 +47,7 @@ class RWACheck(BaseModel):
     state: str
     current: int
     total: int
-    status: str
+    status: Optional[str]
 
 class RWACheckList(BaseModel):
     rwa_check_list: List[RWACheck]
@@ -61,26 +65,27 @@ class Protection(Path):
 
 class Restoration(BaseModel):
     first_failure: List[str] = Field(..., max_items=2, min_items=2)
-    second_failure: List[str]
-    path: Path
+    second_failure: Optional[List[str]]
+    restoration_algorithm: RestorationAlgorithm = RestorationAlgorithm.Basic
+    info: Path
 
 
 class RoutingInfo(BaseModel):
     working: Working
-    protection: Protection
-    restoration: Optional[Restoration] = None
+    protection: Optional[Protection]
+    restoration: Optional[List[Restoration]]
 
 class Lightpath(BaseModel):
     id: str
     source: str
     destination: str
     cluster_id: str
+    demand_id: Optional[str]
     routing_type: RoutingType = RoutingType.GE100
-    demand_id: str
     protection_type: ProtectionType = ProtectionType.node_dis
     restoration_type: RestorationType = RestorationType.none
     routing_info: RoutingInfo
-    capacity: float
+    capacity: Optional[float]
 
 class RWAIdList(BaseModel):
     rwa_id_list: List[str]
@@ -89,4 +94,4 @@ class RWAId(BaseModel):
     rwa_id: str
 
 class RWAResult(BaseModel):
-    lightpath: Lightpath
+    lightpaths: List[Lightpath]
