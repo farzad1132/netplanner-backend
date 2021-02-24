@@ -5,7 +5,9 @@ Created on Mon Feb  8 22:49:14 2021
 @author: Mostafa
 """
 
-from Lookup_Table import LookUpTableCreator,SNRCalculator
+from LookUp_Table import LookUpTableCreator,SNRCalculator
+
+#from schemas import LookUpTableLink
 
 if __name__=='__main__':
     alpha=0.2/4.343e3
