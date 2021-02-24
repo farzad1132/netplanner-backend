@@ -31,7 +31,7 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
 
     # fetching grooming result
     if (grooming_result:=db.query(GroomingModel)\
-        .filter_by(grooming_id=grooming_id).one_or_none()) is None:
+        .filter_by(id=grooming_id).one_or_none()) is None:
         raise HTTPException(status_code=404, detail="grooming result not found")
 
     # fetching clusters
