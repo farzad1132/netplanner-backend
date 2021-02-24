@@ -486,14 +486,12 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
         for i in TM['demands'].keys():
             if TM['demands'][i]["source"] not in device_dict.keys():
                         device_dict.update({TM['demands'][i]["source"]:{        
-                                    "node": TM['demands'][i]["source"],
                                     "TP1H": [],
                                     "MP1H": [],
                                     "MP2X": []
                                     }})
             if TM['demands'][i]["destination"] not in device_dict.keys():
                 device_dict.update({TM['demands'][i]["destination"]:{        
-                                    "node": TM['demands'][i]["destination"],
                                     "TP1H": [],
                                     "MP1H": [],
                                     "MP2X": []
@@ -716,6 +714,5 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
         groomingresult.update({'lightpaths':FinalLightPath['LightPaths']})
         groomingresult.update({'remaining_services':remaningnservices})
         # groomingresult.update({'cluster_id':TM1[0]['id']})
-        devicedict.update({'service_devices': Nodestructureservices(device_dict)})
-        return groomingresult,devicedict
-
+        # devicedict.update({'service_devices': Nodestructureservices(device_dict)})
+        return groomingresult,device_dict

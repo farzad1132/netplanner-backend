@@ -10,7 +10,8 @@ from grooming.Algorithm.change_tm_according_clustering import Change_TM_acoordin
 from grooming.models import GroomingModel, GroomingRegisterModel
 from models import UserModel
 from database import session
-
+from physical_topology.schemas import PhysicalTopologyDB
+from grooming.Algorithm.NodeStructure import Nodestructureservices
 
 class GroomingHandle(Task):
     def on_success(self, retval, task_id, *args, **kwargs):
@@ -53,6 +54,7 @@ class GroomingHandle(Task):
 # required:
 # 		traffic_matrix: traffic matrix in form of “TrafficMatrixDB” class
 # mp1h_threshold: Threshold of MP1H devices
+# Physical_topology: physical topology  in form of "PhysicalTopologyDB" class
 # Optional:
 # 		clusters: clusters details in form of “ClusterDict” class
 # Output:
@@ -62,48 +64,31 @@ class GroomingHandle(Task):
 # 	"clustered_tms": if clusters input isn’t existing value of this key in None in otherwise value consists of traffic matrix of each cluster in form of “ClusteredTMs” class 
 
 @celeryapp.task(bind=True, base=GroomingHandle)
-def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters:ClusterDict):
+def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters:ClusterDict, Physical_topology:PhysicalTopologyDB):
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
     if clusters != None:
         service_mapping,clusteerdtm=Change_TM_acoordingTo_Clusters(traffic_matrix,clusters,mp1h_threshold)
         finalres={"traffic":{}}
-        device={"service_devices":{"nodes":{}}}
+        devicee={}
         self.update_state(state='PROGRESS', meta={'current': 50, 'total': 100, 'status': 'Clustering Finished'})
         for i in clusteerdtm['sub_tms'].keys():
             if i != traffic_matrix['id']:
                 res, dev=grooming_fun(clusteerdtm['sub_tms'][i]['tm'],mp1h_threshold)
                 res.update({'cluster_id':i})
+                devicee.update({i:dev})
                 finalres["traffic"].update({i:res})
-                for j in dev['service_devices']['nodes']:
-                    if j in device['service_devices']['nodes']:
-                        # if 'racks' in device['service_devices']['nodes']:
-                        #     pass
-                        # else:
-                        #     device['service_devices']['nodes'].update({'racks':{}})
-                        for k in dev['service_devices']['nodes'][j]['racks']:
-                            if k in device['service_devices']['nodes'][j]['racks']:
-                                # if 'shelves' in device['service_devices']['nodes'][j]['racks'][k]:
-                                #     pass
-                                # else:
-                                #     dev['service_devices']['nodes'][j]['racks'][k].update('shelves':{})
-                                for z in dev['service_devices']['nodes'][j]['racks'][k]['shelves']:
-                                    if z in device['service_devices']['nodes'][j]['racks'][k]['shelves']:
-                                        for y in dev['service_devices']['nodes'][j]['racks'][k]['shelves'][z]['slots']:
-                                            device['service_devices']['nodes'][j]['racks'][k]['shelves'][z]['slots'].update({y:dev['service_devices']['nodes'][j]['racks'][k]['shelves'][z]['slots'][y]})
-                                    else:
-                                        device['service_devices']['nodes'][j]['racks'][k]['shelves'].update({z: dev['service_devices']['nodes'][j]['racks'][k]['shelves'][z]})
-                            else:
-                                device['service_devices']['nodes'][j]['racks'].update({k: dev['service_devices']['nodes'][j]['racks'][k]})
-                    else:
-                        device['service_devices']['nodes'].update({j:dev['service_devices']['nodes'][j]})
-        finalres.update({"service_devices":device['service_devices']})
+        device_final = Nodestructureservices(devicee, Physical_topology)
+        
+        finalres.update({"service_devices":device_final})
         self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Algorithm Finished'})
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":ServiceMapping(**service_mapping).dict(), "clustered_tms":ClusteredTMs(**clusteerdtm).dict()}
     else:
         res, dev=grooming_fun(traffic_matrix['data'],mp1h_threshold)
+        devicee={traffic_matrix['id']:dev}
+        device_final = Nodestructureservices(devicee, Physical_topology)
         self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Algorithm Finished'})
         res.update({'cluster_id':traffic_matrix['id']})
-        finalres={"traffic":{traffic_matrix['id']:res},"service_devices":dev["service_devices"]}
+        finalres={"traffic":{traffic_matrix['id']:res},"service_devices":device_final}
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":None, "clustered_tms":None}
     print("\n Data received on the server for Grooming!")
 
