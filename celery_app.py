@@ -9,5 +9,6 @@ broker_url = f'amqp://{BROKER_DEFAULT_USER}:{BROKER_DEFAULT_PASSWORD}@{BROKER_HO
 
 celeryapp = Celery("celery_app", broker=broker_url, backend='rpc://')
 celeryapp.conf.imports = [
-    'grooming.grooming_worker'
+    'grooming.grooming_worker',
+    'rwa.rwa_worker'
 ]
