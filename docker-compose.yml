@@ -40,8 +40,10 @@ services:
     image: service:v2
     environment: 
       - BROKER_HOST=rabbitmq
+      - DB_HOST=db
     links: 
       - rabbitmq
+      - db
     depends_on: 
       - rabbitmq
       - db

@@ -47,7 +47,7 @@ class GroomingHandle(Task):
             register.exception = exc
 
             db.add(register)
-            db.comment()
+            db.commit()
             db.close()
 
 # grooming_task ( traffic_matrix, mp1h_threshold, clusters):
