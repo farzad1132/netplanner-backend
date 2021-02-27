@@ -218,6 +218,7 @@ class GroomingDBOut(GroomingInformation):
     clustered_tms: ClusteredTMs
     service_mapping: ServiceMapping
     clusters: ClusterDict
+    form: GroomingForm
 
     class Config:
         orm_mode = True
