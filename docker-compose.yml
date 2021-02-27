@@ -47,4 +47,6 @@ services:
     depends_on: 
       - rabbitmq
       - db
+    volumes: 
+      - .:/app/
     command: ['celery', '-A', 'celery_app', 'worker', '-l', 'DEBUG']
