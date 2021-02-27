@@ -2,6 +2,8 @@ import os
 from dependencies import get_password_hash, get_db
 from models import (PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel,
                     PhysicalTopologyUsersModel, TrafficMatrixUsersModel, ProjectUsersModel)
+from physical_topology.utils import excel_to_pt
+from traffic_matrix.utils import excel_to_tm
 
 
 PHYSICALTOPOLOGY = {
@@ -105,6 +107,37 @@ if __name__ == "__main__":
                         password=get_password_hash(USER["password"]))
         users[id] = user
         id -= 1
+    
+    # creating kerman physical topology record
+    import os
+    if not os.path.exists('./tests/test_pt/PT_kerman.xlsx'):
+        raise Exception("kerman pt not found")
+    with open('./tests/test_pt/PT_kerman.xlsx', 'rb') as file:
+        flag, kerman_pt = excel_to_pt(file.read())
+        if not flag:
+            raise Exception("error in parsing kerman pt excel")
+    pt_kerman_record = PhysicalTopologyModel(name="kerman", data=kerman_pt, version=1, id='kerman', comment='first kerman')
+    #pt_kerman_record.owner_id = 1
+    user.physical_topologies.append(pt_kerman_record)
+
+    # creating kerman traffic matrix record
+    if not os.path.exists('./tests/test_tm/traffic_kerman.xlsx'):
+        raise Exception("kerman pt not found")
+    with open('./tests/test_tm/traffic_kerman.xlsx', 'rb') as file:
+        flag, kerman_tm = excel_to_tm(file.read())
+        if not flag:
+            raise Exception("error in parsing kerman pt excel")
+    tm_kerman_record = TrafficMatrixModel(name="kerman", data=kerman_tm, version=1, id='kerman', comment='first kerman')
+    #tm_kerman_record.owner_id = 1
+    user.traffic_matrices.append(tm_kerman_record)
+
+    # creating kerman project
+    kerman_project = ProjectModel(name="kerman", id='kerman')
+    kerman_project.owner_id = users[1].id
+    kerman_project.current_tm_version = 1
+    kerman_project.current_pt_version = 1
+    kerman_project.physical_topology = pt_kerman_record
+    kerman_project.traffic_matrix = tm_kerman_record
 
     physical_topology = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=1, id='1', comment="first pt")
     physical_topology_2 = PhysicalTopologyModel(name="Test PT", data=PHYSICALTOPOLOGY, version=2, id='1', comment="second pt")
@@ -147,7 +180,9 @@ if __name__ == "__main__":
     #cluster.project_id = project.id
     project.clusters.append(cluster)
 
-
+    db.add(tm_kerman_record)
+    db.add(pt_kerman_record)
+    db.add(kerman_project)
 
     traffic_matrix_2.projects.append(project)
     physical_topology.projects.append(project)
