@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional, Dict, List, Tuple
-from rwa.schemas import ModulationType
+from rwa.schemas import RWAForm
 
 class LookUpTableLink(BaseModel):
     alpha: float = Field(0.2/4.343e3, ge=0)
@@ -29,7 +29,7 @@ class LookUpTableIn(BaseModel):
 class SNRCalculatorLightpath(BaseModel):
     node_list: List[str]
     wavelength: int
-    modulation_type: ModulationType = ModulationType.qpsk
+    modulation_type: RWAForm.ModulationType = RWAForm.ModulationType.qpsk
     launch_power: float
 
 class SNRCalculatorIn(BaseModel):
