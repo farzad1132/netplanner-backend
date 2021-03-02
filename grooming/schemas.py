@@ -112,9 +112,19 @@ class LowRateGrooming(BaseModel):
     demands: Dict[str, GroomingLowRateDemand]
 
 class MP1H(BaseModel):
+    """
+        frontend will need sub_tm_id in order to find lightpath
+    """
+    panel = "MP1H"
+    sub_tm_id: str
     lightpath_id: str
 
 class TP1H(BaseModel):
+    """
+        frontend will need sub_tm_id in order to find lightpath
+    """
+    panel = "TP1H"
+    sub_tm_id: str
     lightpath_id: str
 
 class MP2XLine(BaseModel):
@@ -122,6 +132,7 @@ class MP2XLine(BaseModel):
     demand_id: str
 
 class MP2X(BaseModel):
+    panel = "MP2X"
     line1: MP2XLine
     line2: Optional[MP2XLine]
 
@@ -156,7 +167,10 @@ class RemaningServices(BaseModel):
     demands: Dict[str, List[str]]
 
 class GroomingOutput(BaseModel):
-    lightpaths: List[GroomingLightPath]
+    """
+        keys in lightpaths attribute is lightpath_id
+    """
+    lightpaths: Dict[str, GroomingLightPath]
     cluster_id: str
     low_rate_grooming_result: LowRateGrooming
     remaining_services: RemaningServices
