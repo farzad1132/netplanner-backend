@@ -1,23 +1,23 @@
 from pydantic import BaseModel, Field, validator
 from enum import Enum
 from typing import Optional, Dict, List, Callable, Tuple
-from physical_topology.schemas import Link
+from physical_topology_schemas import Link
 
 class Span(BaseModel):
     alpha: float
     length: float
-    amp_nf: Callable
-    amp_psen_dbm: float
-    amp_psat_dbm: float
-    maxgain_db: float
-    mingain_db: float
-    maxatt_db: float
-    minatt_db: float
+    AmpNF: Callable
+    AmpPSEN_dBm: float
+    AmpPSAT_dBm: float
+    maxgain_dB: float
+    mingain_dB: float
+    maxatt_dB: float
+    minatt_dB: float
 
 class PowerOptLinkIn(Link):
     span_count: int
     spans: List[Span]
-
+    
     @validator('spans')
     def validate_spans(cls, v, values):
         if len(v) != values['span_count']:
@@ -25,37 +25,47 @@ class PowerOptLinkIn(Link):
         return v
 
 class PowerOptNodesLink(BaseModel):
-    nf: Callable
-    amp_psen_dbm: float
-    amp_psat_dbm: float
-    maxgain_db: float
-    mingain_db: float
-    maxatt_db: float
-    minatt_db: float
+    ''' for both the pre-amps and boosters on node degrees '''
+    NF: Callable
+    P_SEN_dBm: float
+    P_SAT_dBm: float
+    maxgain_dB: float
+    mingain_dB: float
+    maxatt_dB: float
+    minatt_dB: float
 
 class PowerOptNodesSplitter(BaseModel):
-    loss_db: float
+    loss_dB: float
 
-class VOA(BaseModel):
-    maxatt_db: float
-    minatt_db: float
+class PowerOptVOA(BaseModel):
+    maxatt_dB: float
+    minatt_dB: float
 
 class PowerOptNodesWSS(BaseModel):
-    ins_loss_db: float
-    voa: VOA
+    ins_loss_dB: float
+    VOA: PowerOptVOA
 
 class PowerOptNodeIn(BaseModel):
     """
         keys are destination node for links (source node is specified in higher hierarchy see: PowerOptIn)
     """
-    pre_amp: Dict[str, PowerOptNodesLink]
-    booster: Dict[str, PowerOptNodesLink]
-    splitter: Dict[str, PowerOptNodesSplitter]
-    wss: Dict[str, PowerOptNodesWSS]
+    pre_amp: Dict[Tuple[str,str], PowerOptNodesLink]
+    booster: Dict[Tuple[str,str], PowerOptNodesLink]
+    splitter: Dict[Tuple[str,str], PowerOptNodesSplitter]
+    WSS: Dict[Tuple[str,str,str], PowerOptNodesWSS]
+
+#class PowerOptNodeIn(BaseModel):
+#    """
+#        keys are destination node for links (source node is specified in higher hierarchy see: PowerOptIn)
+#    """
+#    pre_amp: Dict[str, PowerOptNodesLink]
+#    booster: Dict[str, PowerOptNodesLink]
+#    splitter: Dict[str, PowerOptNodesSplitter]
+#    wss: Dict[str, PowerOptNodesWSS]
 
 class PowerOptLightpathIn(BaseModel):
-    wavelength: int
-    node_list: List[str]
+    Wavelength: int
+    NodeList: List[str]
 
 class PowerOptIn(BaseModel):
     """
@@ -88,7 +98,7 @@ class PowerOptNodesLinkOut(PowerOptNodesLink):
     amp_gain_db: float
     voa_att_db: float
 
-class VOAOut(VOA):
+class VOAOut(PowerOptVOA):
     amp_gain_db: float
     voa_att_db: float
 
