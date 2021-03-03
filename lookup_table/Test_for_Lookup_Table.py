@@ -88,6 +88,8 @@ if __name__=='__main__':
     
     print(LookUpTableIn(links=LinkDict,symbol_rate=32e9,channel_bandwith=32e9))
     
-    print(SNRCalculatorIn(lpid=2,LookUpTableOut=LUT,lightpaths=LightPathDict,links=LinkDict))
+    print(SNRCalculatorIn(lpid=2,lookuptableout=LUT,lightpaths=LightPathDict,links=LinkDict))
+    
+    print(SNRCalculatorOut(snr_db=Service_SNR))
     
     

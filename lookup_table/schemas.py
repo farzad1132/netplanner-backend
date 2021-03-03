@@ -21,11 +21,13 @@ class LookUpTableIn(BaseModel):
     symbol_rate: float = Field(32e9, ge=0)
     channel_bandwith: float = Field(32e9, ge=0)
     _nmc: float = Field(1e6, ge=1000)
-    printlog: bool = False
+    printlog: bool = Field(False)
     max_num_lambda: int = Field(10, ge=1)
     roll_off_factor: float = Field(0, ge=0, le=1)
 
 # TODO: add LookUpTableOut
+#class LookUpTableOut:
+    
 
 class SNRCalculatorLightpath(BaseModel):
     node_list: List[str]
@@ -37,7 +39,7 @@ class SNRCalculatorIn(BaseModel):
     links: Dict[Tuple[str, str], LookUpTableLink]
     lightpaths: Dict[str, SNRCalculatorLightpath]
     lpid: str
-    LookUpTableOut: Dict[
+    lookuptableout: Dict[
             Tuple[float,float,float,float,int],
             Dict[Tuple[int,int,int,int],float]
             ]
