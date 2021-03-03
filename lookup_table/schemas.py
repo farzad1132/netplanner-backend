@@ -1,16 +1,17 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional, Dict, List, Tuple
-from rwa.schemas import RWAForm
+from rwa_schemas import RWAForm
+#from rwa.schemas import RWAForm
 
 class LookUpTableLink(BaseModel):
     alpha: float = Field(0.2/4.343e3, ge=0)
-    beta2: float = Field(-21e-27, ge=0)
+    beta2: float = Field(-21e-27)
     gamma: float = Field(1.3e-3, ge=0)
     lspan: float = Field(100e3, ge=0)
     nspan: int = Field(1, ge=1)
-    amp_gain: float = Field(ge=1)
-    amp_nf: float
+    amp_gain: float = Field(None)
+    amp_nf: float = Field(5)
 
 class LookUpTableIn(BaseModel):
     """
@@ -29,13 +30,17 @@ class LookUpTableIn(BaseModel):
 class SNRCalculatorLightpath(BaseModel):
     node_list: List[str]
     wavelength: int
-    modulation_type: RWAForm.ModulationType = RWAForm.ModulationType.qpsk
+    modulation_type: RWAForm.ModulationType = RWAForm.ModulationType.QPSK
     launch_power: float
 
 class SNRCalculatorIn(BaseModel):
     links: Dict[Tuple[str, str], LookUpTableLink]
     lightpaths: Dict[str, SNRCalculatorLightpath]
     lpid: str
+    LookUpTableOut: Dict[
+            Tuple[float,float,float,float,int],
+            Dict[Tuple[int,int,int,int],float]
+            ]
     # TODO: add LookUpTableOut
 
 class SNRCalculatorOut(BaseModel):
