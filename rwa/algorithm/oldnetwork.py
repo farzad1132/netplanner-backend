@@ -464,7 +464,7 @@ class OldNetwork(object):
         for cluster in (self.cluster_dict.values()):
             cluster_graph = G.copy()
             cluster_node_set = set(cluster.subnode_list)
-            cluster_node_set.union(set(cluster.gateway))
+            cluster_node_set = cluster_node_set.union(set(cluster.gateway))
             cluster_graph.remove_nodes_from([n for n in G if n not in cluster_node_set])
             cluster.graph = cluster_graph
  
