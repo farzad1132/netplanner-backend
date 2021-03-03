@@ -1,0 +1,3782 @@
+[
+  {
+    "data": {
+      "demands": {
+        "1": {
+          "id": "1",
+          "source": "K4",
+          "destination": "K3",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "1",
+                "2",
+                "3"
+              ],
+              "sla": null,
+              "type": "STM16",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "2": {
+          "id": "2",
+          "source": "K4",
+          "destination": "K1",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "4",
+                "5",
+                "6",
+                "7"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "8",
+                "9",
+                "10"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "3": {
+          "id": "3",
+          "source": "K4",
+          "destination": "K2",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "4": {
+          "id": "4",
+          "source": "K4",
+          "destination": "ZAR",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "19",
+                "20"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "5": {
+          "id": "5",
+          "source": "K4",
+          "destination": "BAR",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "21",
+                "22",
+                "23"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "6": {
+          "id": "6",
+          "source": "K4",
+          "destination": "R2",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "24",
+                "25"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "7": {
+          "id": "7",
+          "source": "K1",
+          "destination": "K3",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 16,
+              "service_id_list": [
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "42",
+                "43",
+                "44"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "8": {
+          "id": "8",
+          "source": "K1",
+          "destination": "K6",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "45",
+                "46",
+                "47",
+                "48"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "49",
+                "50"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "9": {
+          "id": "9",
+          "source": "K1",
+          "destination": "RE",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 16,
+              "service_id_list": [
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "67",
+                "68",
+                "69"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "10": {
+          "id": "10",
+          "source": "RE",
+          "destination": "AN",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "70"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "77",
+                "78"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "11": {
+          "id": "11",
+          "source": "K1",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 20,
+              "service_id_list": [
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 5,
+              "service_id_list": [
+                "99",
+                "100",
+                "101",
+                "102",
+                "103"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "12": {
+          "id": "12",
+          "source": "K1",
+          "destination": "ZB",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 37,
+              "service_id_list": [
+                "104",
+                "105",
+                "106",
+                "107",
+                "108",
+                "109",
+                "110",
+                "111",
+                "112",
+                "113",
+                "114",
+                "115",
+                "116",
+                "117",
+                "118",
+                "119",
+                "120",
+                "121",
+                "122",
+                "123",
+                "124",
+                "125",
+                "126",
+                "127",
+                "128",
+                "129",
+                "130",
+                "131",
+                "132",
+                "133",
+                "134",
+                "135",
+                "136",
+                "137",
+                "138",
+                "139",
+                "140"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "141",
+                "142"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "13": {
+          "id": "13",
+          "source": "K1",
+          "destination": "NE",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "143",
+                "144",
+                "145",
+                "146",
+                "147",
+                "148",
+                "149",
+                "150"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "14": {
+          "id": "14",
+          "source": "RE",
+          "destination": "SB",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "151",
+                "152",
+                "153",
+                "154",
+                "155",
+                "156"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "157",
+                "158"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "15": {
+          "id": "15",
+          "source": "K1",
+          "destination": "ZAR",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 18,
+              "service_id_list": [
+                "159",
+                "160",
+                "161",
+                "162",
+                "163",
+                "164",
+                "165",
+                "166",
+                "167",
+                "168",
+                "169",
+                "170",
+                "171",
+                "172",
+                "173",
+                "174",
+                "175",
+                "176"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "177",
+                "178"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "16": {
+          "id": "16",
+          "source": "K1",
+          "destination": "JE",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 63,
+              "service_id_list": [
+                "179",
+                "180",
+                "181",
+                "182",
+                "183",
+                "184",
+                "185",
+                "186",
+                "187",
+                "188",
+                "189",
+                "190",
+                "191",
+                "192",
+                "193",
+                "194",
+                "195",
+                "196",
+                "197",
+                "198",
+                "199",
+                "200",
+                "201",
+                "202",
+                "203",
+                "204",
+                "205",
+                "206",
+                "207",
+                "208",
+                "209",
+                "210",
+                "211",
+                "212",
+                "213",
+                "214",
+                "215",
+                "216",
+                "217",
+                "218",
+                "219",
+                "220",
+                "221",
+                "222",
+                "223",
+                "224",
+                "225",
+                "226",
+                "227",
+                "228",
+                "229",
+                "230",
+                "231",
+                "232",
+                "233",
+                "234",
+                "235",
+                "236",
+                "237",
+                "238",
+                "239",
+                "240",
+                "241"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 7,
+              "service_id_list": [
+                "242",
+                "243",
+                "244",
+                "245",
+                "246",
+                "247",
+                "248"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "17": {
+          "id": "17",
+          "source": "K1",
+          "destination": "K8",
+          "type": null,
+          "protection_type": "NoProtection",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "249",
+                "250",
+                "251",
+                "252"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "253",
+                "254",
+                "255"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "18": {
+          "id": "18",
+          "source": "K1",
+          "destination": "K7",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "256",
+                "257",
+                "258",
+                "259",
+                "260",
+                "261",
+                "262",
+                "263"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "264",
+                "265",
+                "266",
+                "267"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "268",
+                "269",
+                "270"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "19": {
+          "id": "19",
+          "source": "K1",
+          "destination": "K5",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "271",
+                "272",
+                "273",
+                "274"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "275",
+                "276",
+                "277"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "20": {
+          "id": "20",
+          "source": "K1",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "278",
+                "279",
+                "280",
+                "281"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "282",
+                "283",
+                "284"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "21": {
+          "id": "21",
+          "source": "JE",
+          "destination": "ZB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "285",
+                "286",
+                "287"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "22": {
+          "id": "22",
+          "source": "JE",
+          "destination": "SA",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "288"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "289",
+                "290"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "291"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "23": {
+          "id": "23",
+          "source": "BFT",
+          "destination": "SA",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "292"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "24": {
+          "id": "24",
+          "source": "ALS",
+          "destination": "BFT",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "293"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "294",
+                "295",
+                "296",
+                "297",
+                "298",
+                "299"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "300",
+                "301",
+                "302"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "25": {
+          "id": "25",
+          "source": "K1",
+          "destination": "BFT",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 9,
+              "service_id_list": [
+                "303",
+                "304",
+                "305",
+                "306",
+                "307",
+                "308",
+                "309",
+                "310",
+                "311"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "312",
+                "313"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "26": {
+          "id": "26",
+          "source": "K1",
+          "destination": "SA",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "314",
+                "315",
+                "316",
+                "317"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "27": {
+          "id": "27",
+          "source": "K1",
+          "destination": "R2",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "318"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "319",
+                "320",
+                "321",
+                "322",
+                "323",
+                "324"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "28": {
+          "id": "28",
+          "source": "RE",
+          "destination": "SRC",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "325",
+                "326"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "327",
+                "328",
+                "329",
+                "330",
+                "331",
+                "332"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "333"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "29": {
+          "id": "29",
+          "source": "K1",
+          "destination": "BAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "334",
+                "335",
+                "336",
+                "337",
+                "338",
+                "339"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "340",
+                "341"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "30": {
+          "id": "30",
+          "source": "ZB",
+          "destination": "R2",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "342",
+                "343",
+                "344"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "31": {
+          "id": "31",
+          "source": "BAR",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "345",
+                "346",
+                "347"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "32": {
+          "id": "32",
+          "source": "BAR",
+          "destination": "NE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "348"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "33": {
+          "id": "33",
+          "source": "NE",
+          "destination": "BFT",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "349",
+                "350"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "34": {
+          "id": "34",
+          "source": "ZAR",
+          "destination": "RE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "351"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "35": {
+          "id": "35",
+          "source": "SB",
+          "destination": "AN",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "352"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "36": {
+          "id": "36",
+          "source": "SB",
+          "destination": "SRC",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "353",
+                "354"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "37": {
+          "id": "37",
+          "source": "SB",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "355"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "38": {
+          "id": "38",
+          "source": "K2",
+          "destination": "K3",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "356",
+                "357",
+                "358",
+                "359",
+                "360",
+                "361",
+                "362",
+                "363"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "364",
+                "365"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "39": {
+          "id": "39",
+          "source": "K2",
+          "destination": "K1",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "JointSame",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "366",
+                "367"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 16,
+              "service_id_list": [
+                "368",
+                "369",
+                "370",
+                "371",
+                "372",
+                "373",
+                "374",
+                "375",
+                "376",
+                "377",
+                "378",
+                "379",
+                "380",
+                "381",
+                "382",
+                "383"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "384",
+                "385",
+                "386",
+                "387"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "40": {
+          "id": "40",
+          "source": "K2",
+          "destination": "K8",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "388",
+                "389",
+                "390",
+                "391"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "392"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "41": {
+          "id": "41",
+          "source": "K2",
+          "destination": "K7",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "393",
+                "394",
+                "395",
+                "396"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "397"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "42": {
+          "id": "42",
+          "source": "K2",
+          "destination": "K5",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "398",
+                "399",
+                "400",
+                "401"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "402",
+                "403"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "43": {
+          "id": "43",
+          "source": "K2",
+          "destination": "K6",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "404",
+                "405",
+                "406",
+                "407"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "408"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "44": {
+          "id": "44",
+          "source": "K2",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "409",
+                "410",
+                "411",
+                "412"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "413"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "45": {
+          "id": "45",
+          "source": "K2",
+          "destination": "R2",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "414",
+                "415"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "416",
+                "417",
+                "418",
+                "419",
+                "420",
+                "421"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "422"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "46": {
+          "id": "46",
+          "source": "K2",
+          "destination": "NE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "423",
+                "424"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "425"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "426",
+                "427",
+                "428",
+                "429"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "47": {
+          "id": "47",
+          "source": "K2",
+          "destination": "ZAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "430",
+                "431",
+                "432"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 10,
+              "service_id_list": [
+                "433",
+                "434",
+                "435",
+                "436",
+                "437",
+                "438",
+                "439",
+                "440",
+                "441",
+                "442"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "443"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "48": {
+          "id": "48",
+          "source": "K2",
+          "destination": "RE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "444",
+                "445",
+                "446",
+                "447"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "448",
+                "449",
+                "450",
+                "451",
+                "452",
+                "453",
+                "454",
+                "455"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "456"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "49": {
+          "id": "49",
+          "source": "K2",
+          "destination": "SB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "457"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "458",
+                "459"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "50": {
+          "id": "50",
+          "source": "K2",
+          "destination": "BAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "460"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "461",
+                "462",
+                "463",
+                "464"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "51": {
+          "id": "51",
+          "source": "K2",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "465",
+                "466"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "467",
+                "468",
+                "469",
+                "470",
+                "471",
+                "472"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "473"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "52": {
+          "id": "52",
+          "source": "K2",
+          "destination": "BFT",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "474"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "475",
+                "476",
+                "477",
+                "478"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "53": {
+          "id": "53",
+          "source": "K2",
+          "destination": "JE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "479",
+                "480",
+                "481",
+                "482"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 14,
+              "service_id_list": [
+                "483",
+                "484",
+                "485",
+                "486",
+                "487",
+                "488",
+                "489",
+                "490",
+                "491",
+                "492",
+                "493",
+                "494",
+                "495",
+                "496"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "497"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "54": {
+          "id": "54",
+          "source": "K2",
+          "destination": "ZB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "498",
+                "499",
+                "500"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "501",
+                "502"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "503"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "55": {
+          "id": "55",
+          "source": "K8",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "504",
+                "505",
+                "506",
+                "507"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "508"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "56": {
+          "id": "56",
+          "source": "K8",
+          "destination": "K6",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "509",
+                "510",
+                "511",
+                "512"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "513"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "57": {
+          "id": "57",
+          "source": "K8",
+          "destination": "K5",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "514",
+                "515",
+                "516",
+                "517"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "518"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "58": {
+          "id": "58",
+          "source": "K8",
+          "destination": "K7",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "519",
+                "520",
+                "521",
+                "522"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "523"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "59": {
+          "id": "59",
+          "source": "K7",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "524",
+                "525",
+                "526",
+                "527"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "528"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "60": {
+          "id": "60",
+          "source": "K7",
+          "destination": "K6",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "529",
+                "530",
+                "531",
+                "532"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "533"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "61": {
+          "id": "61",
+          "source": "K7",
+          "destination": "K5",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "534",
+                "535",
+                "536",
+                "537"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "538"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "62": {
+          "id": "62",
+          "source": "K5",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "539",
+                "540",
+                "541",
+                "542"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "543"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "63": {
+          "id": "63",
+          "source": "K5",
+          "destination": "K6",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "544",
+                "545",
+                "546",
+                "547"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "548"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "64": {
+          "id": "64",
+          "source": "K6",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "549",
+                "550",
+                "551",
+                "552"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "553"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "65": {
+          "id": "65",
+          "source": "K3",
+          "destination": "ZB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 19,
+              "service_id_list": [
+                "554",
+                "555",
+                "556",
+                "557",
+                "558",
+                "559",
+                "560",
+                "561",
+                "562",
+                "563",
+                "564",
+                "565",
+                "566",
+                "567",
+                "568",
+                "569",
+                "570",
+                "571",
+                "572"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "573",
+                "574",
+                "575"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "66": {
+          "id": "66",
+          "source": "K3",
+          "destination": "SA",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "576",
+                "577"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "67": {
+          "id": "67",
+          "source": "K3",
+          "destination": "JE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 61,
+              "service_id_list": [
+                "578",
+                "579",
+                "580",
+                "581",
+                "582",
+                "583",
+                "584",
+                "585",
+                "586",
+                "587",
+                "588",
+                "589",
+                "590",
+                "591",
+                "592",
+                "593",
+                "594",
+                "595",
+                "596",
+                "597",
+                "598",
+                "599",
+                "600",
+                "601",
+                "602",
+                "603",
+                "604",
+                "605",
+                "606",
+                "607",
+                "608",
+                "609",
+                "610",
+                "611",
+                "612",
+                "613",
+                "614",
+                "615",
+                "616",
+                "617",
+                "618",
+                "619",
+                "620",
+                "621",
+                "622",
+                "623",
+                "624",
+                "625",
+                "626",
+                "627",
+                "628",
+                "629",
+                "630",
+                "631",
+                "632",
+                "633",
+                "634",
+                "635",
+                "636",
+                "637",
+                "638"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 9,
+              "service_id_list": [
+                "639",
+                "640",
+                "641",
+                "642",
+                "643",
+                "644",
+                "645",
+                "646",
+                "647"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "68": {
+          "id": "68",
+          "source": "K3",
+          "destination": "BFT",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 7,
+              "service_id_list": [
+                "648",
+                "649",
+                "650",
+                "651",
+                "652",
+                "653",
+                "654"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "655"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "69": {
+          "id": "69",
+          "source": "K3",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 12,
+              "service_id_list": [
+                "656",
+                "657",
+                "658",
+                "659",
+                "660",
+                "661",
+                "662",
+                "663",
+                "664",
+                "665",
+                "666",
+                "667"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "668",
+                "669",
+                "670"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "70": {
+          "id": "70",
+          "source": "K3",
+          "destination": "BAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "671",
+                "672",
+                "673",
+                "674"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "675",
+                "676"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "71": {
+          "id": "71",
+          "source": "K3",
+          "destination": "RE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "677",
+                "678",
+                "679"
+              ],
+              "sla": null,
+              "type": "STM64",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 18,
+              "service_id_list": [
+                "680",
+                "681",
+                "682",
+                "683",
+                "684",
+                "685",
+                "686",
+                "687",
+                "688",
+                "689",
+                "690",
+                "691",
+                "692",
+                "693",
+                "694",
+                "695",
+                "696",
+                "697"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 5,
+              "service_id_list": [
+                "698",
+                "699",
+                "700",
+                "701",
+                "702"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "72": {
+          "id": "72",
+          "source": "K3",
+          "destination": "ZAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 18,
+              "service_id_list": [
+                "703",
+                "704",
+                "705",
+                "706",
+                "707",
+                "708",
+                "709",
+                "710",
+                "711",
+                "712",
+                "713",
+                "714",
+                "715",
+                "716",
+                "717",
+                "718",
+                "719",
+                "720"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "721",
+                "722",
+                "723",
+                "724"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "73": {
+          "id": "73",
+          "source": "K3",
+          "destination": "NE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "725",
+                "726",
+                "727",
+                "728"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "729"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "74": {
+          "id": "74",
+          "source": "K3",
+          "destination": "K9",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "730",
+                "731",
+                "732",
+                "733"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "734"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "75": {
+          "id": "75",
+          "source": "K3",
+          "destination": "K6",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "735",
+                "736",
+                "737",
+                "738"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "739"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "76": {
+          "id": "76",
+          "source": "K3",
+          "destination": "K5",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "740",
+                "741",
+                "742",
+                "743"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "744"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "77": {
+          "id": "77",
+          "source": "K3",
+          "destination": "K7",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "745",
+                "746",
+                "747",
+                "748"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "749"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "78": {
+          "id": "78",
+          "source": "K3",
+          "destination": "K8",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "750",
+                "751",
+                "752",
+                "753"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "754"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "79": {
+          "id": "79",
+          "source": "K5",
+          "destination": "ZB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "755",
+                "756"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "80": {
+          "id": "80",
+          "source": "K5",
+          "destination": "JE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "757",
+                "758",
+                "759",
+                "760"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "81": {
+          "id": "81",
+          "source": "K5",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "761",
+                "762"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "82": {
+          "id": "82",
+          "source": "K5",
+          "destination": "BAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "763"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "83": {
+          "id": "83",
+          "source": "K5",
+          "destination": "RE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 3,
+              "service_id_list": [
+                "764",
+                "765",
+                "766"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "84": {
+          "id": "84",
+          "source": "K5",
+          "destination": "ZAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "767"
+              ],
+              "sla": null,
+              "type": "STM16",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "768",
+                "769"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "85": {
+          "id": "85",
+          "source": "K7",
+          "destination": "BAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "770",
+                "771",
+                "772",
+                "773"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "86": {
+          "id": "86",
+          "source": "K7",
+          "destination": "ALS",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "774",
+                "775",
+                "776",
+                "777"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "87": {
+          "id": "87",
+          "source": "K7",
+          "destination": "SB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "778",
+                "779",
+                "780",
+                "781"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "88": {
+          "id": "88",
+          "source": "K7",
+          "destination": "RE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "782",
+                "783",
+                "784",
+                "785"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "89": {
+          "id": "89",
+          "source": "K7",
+          "destination": "ZAR",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 12,
+              "service_id_list": [
+                "786",
+                "787",
+                "788",
+                "789",
+                "790",
+                "791",
+                "792",
+                "793",
+                "794",
+                "795",
+                "796",
+                "797"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "90": {
+          "id": "90",
+          "source": "K7",
+          "destination": "ZB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "798",
+                "799",
+                "800",
+                "801"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "91": {
+          "id": "91",
+          "source": "K7",
+          "destination": "JE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 20,
+              "service_id_list": [
+                "802",
+                "803",
+                "804",
+                "805",
+                "806",
+                "807",
+                "808",
+                "809",
+                "810",
+                "811",
+                "812",
+                "813",
+                "814",
+                "815",
+                "816",
+                "817",
+                "818",
+                "819",
+                "820",
+                "821"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "92": {
+          "id": "92",
+          "source": "K7",
+          "destination": "BFT",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "822",
+                "823",
+                "824",
+                "825"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "93": {
+          "id": "93",
+          "source": "K7",
+          "destination": "NE",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "826",
+                "827",
+                "828",
+                "829"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "94": {
+          "id": "94",
+          "source": "K7",
+          "destination": "SA",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "830",
+                "831",
+                "832",
+                "833"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "95": {
+          "id": "95",
+          "source": "K7",
+          "destination": "R2",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "None",
+          "services": [
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "834",
+                "835",
+                "836",
+                "837",
+                "838",
+                "839",
+                "840",
+                "841"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "96": {
+          "id": "96",
+          "source": "K1",
+          "destination": "AN",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "842",
+                "843",
+                "844",
+                "845",
+                "846",
+                "847"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "97": {
+          "id": "97",
+          "source": "K1",
+          "destination": "SB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 8,
+              "service_id_list": [
+                "848",
+                "849",
+                "850",
+                "851",
+                "852",
+                "853",
+                "854",
+                "855"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "856",
+                "857"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "98": {
+          "id": "98",
+          "source": "K1",
+          "destination": "SRC",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 6,
+              "service_id_list": [
+                "858",
+                "859",
+                "860",
+                "861",
+                "862",
+                "863"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "99": {
+          "id": "99",
+          "source": "K7",
+          "destination": "AN",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "864",
+                "865",
+                "866",
+                "867"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "100": {
+          "id": "100",
+          "source": "K7",
+          "destination": "SRC",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "868",
+                "869",
+                "870",
+                "871"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "101": {
+          "id": "101",
+          "source": "K2",
+          "destination": "SRC",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "872"
+              ],
+              "sla": null,
+              "type": "FE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "873"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "102": {
+          "id": "102",
+          "source": "K3",
+          "destination": "SB",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "874",
+                "875",
+                "876",
+                "877"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 2,
+              "service_id_list": [
+                "878",
+                "879"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "103": {
+          "id": "103",
+          "source": "K3",
+          "destination": "SRC",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "880",
+                "881",
+                "882",
+                "883"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "884"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        },
+        "104": {
+          "id": "104",
+          "source": "K3",
+          "destination": "AN",
+          "type": null,
+          "protection_type": "1+1_NodeDisjoint",
+          "restoration_type": "AdvJointSame",
+          "services": [
+            {
+              "quantity": 4,
+              "service_id_list": [
+                "885",
+                "886",
+                "887",
+                "888"
+              ],
+              "sla": null,
+              "type": "GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            },
+            {
+              "quantity": 1,
+              "service_id_list": [
+                "889"
+              ],
+              "sla": null,
+              "type": "10GE",
+              "granularity": null,
+              "granularity_vc12": null,
+              "granularity_vc4": null
+            }
+          ]
+        }
+      }
+    },
+    "id": "debad2493c594227a34506dc4c606c9f",
+    "version": 1,
+    "name": "kerman",
+    "create_date": "2021-02-24T06:19:19.162343",
+    "comment": "initial version"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "clusters": {
+    "a6c22f5f8274403cb33260e0f2e69aac": {
+      "data": {
+        "gateways": [
+          "K1"
+        ],
+        "subnodes": [
+          "K2",
+          "K3",
+          "K4"
+        ],
+        "color": "green",
+        "type": "100GE"
+      },
+      "name": "test_cluster",
+      "id": "a6c22f5f8274403cb33260e0f2e69aac"
+    }
+  }
+}
