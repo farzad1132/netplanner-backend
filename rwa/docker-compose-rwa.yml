@@ -1,0 +1,58 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    restart: on-failure
+    container_name: db
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASS}
+      - POSTGRES_USER=${DB_USER} 
+      - POSTGRES_DB=${DB_USER} 
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+  
+  dbadmin:
+    image: dpage/pgadmin4
+    container_name: db_admin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${MAIL_USERNAME}
+      - PGADMIN_DEFAULT_PASSWORD=${DB_PASS}
+      - PGADMIN_LISTEN_PORT=80
+    ports:
+      - 8080:80
+    links:
+      - "db:pgsql-server"
+
+  rabbitmq:
+    image: rabbitmq:management
+    hostname: myrabbit
+    container_name: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=${BROKER_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${BROKER_DEFAULT_PASSWORD}
+    ports:
+      - ${BROKER_PORT}:${BROKER_PORT}
+      - 15672:15672
+
+  # docker compose up -d
+  # celery -A celery_app worker -l info -P gevent
+  # celery -A celery_app flower --loglevel=INFO 
+  # celery -A celery_app worker --loglevel=INFO
+  # python init_database.py
+  # python main.py
+  
+  # flower:
+  #   image: mher/flower:0.9.4
+  #   environment:
+  #     - AMQP_USERNAME=${BROKER_DEFAULT_USER}
+  #     - AMQP_PASSWORD=${BROKER_DEFAULT_PASSWORD}
+  #     - AMQP_HOST=${BROKER_HOST}
+  #     - AMQP_PORT=${BROKER_PORT}
+  #     - AMQP_ADMIN_USERNAME=${BROKER_DEFAULT_USER}
+  #     - AMQP_ADMIN_PASSWORD=${BROKER_DEFAULT_PASSWORD}
+  #     - AMQP_ADMIN_HOST=${BROKER_HOST}
+  #     - AMQP_ADMIN_PORT=15672
+  #     - CELERY_BROKER_URL=amqp://${BROKER_DEFAULT_USER}:${BROKER_DEFAULT_PASSWORD}@${BROKER_HOST}:${BROKER_PORT}/
+  #     - FLOWER_PORT=5555
+  #   ports:
+  #     - "49555:5555"
