@@ -138,6 +138,8 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
                 has_restoration = False
             # protection_type = "NoProtection"
             cluster_id = grooming_output["cluster_id"]
+            if cluster_id == 'main':
+                cluster_id = 0
             previous_id = demand["id"]
             NET.add_demand(demand["source"],  demand["destination"], modulation = rwa_form["modulation_type"],
                             demand_type = demand_type, protection_type= protection_type,
@@ -241,16 +243,17 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
                             snr = restorationSNRs[restoration_index][second_restoration_index]
                             if not isinstance(snr, list):
                                 snr = [snr]
-                            restoration_info.append({
-                                'first_failure': restorationFailedLinks[restoration_index][second_restoration_index][0:2],
-                                'second_failure': restorationFailedLinks[restoration_index][second_restoration_index][2:4],
-                                'restoration_algorithm': 'Advanced',
-                                'info': {
-                                    'path': restorationPathList[restoration_index][second_restoration_index],
-                                    'regenerators': restorationPathRegenerators[restoration_index][second_restoration_index],
-                                    'snr': snr,
-                                }
-                            })
+                            if restorationFailedLinks[restoration_index][second_restoration_index]:
+                                restoration_info.append({
+                                    'first_failure': restorationFailedLinks[restoration_index][second_restoration_index][0:2],
+                                    'second_failure': restorationFailedLinks[restoration_index][second_restoration_index][2:4],
+                                    'restoration_algorithm': 'Advanced',
+                                    'info': {
+                                        'path': restorationPathList[restoration_index][second_restoration_index],
+                                        'regenerators': restorationPathRegenerators[restoration_index][second_restoration_index],
+                                        'snr': snr,
+                                    }
+                                })
                     elif restorationPathList[restoration_index] is not None:
                         snr = restorationSNRs[restoration_index]
                         if not isinstance(snr, list):
@@ -275,5 +278,5 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
     # import json
     # print(json.dumps(rwa_result.dict(), indent=4))
     self.update_state(state='SUCCESS', meta={'current': 100, 'total': 100, 'status':'RWA finished. Sending back the results'})
-    return rwa_result.dict()
+    return rwa_result.json()
 
