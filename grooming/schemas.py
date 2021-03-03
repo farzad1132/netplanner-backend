@@ -167,7 +167,7 @@ class GroomingResult(BaseModel):
     """
         keys of **traffic** are sub_tm_id
     """
-    service_devices: NodeStructure
+    node_structure: Optional[NodeStructure]
     traffic: Dict[str, GroomingOutput]
 
 class SubTM(BaseModel):
