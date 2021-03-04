@@ -40,6 +40,7 @@ class RWAModel(base):
     manager_id = Column(String, ForeignKey("User.id"))
     manager = relationship("UserModel", back_populates="rwa_algorithms")
     start_date = Column(DateTime, default=datetime.utcnow)
+    end_date = Column(DateTime, default=datetime.utcnow)
     form = Column("form", JSON, nullable=False)
     is_failed = Column("is_failed", Boolean, nullable=False, default=False)
     exception = Column("exception", String)
