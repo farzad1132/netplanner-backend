@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from .schemas import RWAForm, RWAResult, RWAIdList, RWAId, RWACheck, Lightpath
+from .schemas import RWAForm, RWAResult, RWAIdList, RWAId, RWACheck
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
 from projects.schemas import ProjectSchema
@@ -9,9 +9,7 @@ from projects.utils import GetProject
 from rwa.rwa_worker import rwa_task
 from grooming.schemas import GroomingResult
 from grooming.models import GroomingModel
-from models import ClusterModel
-from clusters.utils import cluster_list_to_cluster_dict
-from clusters.schemas import ClusterDict
+from rwa.models import RWAModel, RWARegisterModel
 
 rwa_router = APIRouter(
     tags=["Algorithms", "RWA"]
@@ -40,6 +38,18 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
                             grooming_result=GroomingResult(**{"traffic":grooming_result.traffic,
                                     "service_devices":grooming_result.service_devices}).dict(),
                             rwa_form= rwa_form.dict())
+    
+    register_record = RWARegisterModel( grooming_id=grooming_id,
+                                        project_id=project_id,
+                                        pt_id=project_db["physical_topology"]["id"],
+                                        tm_id=project_db["traffic_matrix"]["id"],
+                                        pt_version=project_db["physical_topology"]["version"],
+                                        tm_version=project_db["traffic_matrix"]["version"],
+                                        manager_id=user.id,
+                                        form=rwa_form.dict())
+    db.add(register_record)
+    db.commit()
+
     return {"rwa_id": task.id}
 
 @rwa_router.post("/v2.0.0/algorithms/rwa/check", status_code=200, response_model=List[RWACheck])
