@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship
 from database import base
 from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime
 from grooming.models import GroomingModel, GroomingRegisterModel
+from rwa.models import RWAModel, RWARegisterModel
 
 class PhysicalTopologyModel(base):
     __tablename__ = "PhysicalTopology"
@@ -68,6 +69,8 @@ class UserModel(base):
     role = Column("role", String, nullable= False)
     grooming_registers = relationship("GroomingRegisterModel", back_populates="manager")
     grooming_algorithms = relationship("GroomingModel", back_populates="manager")
+    rwa_registers = relationship("RWARegisterModel", back_populates="manager")
+    rwa_algorithms = relationship("RWAModel", back_populates="manager")
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
     
     def __repr__(self):
