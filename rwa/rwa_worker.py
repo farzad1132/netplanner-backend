@@ -143,7 +143,7 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
             NET.add_cluster(gateway, subnode_list, cluster_id)
     demand_info_list = []
     for sub_tm_id, grooming_output in grooming_result['traffic'].items():
-        for demand in grooming_output['lightpaths']:
+        for demand in grooming_output['lightpaths'].values():
             if demand["routing_type"] == "100GE":
                 demand_type = '100G'
             else:
@@ -220,7 +220,7 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
         print("INVALID SOLVER!")
         result_net = None 
 
-    output_lightpath_list = []
+    output_lightpath_dict = {}
     if result_net is not None:
         # result_net.print_results()
         # result_net.print_demand_list()
@@ -297,8 +297,8 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
             # routing info is completed
             lightpath_dict['routing_info'] = routing_info_dict
             lightpath_output = Lightpath(**lightpath_dict)
-            output_lightpath_list.append(lightpath_output)
-    result_dict = {'lightpaths': output_lightpath_list}
+            output_lightpath_dict[lightpath.demand.previous_id] = lightpath_output
+    result_dict = {'lightpaths': output_lightpath_dict}
     rwa_result = RWAResult(**result_dict)
     # import json
     # print(json.dumps(rwa_result.dict(), indent=4))
