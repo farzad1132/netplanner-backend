@@ -95,4 +95,7 @@ class RWAId(BaseModel):
     rwa_id: str
 
 class RWAResult(BaseModel):
-    lightpaths: List[Lightpath]
+    """
+        **lightpaths** keys are **lightpath_id**
+    """
+    lightpaths: Dict[str, Lightpath]
