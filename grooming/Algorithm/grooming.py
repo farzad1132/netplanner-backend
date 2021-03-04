@@ -436,7 +436,7 @@ def PS6X(Services_lower10_i):
 
 
 
-def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
+def grooming_fun( TM, MP1H_Threshold,  tmId, MP2X_Threshold=None):
         
         service_lower10_SDH=[]
         service_lower10_E=[]
@@ -454,7 +454,7 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
         Groomout10={"demands":{}}
         remaningnservices={"demands":{}}
         FinalLightPath={}
-        FinalLightPath.update({'LightPaths':[]})
+        FinalLightPath.update({'LightPaths':{}})
         FinalLightPath.update({"id":uuid.uuid4().hex})
         def addlightpath(source,destination,capacity,service_id_list,demand_id,Routing_type,groomout10_id_list, protection_type, restoration_type):
             lst=[]
@@ -476,7 +476,7 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
                 "restoration_type":  restoration_type,
                 "capacity": capacity
             }
-            FinalLightPath['LightPaths'].append(lp1)
+            FinalLightPath['LightPaths'].update({lightpathId:lp1})
             return lightpathId
         MP2x_dict={}
         TP1H_dict={}
@@ -517,20 +517,28 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
                             TP1H_dict[i].append((LPId,k))
                             device_dict[TM['demands'][i]["source"]]["TP1H"].append(
                                         {
-                                        "lightpath_id": LPId})
+                                            "panel" : "TP1H",
+                                            "sub_tm_id": tmId,
+                                            "lightpath_id": LPId})
                             device_dict[TM['demands'][i]["destination"]]["TP1H"].append(
                                         {
-                                        "lightpath_id": LPId}
+                                            "panel" : "TP1H",
+                                            "sub_tm_id": tmId,
+                                            "lightpath_id": LPId}
                             )
                         else:
                             TP1H_dict.update({TM["demands"][i]["id"]:[(LPId,k)]})
                             device_dict[TM['demands'][i]["source"]]["TP1H"].append(
                                         {
-                                        "lightpath_id": LPId
+                                            "panel" : "TP1H",
+                                            "sub_tm_id": tmId,
+                                            "lightpath_id": LPId
                                     })
                             device_dict[TM['demands'][i]["destination"]]["TP1H"].append(
                                         {
-                                        "lightpath_id": LPId}
+                                            "panel" : "TP1H",
+                                            "sub_tm_id": tmId,
+                                            "lightpath_id": LPId}
                             )
                 elif ((TM["demands"][i]["services"][j]["type"] == "STM64") or (TM["demands"][i]["services"][j]["type"] == "10GE")):
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
@@ -609,7 +617,9 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
                                         "line2":{
                                                 "demand_id": groom_out10_list[i][0],
                                                 "groomout_id": groom_out10_list[i][1][j][0]
-                                                    }
+                                                    },
+                                        "panel" : "MP2X",
+                                        "sub_tm_id": tmId,
                             })
 
                         device_dict[TM['demands'][groom_out10_list[i][0]]["destination"]]["MP2X"].append({
@@ -620,7 +630,9 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
                                         "line2":{
                                                 "demand_id": groom_out10_list[i][0],
                                                 "groomout_id": groom_out10_list[i][1][j][0]
-                                                    }
+                                                    },
+                                        "panel" : "MP2X",
+                                        "sub_tm_id": tmId,
 
 
                             }
@@ -642,14 +654,18 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
                                         "line1":{
                                                 "demand_id": groom_out10_list[i][0],
                                                 "groomout_id": groom_out10_list[i][1][m][0]
-                                                    }
+                                                    },
+                                        "panel" : "MP2X",
+                                        "sub_tm_id": tmId,
                             })
 
                         device_dict[TM['demands'][groom_out10_list[i][0]]["destination"]]["MP2X"].append({
                                         "line1":{
                                                 "demand_id": groom_out10_list[i][0],
                                                 "groomout_id": groom_out10_list[i][1][m][0]
-                                                }
+                                                },
+                                        "panel" : "MP2X",
+                                        "sub_tm_id": tmId,
                             }
 
                                 
@@ -701,9 +717,13 @@ def grooming_fun( TM, MP1H_Threshold, MP2X_Threshold=None):
                         restoration_type=TM["demands"][service_lower100[i][0]]["restoration_type"]
                         )
                     device_dict[TM['demands'][service_lower100[i][0]]["source"]]["MP1H"].append({
+                                    "panel" : "MP1H",
+                                    "sub_tm_id": tmId,
                                     "lightpath_id": LPId,
                     })
                     device_dict[TM['demands'][service_lower100[i][0]]["destination"]]["MP1H"].append({
+                                    "panel" : "MP1H",
+                                    "sub_tm_id": tmId,
                                     "lightpath_id": LPId
                     })
 
