@@ -14,13 +14,17 @@ class RWAHandle(Task):
         db = session()
         if (register:=db.query(RWARegisterModel)\
             .filter_by(id=task_id, is_deleted=False).one_or_none()):
-            rwa_res = RWAModel( project_id=register.project_id,
+            rwa_res = RWAModel( id=task_id,
+                                project_id=register.project_id,
                                 grooming_id=register.grooming_id,
                                 pt_id=register.pt_id,
                                 tm_id=register.tm_id,
+                                pt_version=register.pt_version,
+                                tm_version=register.tm_version,
                                 manager_id=register.manager_id,
                                 form=register.form,
-                                lightpaths=retval)
+                                lightpaths=retval["lightpaths"],
+                                start_date=register.start_date)
             db.add(rwa_res)
             db.commit()
             db.close()
@@ -33,7 +37,7 @@ class RWAHandle(Task):
             register.exception = exc
 
             db.add(register)
-            db.comment()
+            db.commit()
             db.close()
 
 
