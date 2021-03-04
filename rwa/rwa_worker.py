@@ -5,11 +5,36 @@ from celery.app.task import Task
 from physical_topology.schemas import PhysicalTopologySchema
 from clusters.schemas import ClusterDict
 from grooming.schemas import GroomingResult
-from rwa.schemas import RWAForm, RWAResult
+from rwa.schemas import Lightpath, RWAForm, RWAResult
+from database import session
+from rwa.models import RWAModel, RWARegisterModel
 
 class RWAHandle(Task):
     def on_success(self, retval, task_id, *args, **kwargs):
-        print("we are in success")
+        db = session()
+        if (register:=db.query(RWARegisterModel)\
+            .filter_by(id=task_id, is_deleted=False).one_or_none()):
+            rwa_res = RWAModel( project_id=register.project_id,
+                                grooming_id=register.grooming_id,
+                                pt_id=register.pt_id,
+                                tm_id=register.tm_id,
+                                manager_id=register.manager_id,
+                                form=register.form,
+                                lightpaths=retval)
+            db.add(rwa_res)
+            db.commit()
+            db.close()
+
+    def on_failure(self, exc, task_id, *args, **kwargs):
+        db = session()
+        if (register:=db.query(RWARegisterModel)\
+            .filter_by(id=task_id).one_or_none()) is not None:
+            register.is_failed = True
+            register.exception = exc
+
+            db.add(register)
+            db.comment()
+            db.close()
 
 
 @celeryapp.task(bind=True, base=RWAHandle)
@@ -278,5 +303,5 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
     # import json
     # print(json.dumps(rwa_result.dict(), indent=4))
     self.update_state(state='SUCCESS', meta={'current': 100, 'total': 100, 'status':'RWA finished. Sending back the results'})
-    return rwa_result.json()
+    return rwa_result.dict()
 
