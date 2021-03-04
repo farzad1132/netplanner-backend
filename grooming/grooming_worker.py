@@ -50,19 +50,30 @@ class GroomingHandle(Task):
             db.commit()
             db.close()
 
-# grooming_task ( traffic_matrix, mp1h_threshold, clusters):
-# Input:
-# required:
-# 		traffic_matrix: traffic matrix in form of “TrafficMatrixDB” class
-# mp1h_threshold: Threshold of MP1H devices
-# Physical_topology: physical topology  in form of "PhysicalTopologyDB" class
-# Optional:
-# 		clusters: clusters details in form of “ClusterDict” class
-# Output:
-# 	Result: a dictionary consists of fallowing keys:
-# 	"grooming_result": grooming results in form of class GroomingResult
-# 	"serviceMapping": if clusters input isn’t existing value of this key in None in otherwise value is mapping between original services and broken service based on clusters in form of “serviceMapping” class
-# 	"clustered_tms": if clusters input isn’t existing value of this key in None in otherwise value consists of traffic matrix of each cluster in form of “ClusteredTMs” class 
+# grooming_task ( traffficmatrix, mp1h_threshold, clusters, Physical_topology):
+
+# input:
+
+#    required:       
+
+#             traffficmatrix: traffic matrix in form of “TrafficMatrixDB” class  
+
+#             mp1h_threshold: Threshold of MP1H devices     
+
+#             Physical_topology: physical topology  in form of "PhysicalTopologyDB" class 
+
+#     Optional:      
+
+#              clusters: clusters details in form of “ClusterDict” class
+# output:
+#  Result: a dictionary consists of the following keys: 
+
+#     "grommingresult": grooming results in form of “GroomingResult”   class                
+
+#     "serviceMapping": if clusters input doesn’t exist the value of this key is None in otherwise the value is a mapping between original services and broken service based on clusters in form of “serviceMapping” class
+
+#     "clusteredtm": if clusters input doesn’t exist the value of this key is None in otherwise value consists of the traffic matrix of each cluster in form of “ClusteredTMs” class  
+
 
 @celeryapp.task(bind=True, base=GroomingHandle)
 def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters:ClusterDict, Physical_topology:PhysicalTopologyDB):
@@ -71,10 +82,10 @@ def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters
         service_mapping,clusteerdtm=Change_TM_acoordingTo_Clusters(traffic_matrix,clusters,mp1h_threshold)
         finalres={"traffic":{}}
         devicee={}
-        self.update_state(state='PROGRESS', meta={'current': 50, 'total': 100, 'status': 'Clustering Finished'})
+        self.update_state(state='PROGRESS', meta={'current': 40, 'total': 100, 'status': 'Clustering Finished'})
         for i in clusteerdtm['sub_tms'].keys():
             if i != traffic_matrix['id']:
-                res, dev=grooming_fun(clusteerdtm['sub_tms'][i]['tm'],mp1h_threshold)
+                res, dev=grooming_fun(TM = clusteerdtm['sub_tms'][i]['tm'], MP1H_Threshold = mp1h_threshold, tmId = i)
                 res.update({'cluster_id':i})
                 devicee.update({i:dev})
                 finalres["traffic"].update({i:res})
@@ -84,7 +95,7 @@ def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters
         self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Algorithm Finished'})
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":ServiceMapping(**service_mapping).dict(), "clustered_tms":ClusteredTMs(**clusteerdtm).dict()}
     else:
-        res, dev=grooming_fun(traffic_matrix['data'],mp1h_threshold)
+        res, dev=grooming_fun(TM = traffic_matrix['data'], MP1H_Threshold = mp1h_threshold, tmId = traffic_matrix['id'])
         devicee={traffic_matrix['id']:dev}
         device_final = Nodestructureservices(devicee, Physical_topology)
         self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Algorithm Finished'})

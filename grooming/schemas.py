@@ -133,6 +133,7 @@ class MP2XLine(BaseModel):
 
 class MP2X(BaseModel):
     panel = "MP2X"
+    sub_tm_id: str
     line1: MP2XLine
     line2: Optional[MP2XLine]
 
