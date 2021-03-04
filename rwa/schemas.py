@@ -41,6 +41,7 @@ class RWAForm(BaseModel):
     iterations: int = Field(4, ge=1)
     group_size:int = Field(4, ge=1)
     history_window: int = Field(30, ge=1)
+    comment: str
 
 class RWACheck(BaseModel):
     id: str
