@@ -24,6 +24,7 @@ class GroomingHandle(Task):
                                             tm_id=register.tm_id,
                                             pt_version=register.pt_version,
                                             tm_version=register.tm_version,
+                                            form=register.form,
                                             manager_id=register.manager_id,
                                             comment=register.comment,
                                             with_clustering=register.with_clustering,
