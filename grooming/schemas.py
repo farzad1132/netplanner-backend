@@ -228,6 +228,9 @@ class ServiceMapping(BaseModel):
     traffic_matrices: Dict[str, ServiceMappingDemands]
 
 class GroomingDBOut(GroomingInformation):
+    """
+        keys of **traffic** are **sub_tm_id**
+    """
     traffic: Dict[str, GroomingOutput]
     service_devices: NodeStructure
     clustered_tms: ClusteredTMs
