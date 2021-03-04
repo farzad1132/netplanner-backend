@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional, Dict, List
+from datetime import datetime
 
 class Algorithm(str, Enum):
     Greedy = "Greedy"
@@ -99,3 +100,34 @@ class RWAResult(BaseModel):
         **lightpaths** keys are **lightpath_id**
     """
     lightpaths: Dict[str, Lightpath]
+
+class RWADBOut(BaseModel):
+    id: str
+    project_id: str
+    grooming_id: str
+    pt_id: str
+    tm_id: str
+    pt_version: str
+    tm_version: str
+    form: RWAForm
+    lightpaths: Dict[str, Lightpath]
+
+    class Config:
+        orm_mode = True
+
+class RWAInformation(BaseModel):
+    id: str
+    grooming_id: str
+    form: RWAForm
+    pt_id: str
+    tm_id: str
+    pt_version: int
+    tm_version: int
+    start_date: datetime
+    end_date: datetime
+    
+    class Config:
+        orm_mode = True
+
+class FailedRWAInfo(RWAInformation):
+    exception: str
