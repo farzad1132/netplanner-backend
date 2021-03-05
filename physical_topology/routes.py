@@ -85,7 +85,7 @@ def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
         raise HTTPException(status_code=400, detail={"detail": "there is(are) error(s) in this file",
                                                      "physical_topology": pt})
 
-@pt_router.post('/v2.0.0/physical_topologies/check_excel', status_code=200)
+@pt_router.post('/v2.0.0/physical_topologies/check_excel', status_code=200, response_model=PhysicalTopologySchema)
 def check_excel(name: str = Body(...), pt_binary: UploadFile = File(None),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
@@ -98,7 +98,7 @@ def check_excel(name: str = Body(...), pt_binary: UploadFile = File(None),
         return 200
     flag, pt = excel_to_pt(pt_binary.file.read())
     if flag is True:
-        return 200
+        return pt
     else:
         raise HTTPException(status_code=400, detail={"detail": "there is(are) error(s) in this file",
                                                      "physical_topology": pt})

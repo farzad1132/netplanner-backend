@@ -85,7 +85,7 @@ def from_excel(name: str = Body(...), tm_binary: UploadFile = File(...),
     else:
         raise HTTPException(status_code=400, detail={"detail":"there is(are) error(s) in this file","traffic_matrix": tm})
 
-@tm_router.post('/v2.0.0/traffic_matrices/check_excel', status_code=200)
+@tm_router.post('/v2.0.0/traffic_matrices/check_excel', status_code=200, response_model=TrafficMatrixSchema)
 def check_excel(name: str = Body(...), tm_binary: UploadFile = File(None),
                 user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
@@ -98,6 +98,6 @@ def check_excel(name: str = Body(...), tm_binary: UploadFile = File(None),
         return None
     flag, tm = excel_to_tm(tm_binary.file.read())
     if flag is True:
-        return 200
+        return tm
     else:
         raise HTTPException(status_code=400, detail={"detail":"there is(are) error(s) in this file","traffic_matrix": tm})
