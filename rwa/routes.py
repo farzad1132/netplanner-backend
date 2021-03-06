@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from .schemas import RWAForm, RWAResult, RWAIdList, RWAId, RWACheck, RWADBOut, RWAInformation, FailedRWAInfo
+from .schemas import RWAForm, RWAIdList, RWAId, RWACheck, RWADBOut, RWAInformation, FailedRWAInfo
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
 from projects.schemas import ProjectSchema

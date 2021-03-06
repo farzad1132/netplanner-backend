@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, UploadFile, Body, HTTPException, File
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
 from traffic_matrix.schemas import (TrafficMatrixDB, TMId, TrafficMatrixPOST,
 TrafficMatrixPUT, TrafficMatrixSchema, TrafficMatrixOut)
-from typing import Optional, List
+from typing import List
 from traffic_matrix.utils import (GetTM, check_tm_name_conflict, get_tm_last_version, excel_to_tm,
 get_user_tms_id)
 from models import TrafficMatrixModel
 from users.schemas import User
 from uuid import uuid4
-import json
 
 tm_router = APIRouter(
     tags=["Traffic Matrix"]

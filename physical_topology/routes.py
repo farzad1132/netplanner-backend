@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, UploadFile, Body, HTTPException, File
-from pydantic import ValidationError
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
 from physical_topology.schemas import (PhysicalTopologyDB, PTId, PhysicalTopologyPOST,
@@ -10,7 +9,6 @@ get_user_pts_id)
 from models import PhysicalTopologyModel
 from users.schemas import User
 from uuid import uuid4
-import json
 
 pt_router = APIRouter(
     tags=["Physical Topology"]

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
-from clusters.schemas import ClusterSchema, ClusterIn, ClusterOut, ClusterDict, ClusterId
+from clusters.schemas import ClusterIn, ClusterOut, ClusterDict, ClusterId
 from typing import List
 from projects.utils import GetProject
 from users.schemas import User

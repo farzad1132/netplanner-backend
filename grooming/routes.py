@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List
-from grooming.schemas import (GroomingForm, GroomingId, GroomingCheck, GroomingResult, GroomingIdList, 
+from grooming.schemas import (GroomingForm, GroomingId, GroomingCheck, GroomingIdList, 
     GroomingInformation, GroomingDBOut, FailedGroomingInfo)
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user

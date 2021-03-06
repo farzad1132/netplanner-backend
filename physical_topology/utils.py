@@ -2,12 +2,10 @@ from models import PhysicalTopologyUsersModel, PhysicalTopologyModel
 from typing import Optional, List, Tuple
 from dependencies import auth_user, get_current_user, get_db
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, UploadFile, File
+from fastapi import Depends, HTTPException, File
 from users.schemas import User
 from physical_topology.schemas import methods, PhysicalTopologyDB, PhysicalTopologySchema
 from pandas import ExcelFile, read_excel
-from pydantic import ValidationError
-import json
 
 class GetPT:
     def __init__(self, mode: methods = methods.get):

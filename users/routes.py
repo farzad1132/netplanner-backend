@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Query, Body
+from fastapi import APIRouter, Depends, Request, Query, Body
 from users.schemas import RegisterForm, Token, UserSearch, User, RefreshToken
 from fastapi.security import OAuth2PasswordRequestForm
 from dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, auth_user,

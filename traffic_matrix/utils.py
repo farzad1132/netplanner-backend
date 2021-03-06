@@ -2,13 +2,11 @@ from models import TrafficMatrixModel, TrafficMatrixUsersModel
 from typing import Optional, List, Tuple
 from dependencies import auth_user, get_current_user, get_db
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, UploadFile, File
+from fastapi import Depends, HTTPException, File
 from users.schemas import User
 from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
 from physical_topology.schemas import methods
 from pandas import ExcelFile, read_excel
-from pydantic import ValidationError
-import json
 
 class GetTM:
     def __init__(self, mode: methods = methods.get):

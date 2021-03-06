@@ -1,11 +1,9 @@
 from celery_app import celeryapp
-import time
-import random
 from celery.app.task import Task
 from physical_topology.schemas import PhysicalTopologySchema
 from clusters.schemas import ClusterDict
 from grooming.schemas import GroomingResult
-from rwa.schemas import Lightpath, RWAForm, RWAResult
+from rwa.schemas import RWAForm, RWAResult
 from database import session
 from rwa.models import RWAModel, RWARegisterModel
 
