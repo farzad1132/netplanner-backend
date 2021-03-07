@@ -5,12 +5,6 @@ Created on Wed Nov 25 20:16:55 2020
 @author: Mostafa
 """
 
-#import matplotlib.pyplot as plt
-
-#from pickle import load as pickleload
-
-#from json import dump as jsonsave
-
 from tqdm import tqdm
 
 from numpy import cos,pi,exp,conj,real,log10,arange,sum,abs
@@ -209,19 +203,13 @@ def LookUpTableEntryAdder(
                     COIlambda/CHANNELBANDWIDTH
                     ]=(D_temp,E_temp,F_temp,G_temp)
 
-    LookUpTable['spec']='Channel Bandwidth = {}\nNum. of lambdas = {}\nNum. of MonteCarlo Points = {}\nRectangular Pulse Shape'.format(
-            CHANNELBANDWIDTH,
-            MAXNUMLAMBDA,
-            _NMC
-            )
-
-    LookUpTable['specdict']={
+    LookUpTableSpec={
             'ChannelBandwidth': CHANNELBANDWIDTH,
             'Numoflambdas': MAXNUMLAMBDA,
             'NumofMonteCarloPoints': _NMC
             }
 
-    return LookUpTable
+    return LookUpTable,LookUpTableSpec
 #%%
 def LookUpTableCreator(
         LinkDict,
@@ -246,7 +234,7 @@ def LookUpTableCreator(
                 LinkIndex,
                 TotalNumLinkSpec
                 ))
-        LookUpTable=LookUpTableEntryAdder(
+        LookUpTable,LookUpTableSpec=LookUpTableEntryAdder(
                 LookUpTable,
                 LinkParams['alpha'],
                 LinkParams['beta2'],
@@ -260,9 +248,9 @@ def LookUpTableCreator(
                 ROLL_OFF_FACTOR)
         LinkIndex+=1
 
-    return LookUpTable
+    return LookUpTable,LookUpTableSpec
 #%%
-def SNRCalculator(LPID,LookUpTable,LightPathDict,LinkDict):
+def SNRCalculator(LPID,LookUpTable,LookUpTableSpec,LightPathDict,LinkDict):
 
     '''Constants'''
     h=6.62607004e-34
@@ -278,7 +266,6 @@ def SNRCalculator(LPID,LookUpTable,LightPathDict,LinkDict):
     COILinks=list(zip(COINodes,COINodes[1:]))
     COIlambda=LightPathDict[LPID]['Wavelength']
 
-#    print(COILinks)
     for iLinkID in COILinks:
         LinkLPIDDict[iLinkID]=[]
 
@@ -299,36 +286,17 @@ def SNRCalculator(LPID,LookUpTable,LightPathDict,LinkDict):
             except ValueError:
                 continue
 
-#            try:
             LinkLPIDDict[iLinkID].append({
                     'LaunchPower': 10**(iLightPath['LaunchPower']*0.1-3),
                     'Wavelength': iLightPath['Wavelength'],
                     'Phi': iLightPath_Phi,
                     'Psi': iLightPath_Psi
                     })
-#            except:
-#                LinkLPIDDict[iLinkID]=set()
-#                LinkLPIDDict[iLinkID].add({
-#                        'LaunchPower': 10**(iLightPath['LaunchPower']*0.1-3),
-#                        'Wavelength': iLightPath['Wavelength'],
-#                        'Phi': iLightPath_Phi,
-#                        'Psi': iLightPath_Psi
-#                        })
-#                LinkLPIDDict[iLinkID].add((
-#                        10**(iLightPath['LaunchPower']*0.1-3),
-#                        iLightPath['Wavelength'],
-#                        iLightPath_Phi,
-#                        iLightPath_Psi
-#                        ))
 
     LinkTripleLPIDDict={}
 
-#    print('asasasasa',LinkLPIDDict)
-
     for iLink in LinkLPIDDict:
         LinkTripleLPIDDict[iLink]=[(ituple1,ituple2,ituple3) for ituple1 in LinkLPIDDict[iLink] for ituple2 in LinkLPIDDict[iLink] for ituple3 in LinkLPIDDict[iLink]]
-
-#    print('aaaaaaaaa',LinkTripleLPIDDict)
 
     for iLink in COILinks:
         LinkSpec=LinkDict[iLink]
@@ -340,17 +308,13 @@ def SNRCalculator(LPID,LookUpTable,LightPathDict,LinkDict):
                 LinkSpec['nspan'],
                 ]
         '''Adding NLIN'''
-#        print(NLI_terms[5,5,5,5])
         for ituple1,ituplet,ituple2 in LinkTripleLPIDDict[iLink]:
-#            print('{}\n{}\n{}\n\n'.format(ituple1,ituple2,ituplet))
             templambdatuple=(
                     ituple1['Wavelength'],
                     ituplet['Wavelength'],
                     ituple2['Wavelength'],
                     COIlambda
                     )
-
-#            print(NLI_terms[templambdatuple])
 
             try:
                 TotalNoise_Var+=ituple1['LaunchPower']*ituple2['LaunchPower']*ituplet['LaunchPower']*\
@@ -359,132 +323,21 @@ def SNRCalculator(LPID,LookUpTable,LightPathDict,LinkDict):
                  NLI_terms[templambdatuple][2]*ituple1['Phi']+\
                  NLI_terms[templambdatuple][3]*ituple1['Psi']\
                  )
-#                print((NLI_terms[templambdatuple][0]+\
-#                 NLI_terms[templambdatuple][1]*ituple2['Phi']+\
-#                 NLI_terms[templambdatuple][2]*ituple1['Phi']+\
-#                 NLI_terms[templambdatuple][3]*ituple1['Psi']\
-#                 ))
             except:
                 pass
-
-#        print(TotalNoise_PSD)
 
         '''Adding ASEN'''
         if LinkSpec['amp_gain']==None:
             _ampgain_=exp(LinkSpec['alpha']*LinkSpec['lspan'])
-#
-#    for iLink in range(NumLinks):
-#        G_ASE=G_ASE+h*nu/2*(10**(AmplifierGainList[iLink][0]/10+AmplifierNoiseFigureList[iLink][0]/10)-1)*LinkNumSpanList[iLink]*2
-        TotalNoise_Var+=h*nu/2*(10**(_ampgain_/10+LinkSpec['amp_nf']/10)-1)*LinkSpec['nspan']*2
-
-#        print(TotalNoise_PSD)
-
-#    for iLink in
-
-#    for iLink in LinkDict:
-#        LinkLambdaDict[iLink]=set()
-#    for iLink in LinkDict:
-#        LinkLambdaDict[iLink].add()
+            
+        TotalNoise_Var+=max([
+                h*nu/2*(_ampgain_*10**(LinkSpec['amp_nf']/10)-1)*LinkSpec['nspan']*2*LookUpTableSpec['ChannelBandwidth'],
+                0])
+        
+#        print(_ampgain_)
+        
+#        print(h*nu/2*(_ampgain_*10**(LinkSpec['amp_nf']/10)-1)*LinkSpec['nspan']*2*LookUpTableSpec['ChannelBandwidth'])
+        
+#        print(10**(_ampgain_/10+LinkSpec['amp_nf']/10)-1)
 
     return LightPathDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_Var)
-#    return LightPathDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_PSD*LookUpTable['specdict']['ChannelBandwidth'])
-#    return LinkLPIDDict,LinkTripleLPIDDict,NLI_terms
-##%%
-#def LookUpTable2CSV(LookUpTable,filename):
-#    csvfile=open('{}.csv'.format(filename),'w+')
-#    csvfile.writelines('ChannelBandwidth,{}\n'.format(LookUpTable['specdict']['ChannelBandwidth']))
-#    csvfile.writelines('Numoflambdas,{}\n'.format(LookUpTable['specdict']['Numoflambdas']))
-#    csvfile.writelines('NumofMonteCarloPoints,{}\n'.format(LookUpTable['specdict']['NumofMonteCarloPoints']))
-#    csvfile.writelines('alpha,beta2,gamma,Lspan,Nspan,kappa_1,kappa_t,kappa_2,COI,D,E,F,G\n')
-#    for i in LookUpTable:
-##        print(i)
-#        if not i=='spec' and not i=='specdict':
-#            for j in LookUpTable[i]:
-##                print(j)
-#                data=LookUpTable[i][j]
-##                print(data)
-#                csvfile.writelines('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(
-#                        i[0],i[1],i[2],i[3],i[4],j[0],j[1],j[2],j[3],
-#                        data[0],data[1],data[2],data[3],
-#                        ))
-##                csvfile.writelines('5,6,7,8')
-#    csvfile.close()
-#    return
-##%%
-#def SNRfromFile(filename,filetype):
-#    if filetype=='CSV':
-#        1
-#    elif filetype=='JSON':
-#        2
-#    else:
-#        raise Exception('Valid filetypes: CSV, JSON')
-#    return
-#%%
-#if __name__=='__main__':
-#    alpha=0.2/4.343e3
-#    beta2=-21e-27
-#    gamma=1.3e-3*1
-#    Lspan=80e3
-#    ampgain=None
-#    ampNF=5.5-10000
-##    ChBandwidth=50e9
-#
-#    dict_of_links={
-#            (1,2): {
-#                    'alpha': alpha,
-#                    'beta2': beta2,
-#                    'gamma': gamma,
-#                    'Lspan': Lspan,
-#                    'Nspan': 20,
-#                    'AmpGain': ampgain,
-#                    'AmpNF': ampNF,
-#                    },
-#            (2,3): {
-#                    'alpha': alpha,
-#                    'beta2': beta2,
-#                    'gamma': gamma,
-#                    'Lspan': Lspan,
-#                    'Nspan': 20,
-#                    'AmpGain': ampgain,
-#                    'AmpNF': ampNF,
-#                    }
-#            }
-#
-##    dict_of_LPs={
-##            2: {
-##                    'NodeList':[1,2],
-##                    'Wavelength':5,
-##                    'ModulationType':'QPSK',
-##                    'LaunchPower':0,
-##                },
-##            }
-#
-#    dict_of_LPs={
-#            1: {
-#                    'NodeList':[1,2,3],
-#                    'Wavelength':4,
-#                    'ModulationType':'QPSK',
-#                    'LaunchPower':3,
-#                },
-#            2: {
-#                    'NodeList':[1,2],
-#                    'Wavelength':5,
-#                    'ModulationType':'QPSK',
-#                    'LaunchPower':0,
-#                },
-#            4: {
-#                    'NodeList':[2,3],
-#                    'Wavelength':6,
-#                    'ModulationType':'QPSK',
-#                    'LaunchPower':2,
-#                }
-#            }
-#
-#    #%%
-#    x={}
-#    x=LookUpTableEntryAdder(x,4.6e-5,-21e-27,1.3e-3,100e3,5)
-#    u=LookUpTablefromLinkSpec(dict_of_links,32e9,32e9,printlog=True)
-#    #%%
-#    LookUpTable2CSV(u,'L1')
-#    #%%
-#    t=SNRfromLookUpTable(2,u,dict_of_LPs,dict_of_links)

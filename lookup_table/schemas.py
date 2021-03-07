@@ -13,7 +13,7 @@ class LookUpTableLink(BaseModel):
     amp_gain: float = Field(None)
     amp_nf: float = Field(5)
 
-class LookUpTableIn(BaseModel):
+class LookUpTableInput(BaseModel):
     """
         keys for **links** are links source and destination
     """
@@ -25,8 +25,12 @@ class LookUpTableIn(BaseModel):
     max_num_lambda: int = Field(10, ge=1)
     roll_off_factor: float = Field(0, ge=0, le=1)
 
-# TODO: add LookUpTableOut
-#class LookUpTableOut:
+class LookUpTableOutput:
+    lookup_table: Dict[
+            Tuple[float, float, float, float, int],
+            Tuple[float, float, float, float]
+            ]
+    lookup_table_spec: Dict[str, float]
     
 
 class SNRCalculatorLightpath(BaseModel):
@@ -35,7 +39,7 @@ class SNRCalculatorLightpath(BaseModel):
     modulation_type: RWAForm.ModulationType = RWAForm.ModulationType.QPSK
     launch_power: float
 
-class SNRCalculatorIn(BaseModel):
+class SNRCalculatorInput(BaseModel):
     links: Dict[Tuple[str, str], LookUpTableLink]
     lightpaths: Dict[str, SNRCalculatorLightpath]
     lpid: str
@@ -43,7 +47,6 @@ class SNRCalculatorIn(BaseModel):
             Tuple[float,float,float,float,int],
             Dict[Tuple[int,int,int,int],float]
             ]
-    # TODO: add LookUpTableOut
 
-class SNRCalculatorOut(BaseModel):
+class SNRCalculatorOutput(BaseModel):
     snr_db: float

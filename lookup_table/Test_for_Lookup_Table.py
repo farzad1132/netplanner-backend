@@ -7,8 +7,9 @@ Created on Mon Feb  8 22:49:14 2021
 
 from LookUp_Table import LookUpTableCreator,SNRCalculator
 
-from schemas import LookUpTableLink,LookUpTableIn,SNRCalculatorLightpath,\
-SNRCalculatorIn,SNRCalculatorOut
+from schemas import *
+#from schemas import LookUpTableLink,LookUpTableIn,SNRCalculatorLightpath,\
+#SNRCalculatorIn,SNRCalculatorOut
 #import
 
 #import sys
@@ -78,18 +79,18 @@ if __name__=='__main__':
     #%%
     x={}
 #    x=LookUpTableEntryAdder(x,4.6e-5,-21e-27,1.3e-3,100e3,5)
-    LUT=LookUpTableCreator(LinkDict,32e9,32e9,printlog=True)
+    LUT,LookUpTableSpec=LookUpTableCreator(LinkDict,32e9,32e9,printlog=True)
     #%%
-    Service_SNR=SNRCalculator(2,LUT,LightPathDict,LinkDict)
+    Service_SNR=SNRCalculator(2,LUT,LookUpTableSpec,LightPathDict,LinkDict)
     
     #%% Schemas checking
     
-    print(LookUpTableLink(**LinkDict[1,2]))
-    
-    print(LookUpTableIn(links=LinkDict,symbol_rate=32e9,channel_bandwith=32e9))
-    
-    print(SNRCalculatorIn(lpid=2,lookuptableout=LUT,lightpaths=LightPathDict,links=LinkDict))
-    
-    print(SNRCalculatorOut(snr_db=Service_SNR))
+#    print(LookUpTableLink(**LinkDict[1,2]))
+#    
+#    print(LookUpTableInput(links=LinkDict,symbol_rate=32e9,channel_bandwith=32e9))
+#    
+#    print(SNRCalculatorInput(lpid=2,lookuptableout=LUT,lightpaths=LightPathDict,links=LinkDict))
+#    
+#    print(SNRCalculatorOutput(snr_db=Service_SNR))
     
     
