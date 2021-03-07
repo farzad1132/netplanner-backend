@@ -9,7 +9,7 @@ Created on Wed Feb  3 00:55:20 2021
 #SolveOptimizationProblem,ParseResults,BoundsListCreator,\
 #BoundConstraintDictCreator,InjectResults
 
-from Gain_Opt import GainOptSolver
+from Gain_Opt import opt_api
 
 import numpy as np
 
@@ -29,15 +29,15 @@ if __name__=='__main__':
     # VOA indexing (nodeID,input_degreeID,output_degreeID)
     # All scales must be linear!
     '''
-    LinkDict={
+    linkdict={
             linkID: [(span1alpha(dB/km),span1len(km)),(span2alpha(dB/km),span2len(km))]
             }
 
-    LightPathDict={
+    lightpathdict={
             LPID: (NodeList,lambda,add_port_index,add_transponder_index,drop_port_index,drop_transponder_index)
             }
 
-    NodeDict={
+    nodedict={
             NodeID: {
                     'addport': ( num_of_tx_at_add_port_1 , num_of_tx_at_add_port_2 , ... ),
                     'dropport': ( num_of_rx_at_drop_port_1 , num_of_rx_at_drop_port_2 , ... )
@@ -78,9 +78,9 @@ if __name__=='__main__':
         links_mask[j,i]=links_mask1[i,j]
         links_mask[i,j]=links_mask1[i,j]
 
-    NodeDict={}
-#    NodeDict1={}
-    LinkDict={}
+    nodedict={}
+#    nodedict1={}
+    linkdict={}
 
     NF_eq=lambda g: 1e-6*(g-500)**2+3
 
@@ -105,123 +105,123 @@ if __name__=='__main__':
 #        else:
 #            ran_numspan=links_mask[i,j]
 
-        LinkDict[i,j]={'numspan': ran_numspan}
+        linkdict[i,j]={'span_count': ran_numspan, 'spans': []}
 
 #        print(i,j)
 
         for ispan in range(1,1+ran_numspan):
 
-            LinkDict[i,j][ispan]={
+            linkdict[i,j]['spans'].append({
                     'alpha': 0.2,
                     'length': span_length,
-                    'AmpNF': NF_eq,
-                    'AmpPSEN_dBm': 0,
-                    'AmpPSAT_dBm': 10,
-                    'maxgain_dB': 33,
-                    'mingain_dB': 13,
-                    'maxatt_dB': 20,
-                    'minatt_dB': 0,
-                    }
+                    'amp_nf': NF_eq,
+                    'amp_psen_dbm': 0,
+                    'amp_psat_dbm': 10,
+                    'maxgain_db': 33,
+                    'mingain_db': 13,
+                    'maxatt_db': 20,
+                    'minatt_db': 0,
+                    })
+    #######################################
+    for i,j in linkdict:
+        nodedict[i]={}
+        nodedict[j]={}
 
-    for i,j in LinkDict:
-        NodeDict[i]={}
-        NodeDict[j]={}
+        nodedict[i]['pre_amp']={}
+        nodedict[i]['booster']={}
+        nodedict[i]['splitter']={}
+        nodedict[i]['wss']={}
 
-        NodeDict[i]['pre_amp']={}
-        NodeDict[i]['booster']={}
-        NodeDict[i]['splitter']={}
-        NodeDict[i]['WSS']={}
+        nodedict[j]['pre_amp']={}
+        nodedict[j]['booster']={}
+        nodedict[j]['splitter']={}
+        nodedict[j]['wss']={}
 
-        NodeDict[j]['pre_amp']={}
-        NodeDict[j]['booster']={}
-        NodeDict[j]['splitter']={}
-        NodeDict[j]['WSS']={}
-
-    for i,j in LinkDict:
-        NodeDict[i]['booster'][i,j]={
-                'NF': NF_eq,
-                'P_SEN_dBm': 0,
-                'P_SAT_dBm': 10,
-                'maxgain_dB': 33,
-                'mingain_dB': 13,
-                'maxatt_dB': 20,
-                'minatt_dB': 0,
+    for i,j in linkdict:
+        nodedict[i]['booster'][j]={
+                'nf': NF_eq,
+                'amp_psen_dbm': 0,
+                'amp_psat_dbm': 10,
+                'maxgain_db': 33,
+                'mingain_db': 13,
+                'maxatt_db': 20,
+                'minatt_db': 0,
                 }
 
-        NodeDict[j]['pre_amp'][i,j]={
-                'NF': NF_eq,
-                'P_SEN_dBm': 0,
-                'P_SAT_dBm': 10,
-                'maxgain_dB': 33,
-                'mingain_dB': 13,
-                'maxatt_dB': 20,
-                'minatt_dB': 0,
+        nodedict[j]['pre_amp'][i]={
+                'nf': NF_eq,
+                'amp_psen_dbm': 0,
+                'amp_psat_dbm': 10,
+                'maxgain_db': 33,
+                'mingain_db': 13,
+                'maxatt_db': 20,
+                'minatt_db': 0,
                 }
 
-        NodeDict[j]['splitter'][i,j]={'loss_dB': 3,}
+        nodedict[j]['splitter'][i]={'loss_db': 3,}
 
-    for i,j1 in LinkDict:
-        for j2,k in LinkDict:
+    for i,j1 in linkdict:
+        for j2,k in linkdict:
             if j1==j2 and not i==k:
-                NodeDict[j1]['WSS'][i,j1,k]={
-                        'ins_loss_dB': 5,
-                        'VOA': {
-                                'maxatt_dB': 20,
-                                'minatt_dB': 0,
+                nodedict[j1]['wss'][i,k]={
+                        'ins_loss_db': 5,
+                        'voa': {
+                                'maxatt_db': 20,
+                                'minatt_db': 0,
                                 },
                         }
 
-    LightPathDict={
+    lightpathdict={
             1: {
-                    'Wavelength': 50e9,
-                    'NodeList': ['A','B','J'],
+                    'wavelength': 50e9,
+                    'node_list': ['A','B','J'],
 #                    'add_port_index': 0,
 #                    'add_transponder_index': 2,
 #                    'drop_port_index': 2,
 #                    'drop_transponder_index': 0,
                     },
             2: {
-                    'Wavelength': 50e9,
-                    'NodeList': ['C','A','G'],
+                    'wavelength': 50e9,
+                    'node_list': ['C','A','G'],
 #                    'add_port_index': 0,
 #                    'add_transponder_index': 2,
 #                    'drop_port_index': 2,
 #                    'drop_transponder_index': 0,
                     },
             3: {
-                    'Wavelength': 100e9,
-                    'NodeList': ['F','E','C','D','I'],
+                    'wavelength': 100e9,
+                    'node_list': ['F','E','C','D','I'],
 #                    'add_port_index': 0,
 #                    'add_transponder_index': 2,
 #                    'drop_port_index': 2,
 #                    'drop_transponder_index': 0,
                     },
             4: {
-                    'Wavelength': 50e9,
-                    'NodeList': ['D','I','B','J'],
+                    'wavelength': 50e9,
+                    'node_list': ['D','I','B','J'],
 #                    'add_port_index': 0,
 #                    'add_transponder_index': 2,
 #                    'drop_port_index': 2,
 #                    'drop_transponder_index': 0,
                     },
             5: {
-                    'Wavelength': 50e9,
-                    'NodeList': ['J','H','G'],
+                    'wavelength': 50e9,
+                    'node_list': ['J','H','G'],
 #                    'add_port_index': 0,
 #                    'add_transponder_index': 2,
 #                    'drop_port_index': 2,
 #                    'drop_transponder_index': 0,
                     },
             6: {
-                    'Wavelength': 100e9,
-                    'NodeList': ['G','A','B','I'],
+                    'wavelength': 100e9,
+                    'node_list': ['G','A','B','I'],
 #                    'add_port_index': 0,
 #                    'add_transponder_index': 2,
 #                    'drop_port_index': 2,
 #                    'drop_transponder_index': 0,
                     },
             }
-#        LightPathDict={
+#        lightpathdict={
 ##            1: {
 ##                    'Wavelength': 50e9,
 ##                    'NodeList': [1,2],
@@ -264,161 +264,53 @@ if __name__=='__main__':
 #                    },
 #            }
     #%%
-    NodeDict1,LinkDict1,LightPathDict1,ElapsedTime=GainOptSolver(NodeDict,LinkDict,LightPathDict)
-#    NodeDict1,LinkDict1,LightPathDict1=NodeDict,LinkDict,LightPathDict
-    #%% Test for schemas.py
-#    from schemas import *
-#    for i in 
-#    print(Span(**LinkDict['A','B'][1]))
-##    print(PowerOptLinkIn(**LinkDict['A','B']))
-#    print(PowerOptNodesLink(**NodeDict['A']['pre_amp']['J','A']))
-#    print(PowerOptNodesLink(**NodeDict['A']['booster']['A','J']))
-#    print(PowerOptNodesSplitter(**NodeDict['A']['splitter']['B','A']))
-#    print(PowerOptNodesWSS(**NodeDict['A']['WSS']['B','A','C']))
-#    print(PowerOptVOA(**NodeDict['A']['WSS']['B','A','C']['VOA']))
-#    print(PowerOptNodeIn(**NodeDict['A']))
-#    print(PowerOptLightpathIn(**LightPathDict[1]))
-#    print(PowerOptIn(**NodeDict))
-#    print(PowerOptIn(nodes=NodeDict,links=LinkDict,lightpaths=LightPathDict))
-    
-    print(SpanOutput(**LinkDict1['A','B'][1]))
-    print(PowerOptLinkOut(**LinkDict1['A','B']))
-#    PowerOptVOA
-    
-#    t0=time()
-#    set_of_all_triple_links=set()
-#    for iLP in LightPathDict.values():
-#        set_of_all_triple_links|=set(zip(iLP['NodeList'],iLP['NodeList'][1:],iLP['NodeList'][2:]))
-#    #%%
-#    set_of_all_links=set()
-#    for iLP in LightPathDict.values():
-#        set_of_all_links|=set(zip(iLP['NodeList'],iLP['NodeList'][1:]))
-#
-#    set_of_all_nodes=set()
-#    for iLP in LightPathDict.values():
-#        set_of_all_nodes|=set(iLP['NodeList'])
-#
-#    LinkDict_copy=LinkDict.copy()
-#    NodeDict_copy=NodeDict.copy()
-#
-#    for link_ in LinkDict_copy:
-#        if link_ not in set_of_all_links:
-#            try:
-#                LinkDict.pop(link_)
-#            except:
-#                pass
-#
-#    for node_ in NodeDict_copy:
-#        if node_ not in set_of_all_nodes:
-#            try:
-#                NodeDict.pop(link_)
-#            except:
-#                pass
-#
-#
-#
-#    #%%
-#    ParameterDict,VariableDict,var2x,x2var,set_of_all_links=Extract_Params(
-#        NodeDict,
-#        LinkDict,
-#        LightPathDict,
-#        )
-#    #%%
-#    BoundConstraintDict=BoundConstraintDictCreator(
-#            LinkDict,
-#            var2x,
-#            ParameterDict,
-#            set_of_all_triple_links
+#    nodedictMid,linkdictMid,lightpathdictMid,ElapsedTime=opt_api(
+#            nodedict,
+#            linkdict,
+#            lightpathdict,
+#            opt_method='CG',
+#            printlog=True
 #            )
-#
-##    BoundConstraintDict={}
-##    BoundConstraintDict['maxgain_voa-at-span']={}
-##    BoundConstraintDict['mingain-voa-at-span']={}
-##
-##    for i,j in LinkDict:
-##        for n_s in range(1,1+LinkDict[i,j]['numspan']):
-##
-##            if n_s==1:
-##
-##                BoundConstraintDict['maxgain_voa-at-span'][i,j,n_s]=\
-##                lambda x: ParameterDict['maxgain_voa'][i,j,n_s]*\
-##                ParameterDict['span-attenuation'][i,j,n_s]*\
-##                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])-1
-##
-##                BoundConstraintDict['mingain-voa-at-span'][i,j,n_s]=\
-##                lambda x: -ParameterDict['mingain_voa'][i,j,n_s]*\
-##                ParameterDict['span-attenuation'][i,j,n_s]*\
-##                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])+1
-##
-##            else:
-##
-###                print(n_s)
-###                print(i,j)
-##
-##                BoundConstraintDict['maxgain_voa-at-span'][i,j,n_s]=\
-##                lambda x: ParameterDict['maxgain_voa'][i,j,n_s]*\
-##                ParameterDict['span-attenuation'][i,j,n_s]*\
-##                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])-\
-##                array(x)[var2x['B',(i,j,n_s-1)]]
-##
-##                BoundConstraintDict['mingain-voa-at-span'][i,j,n_s]=\
-##                lambda x: -ParameterDict['mingain_voa'][i,j,n_s]*\
-##                ParameterDict['span-attenuation'][i,j,n_s]*\
-##                prod(array(x)[[var2x['B',(i,j,n_s)],var2x['lsg',(i,j,n_s)]]])+\
-##                array(x)[var2x['B',(i,j,n_s-1)]]
-#    #%%
-#    FullConstraint=FullConstraintCreator(
-#        ParameterDict,
-#        var2x,
-#        NodeDict,
-#        LinkDict,
-#        LightPathDict,
-#        set_of_all_links,
-#        BoundConstraintDict,
-#        )
-##    #%%
-##    ttt=BoundConstraintDictCreator(LinkDict,var2x,ParameterDict)
-#
-#    BoundsList=BoundsListCreator(ParameterDict,var2x)
-#    #%%
-#    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList)
-#    #%%
-#    OptimalPoint=OptProblemOutput.x
-#    #%%
-#    CrudeResult=ParseResults(
-#        OptimalPoint,
-#        x2var,
-#        VariableDict,
-#        ParameterDict,
-#        set_of_all_links,
-##        NodeDict,
-#        LinkDict,
-#        LightPathDict
-#        )
-#    #%%
-#    NodeDict,LinkDict,LightPathDict=InjectResults(CrudeResult,NodeDict,LinkDict,LightPathDict)
-#    #%%
-#    w=CrudeResult.copy()
-#    for key in w:
-#        for key2 in w[key]:
-#            if w[key][key2]<0:
-#                print(key,key2)
-#
-#    print(w)
-#
-#    ET=time()-t0
-#
-#    print('ET',ET)
-##    '''Test'''
-##    #%%
-##    x=np.random.rand(len(var2x))
-##    k=0
-##    for u1 in BoundConstraintDict:
-##        for u2 in BoundConstraintDict[u1]:
-##            temp=BoundConstraintDict[u1][u2]
-###            print(k)
-###            k=k+1
-##            print(u1)
-##            print()
-##            print(u2)
-##            p(temp,x)
+    nodedict1,linkdict1,lightpathdict1,ElapsedTime=opt_api(
+            nodedict,
+            linkdict,
+            lightpathdict,
+            opt_method='SLSQP',
+            printlog=True,
+            channel_bandwidth=32e9,
+            )
+    #%%
+#    nodedict1,linkdict1,lightpathdict1,ElapsedTime=GainOptSolver(
+#            nodedict,
+#            linkdict,
+#            lightpathdict,
+#            'SLSQP'
+#            )
+    print('Elapsed time (min) = {}'.format(ElapsedTime/60))
+#    nodedict1,linkdict1,lightpathdict1=nodedict,linkdict,lightpathdict
+    #%% Test for schemas.py
+    print(PowerOptSpan(**linkdict['A','B']['spans'][0]))
+    print(PowerOptAmplifier(**nodedict['A']['pre_amp']['B']))
+    print(PowerOptAmplifier(**nodedict['A']['booster']['B']))
+    print(PowerOptVOA(**nodedict['A']['wss']['B','C']['voa']))
+    print(PowerOptSplitter(**nodedict['A']['splitter']['B']))
+    print(PowerOptWSS(**nodedict['A']['wss']['B','C']))
+    print('\n=============================================\n')
+    print(PowerOptNode(**nodedict['A']))
+    print(PowerOptLink(**linkdict['A','B']))
+    print(PowerOptLightpath(**lightpathdict[1]))
+    print('\n=============================================\n')
+    print(GainOptInput(
+            node_dict=nodedict,
+            link_dict=linkdict,
+            lightpath_dict=lightpathdict,
+            opt_method='trust-constr',
+            printlog=True,
+            channel_bandwidth=32e9,
+            ))
+    print(GainOptOutput(
+            node_dict=nodedict1,
+            link_dict=linkdict1,
+            lightpath_dict=lightpathdict1,
+            elapsed_time=ElapsedTime
+            ))

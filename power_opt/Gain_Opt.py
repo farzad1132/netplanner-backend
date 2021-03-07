@@ -5,7 +5,7 @@ Created on Tue Feb  2 11:41:11 2021
 @author: Mostafa
 """
 
-from numpy import array,prod,log10
+from numpy import array,prod,log10,float64
 #import numpy as np
 from scipy.optimize import minimize
 from time import time
@@ -47,6 +47,7 @@ def FuncSingleConstraintCreator_LHS(
         LightPathNodeList=None,
         constraint_type=None,
         constraint_part=None,
+        channel_bandwidth=32e9
         ):
     '''
     *This function runs for each of the summands of the multiple summations.*
@@ -64,7 +65,7 @@ def FuncSingleConstraintCreator_LHS(
 #    kernel_constraint=[]
     h=6.626e-34
     nu_opt=299792458/1550e-9
-    W=32e9
+    W=channel_bandwidth
     '''LHS Kernel; the primary coefficient at all the constraints before sigmas'''
     x_indices=[]
 
@@ -317,7 +318,6 @@ def BoundsListCreator(ParameterDict,var2x):
     '''
     for i in range(len(var2x)):
         if i not in BoundsDict:
-#            BoundsDict[i]=(0,100)
             BoundsDict[i]=(1e-4,1e-2)
 
     ''''''
@@ -564,6 +564,7 @@ def FullConstraintCreator(
         LightPathDict,
         set_of_all_links,
         BoundConstraintDict,
+        channel_bandwidth=32e9,
         ):
     Constraint_LHS={}
     Constraint_LHS['sen']={}
@@ -611,6 +612,7 @@ def FullConstraintCreator(
                                 LightPathNodeList=LPNodeList,
                                 constraint_type='sen',
                                 constraint_part='signal-power',
+                                channel_bandwidth=channel_bandwidth,
                                 ))
                 Constraint_LHS['sat'][i,j,n_s].append(
                         FuncSingleConstraintCreator_LHS(
@@ -623,6 +625,7 @@ def FullConstraintCreator(
                                 LightPathNodeList=LPNodeList,
                                 constraint_type='sat',
                                 constraint_part='signal-power',
+                                channel_bandwidth=channel_bandwidth,
                                 ))
 
                 '''LHS; booster noise part '''
@@ -643,6 +646,7 @@ def FullConstraintCreator(
                                     LightPathNodeList=LPNodeList,
                                     constraint_type='sen',
                                     constraint_part='booster',
+                                    channel_bandwidth=channel_bandwidth,
                                     ))
                     Constraint_LHS['sat'][i,j,n_s].append(
                             FuncSingleConstraintCreator_LHS(
@@ -656,6 +660,7 @@ def FullConstraintCreator(
                                     LightPathNodeList=LPNodeList,
                                     constraint_type='sat',
                                     constraint_part='booster',
+                                    channel_bandwidth=channel_bandwidth,
                                     ))
 
                 '''LHS; pre-amp noise part '''
@@ -676,6 +681,7 @@ def FullConstraintCreator(
                                     LightPathNodeList=LPNodeList,
                                     constraint_type='sen',
                                     constraint_part='pre_amp',
+                                    channel_bandwidth=channel_bandwidth,
                                     ))
                     Constraint_LHS['sat'][i,j,n_s].append(
                             FuncSingleConstraintCreator_LHS(
@@ -689,6 +695,7 @@ def FullConstraintCreator(
                                     LightPathNodeList=LPNodeList,
                                     constraint_type='sat',
                                     constraint_part='pre_amp',
+                                    channel_bandwidth=channel_bandwidth,
                                     ))
 
                 '''LHS; link-span amp noise part '''
@@ -711,6 +718,7 @@ def FullConstraintCreator(
                                         LightPathNodeList=LPNodeList,
                                         constraint_type='sen',
                                         constraint_part='span',
+                                        channel_bandwidth=channel_bandwidth,
                                         ))
                         Constraint_LHS['sat'][i,j,n_s].append(
                                 FuncSingleConstraintCreator_LHS(
@@ -725,6 +733,7 @@ def FullConstraintCreator(
                                         LightPathNodeList=LPNodeList,
                                         constraint_type='sat',
                                         constraint_part='span',
+                                        channel_bandwidth=channel_bandwidth,
                                         ))
 
     FullConstraint={}
@@ -754,38 +763,38 @@ def ConstraintAppender(ConstraintList,SingleConstraint):
             })
     return ConstraintList
 #%%
-def SolveOptimizationProblem(FullConstraint,BoundsList,InitialPointsList):
+def SolveOptimizationProblem(FullConstraint,BoundsList,InitialPointsList,opt_method,printlog):
     '''For now, the obj function is constantly zero'''
     print('Optimization Started!')
-#    NumVar=len(BoundsList)
-#    x0=[10]*NumVar
+    NumVar=len(BoundsList)
     obj_func=lambda x: 0
     constraints_list=[]
-
-#    bounds=[
-#            (0,10)
-#            ]*NumVar
-
-#    bounds[3]=(0.001,1)
-#    bounds[5]=(0.001,1)
 
     for constraint in FullConstraint.values():
         constraints_list=ConstraintAppender(constraints_list,constraint)
 
-#    constraints_list_copy=constraints_list.copy()
-
-#    print('oooooooooooooooooooooooo')
-
     opt_result = minimize(
             obj_func,
-#            x0,
             InitialPointsList,
-            method='COBYLA',
-#            bounds=tuple(bounds),
+            method=opt_method,
+            jac=lambda x: array([0]*NumVar,dtype=float64),
+            hess=lambda x: array([[0]*NumVar]*NumVar,dtype=float64),
             bounds=tuple(BoundsList),
             constraints=tuple(constraints_list)
             )
-
+    
+    if printlog:
+        
+        for constraint in FullConstraint.values():
+            if constraint(opt_result.x)>=0:
+                print(constraint(opt_result.x))
+                
+        print('\n==============================\n')
+        
+        for constraint in FullConstraint.values():
+            if constraint(opt_result.x)<0:
+                print(constraint(opt_result.x))
+    
     return opt_result
 #%%
 def ParseResults(
@@ -816,8 +825,6 @@ def ParseResults(
     PrimaryVariableDict['og']={}
     PrimaryVariableDict['ov']={}
 
-#    PrimaryVariableDict['G']={}
-
     MidStepVariableDict={}
     MidStepVariableDict['G']={}
 
@@ -828,8 +835,6 @@ def ParseResults(
     for LP in LightPathDict.values():
         LPNodeList=LP['NodeList']
         set_of_all_triple_links|=set(zip(LPNodeList,LPNodeList[1:],LPNodeList[2:]))
-
-#    print(set_of_all_triple_links)
 
     for LPID in VariableDict['P_net']:
         PrimaryVariableDict['LP-power-at-src-output'][LPID]=VariableDict['P_net'][LPID]
@@ -853,7 +858,6 @@ def ParseResults(
         PrimaryVariableDict['ov']=VariableDict['ov']
 
         for n_s in range(1,1+LinkDict[i,j]['numspan']):
-#            print(i,j,n_s)
 
             PrimaryVariableDict['lsg'][i,j,n_s]=VariableDict['lsg'][i,j,n_s]
 
@@ -902,7 +906,7 @@ def InjectResults(
 
     return NodeDict,LinkDict,LightPathDict
 #%%
-def GainOptSolver(NodeDict,LinkDict,LightPathDict):
+def GainOptSolver(NodeDict,LinkDict,LightPathDict,opt_method,printlog,channel_bandwidth):
 
     t0=time()
     set_of_all_triple_links=set()
@@ -955,17 +959,14 @@ def GainOptSolver(NodeDict,LinkDict,LightPathDict):
         LightPathDict,
         set_of_all_links,
         BoundConstraintDict,
+        channel_bandwidth,
         )
 
     BoundsList=BoundsListCreator(ParameterDict,var2x)
 
-#    InitialPointsList=InitialPointsListCreator(ParameterDict,var2x)
-
     InitialPointsList=InitialPointsListCreator(LinkDict,ParameterDict,var2x,set_of_all_triple_links)
 
-    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList,InitialPointsList)
-
-#    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList)
+    OptProblemOutput=SolveOptimizationProblem(FullConstraint,BoundsList,InitialPointsList,opt_method,printlog)
 
     OptimalPoint=OptProblemOutput.x
 
@@ -985,26 +986,128 @@ def GainOptSolver(NodeDict,LinkDict,LightPathDict):
 
     return NodeDict,LinkDict,LightPathDict,ElapsedTime
 #%%
-def silentpop(dictionary,key):
-    try:
-        dictionary.pop(key)
-    except:
-        pass
-    return
-#%%
-def opt_api(nodedict,linkdict,lightpathdict):
+def opt_api(nodedict,linkdict,lightpathdict,opt_method='SLSQP',printlog=False,channel_bandwidth=32e9):
+    
+    # input api
+    
+    NodeDict={}
+    LinkDict={}
+    LightPathDict={}
     
     for i in nodedict:
-        nodedict[i]['wss']=nodedict[i]['WSS']
-        silentpop(nodedict[i],'WSS')
+        NodeDict[i]={
+                'pre_amp':  {},
+                'booster':  {},
+                'splitter': {},
+                'WSS':      {},
+                }
+        for j in nodedict[i]['pre_amp']:
+            pre_amp_spec=nodedict[i]['pre_amp'][j]
+            NodeDict[i]['pre_amp'][j,i]={
+                    'NF':         pre_amp_spec['nf'],
+                    'P_SEN_dBm':  pre_amp_spec['amp_psen_dbm'],
+                    'P_SAT_dBm':  pre_amp_spec['amp_psat_dbm'],
+                    'maxgain_dB': pre_amp_spec['maxgain_db'],
+                    'mingain_dB': pre_amp_spec['mingain_db'],
+                    'maxatt_dB':  pre_amp_spec['maxatt_db'],
+                    'minatt_dB':  pre_amp_spec['minatt_db'],
+                    }
+        for j in nodedict[i]['booster']:
+            booster_spec=nodedict[i]['booster'][j]
+            NodeDict[i]['booster'][i,j]={
+                    'NF':         booster_spec['nf'],
+                    'P_SEN_dBm':  booster_spec['amp_psen_dbm'],
+                    'P_SAT_dBm':  booster_spec['amp_psat_dbm'],
+                    'maxgain_dB': booster_spec['maxgain_db'],
+                    'mingain_dB': booster_spec['mingain_db'],
+                    'maxatt_dB':  booster_spec['maxatt_db'],
+                    'minatt_dB':  booster_spec['minatt_db'],
+                    }
+        for j in nodedict[i]['splitter']:
+            splitter_spec=nodedict[i]['splitter'][j]
+            NodeDict[i]['splitter'][j,i]={
+                    'loss_dB': splitter_spec['loss_db'],
+                    }
+        # WSS
+        for i1,i3 in nodedict[i]['wss']:
+            wss_spec=nodedict[i]['wss'][i1,i3]
+            NodeDict[i]['WSS'][i1,i,i3]={
+                    'ins_loss_dB': wss_spec['ins_loss_db'],
+                    'VOA': {
+                            'maxatt_dB': wss_spec['voa']['maxatt_db'],
+                            'minatt_dB': wss_spec['voa']['minatt_db']
+                            },
+                    }
+    
+    ########################################################
     
     for i,j in linkdict:
-        linkdict[i,j]['span_count']=linkdict[i,j]['numspan']
-        silentpop(linkdict[i,j]['numspan'])
-        linkdict[i,j]['spans']=[]
-##%%
-#def api_input(poweroptnodein,poweroptlinkin,poweroptlightpathin):
-#    return
+        LinkDict[i,j]={'numspan': linkdict[i,j]['span_count']}
+        for span_index in range(len(linkdict[i,j]['spans'])):
+            span_spec=linkdict[i,j]['spans'][span_index]
+            LinkDict[i,j][span_index+1]={
+                    'alpha':       span_spec['alpha'],
+                    'length':      span_spec['length'],
+                    'AmpNF':       span_spec['amp_nf'],
+                    'AmpPSEN_dBm': span_spec['amp_psen_dbm'],
+                    'AmpPSAT_dBm': span_spec['amp_psat_dbm'],
+                    'maxgain_dB':  span_spec['maxgain_db'],
+                    'mingain_dB':  span_spec['mingain_db'],
+                    'maxatt_dB':   span_spec['maxatt_db'],
+                    'minatt_dB':   span_spec['minatt_db'],
+                    }
+            
+    ########################################################
+    
+    for i in lightpathdict:
+        LightPathDict[i]={
+                'Wavelength': lightpathdict[i]['wavelength'],
+                'NodeList':  lightpathdict[i]['node_list'],
+                }
+    
+    ########################################################
+    
+    NodeDictMid,LinkDictMid,LightPathDictMid,ElapsedTime=GainOptSolver(
+            NodeDict,
+            LinkDict,
+            LightPathDict,
+            opt_method,
+            printlog,
+            channel_bandwidth,
+            )
+    
+    # output api
+    
+    for i in NodeDictMid:
+        
+        for j,i1 in NodeDictMid[i]['pre_amp']:
+            if 'AmpGain_dB' in NodeDictMid[i]['pre_amp'][j,i1]:
+                nodedict[i]['pre_amp'][j]['gain_db']=NodeDictMid[i]['pre_amp'][j,i1]['AmpGain_dB']
+            if 'VOAatt_dB' in NodeDictMid[i]['pre_amp'][j,i1]:
+                nodedict[i]['pre_amp'][j]['att_db']=NodeDictMid[i]['pre_amp'][j,i1]['VOAatt_dB']
+        
+        for i1,j in NodeDictMid[i]['booster']:
+            if 'AmpGain_dB' in NodeDictMid[i]['booster'][i1,j]:
+                nodedict[i]['booster'][j]['gain_db']=NodeDictMid[i]['booster'][i1,j]['AmpGain_dB']
+            if 'VOAatt_dB' in NodeDictMid[i]['booster'][i1,j]:
+                nodedict[i]['booster'][j]['att_db']=NodeDictMid[i]['booster'][i1,j]['VOAatt_dB']
+        
+        for i1,i2,i3 in NodeDictMid[i]['WSS']:
+            if 'VOAatt_dB' in NodeDictMid[i]['WSS'][i1,i2,i3]['VOA']:
+                nodedict[i]['wss'][i1,i3]['voa']['att_db']=NodeDictMid[i]['WSS'][i1,i2,i3]['VOA']['VOAatt_dB']
+    
+    for i,j in LinkDictMid:
+        for n_s in range(linkdict[i,j]['span_count']):
+            if 'AmpGain_dB' in LinkDictMid[i,j][n_s+1]:
+                linkdict[i,j]['spans'][n_s]['ampgain_db']=LinkDictMid[i,j][n_s+1]['AmpGain_dB']
+            if 'VOAatt_dB' in LinkDictMid[i,j][n_s+1]:
+                linkdict[i,j]['spans'][n_s]['voaatt_db']=LinkDictMid[i,j][n_s+1]['VOAatt_dB']
+    
+    for i in LightPathDictMid:
+        if 'LaunchPower_dBm' in LightPathDictMid[i]:
+            lightpathdict[i]['launch_power_dbm']=LightPathDictMid[i]['LaunchPower_dBm']
+    
+    return nodedict,linkdict,lightpathdict,ElapsedTime
 #%%
 if __name__=='__main__':
     pass
