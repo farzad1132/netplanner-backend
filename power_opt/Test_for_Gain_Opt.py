@@ -264,20 +264,20 @@ if __name__=='__main__':
 #                    },
 #            }
     #%%
-#    NodeDict1,LinkDict1,LightPathDict1,ElapsedTime=GainOptSolver(NodeDict,LinkDict,LightPathDict)
+    NodeDict1,LinkDict1,LightPathDict1,ElapsedTime=GainOptSolver(NodeDict,LinkDict,LightPathDict)
 #    NodeDict1,LinkDict1,LightPathDict1=NodeDict,LinkDict,LightPathDict
     #%% Test for schemas.py
-    from schemas import *
+#    from schemas import *
 #    for i in 
-    print(Span(**LinkDict['A','B'][1]))
-#    print(PowerOptLinkIn(**LinkDict['A','B']))
-    print(PowerOptNodesLink(**NodeDict['A']['pre_amp']['J','A']))
-    print(PowerOptNodesLink(**NodeDict['A']['booster']['A','J']))
-    print(PowerOptNodesSplitter(**NodeDict['A']['splitter']['B','A']))
-    print(PowerOptNodesWSS(**NodeDict['A']['WSS']['B','A','C']))
-    print(PowerOptVOA(**NodeDict['A']['WSS']['B','A','C']['VOA']))
-    print(PowerOptNodeIn(**NodeDict['A']))
-    print(PowerOptLightpathIn(**LightPathDict[1]))
+#    print(Span(**LinkDict['A','B'][1]))
+##    print(PowerOptLinkIn(**LinkDict['A','B']))
+#    print(PowerOptNodesLink(**NodeDict['A']['pre_amp']['J','A']))
+#    print(PowerOptNodesLink(**NodeDict['A']['booster']['A','J']))
+#    print(PowerOptNodesSplitter(**NodeDict['A']['splitter']['B','A']))
+#    print(PowerOptNodesWSS(**NodeDict['A']['WSS']['B','A','C']))
+#    print(PowerOptVOA(**NodeDict['A']['WSS']['B','A','C']['VOA']))
+#    print(PowerOptNodeIn(**NodeDict['A']))
+#    print(PowerOptLightpathIn(**LightPathDict[1]))
 #    print(PowerOptIn(**NodeDict))
 #    print(PowerOptIn(nodes=NodeDict,links=LinkDict,lightpaths=LightPathDict))
     

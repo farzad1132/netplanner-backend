@@ -45,10 +45,10 @@ class PowerOptNode(BaseModel):
         !!!   THIS COMMENT IS NO LONGER RELEVANT   !!!
         keys are destination node for links (source node is specified in higher hierarchy, see: PowerOptIn)
     """
-    pre_amp: Dict[Tuple(str,str), PowerOptAmplifier]
-    booster: Dict[Tuple(str,str), PowerOptAmplifier]
-    splitter: Dict[Tuple(str,str,str), PowerOptSplitter]
-    wss: Dict[Tuple(str,str,str), PowerOptWSS]
+    pre_amp: Dict[Tuple[str,str], PowerOptAmplifier]
+    booster: Dict[Tuple[str,str], PowerOptAmplifier]
+    splitter: Dict[Tuple[str,str,str], PowerOptSplitter]
+    wss: Dict[Tuple[str,str,str], PowerOptWSS]
 #%%
 class PowerOptLink(Link):
     span_count: int
