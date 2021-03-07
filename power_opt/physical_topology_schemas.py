@@ -19,7 +19,7 @@ class Node(BaseModel):
     lat: float
     lng: float
     roadm_type: ROADMType = ROADMType.cdc
-
+    
     class Config:
         orm_mode = True
 

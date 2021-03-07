@@ -985,5 +985,26 @@ def GainOptSolver(NodeDict,LinkDict,LightPathDict):
 
     return NodeDict,LinkDict,LightPathDict,ElapsedTime
 #%%
+def silentpop(dictionary,key):
+    try:
+        dictionary.pop(key)
+    except:
+        pass
+    return
+#%%
+def opt_api(nodedict,linkdict,lightpathdict):
+    
+    for i in nodedict:
+        nodedict[i]['wss']=nodedict[i]['WSS']
+        silentpop(nodedict[i],'WSS')
+    
+    for i,j in linkdict:
+        linkdict[i,j]['span_count']=linkdict[i,j]['numspan']
+        silentpop(linkdict[i,j]['numspan'])
+        linkdict[i,j]['spans']=[]
+##%%
+#def api_input(poweroptnodein,poweroptlinkin,poweroptlightpathin):
+#    return
+#%%
 if __name__=='__main__':
     pass

@@ -264,7 +264,7 @@ if __name__=='__main__':
 #                    },
 #            }
     #%%
-    NodeDict1,LinkDict1,LightPathDict1,ElapsedTime=GainOptSolver(NodeDict,LinkDict,LightPathDict)
+#    NodeDict1,LinkDict1,LightPathDict1,ElapsedTime=GainOptSolver(NodeDict,LinkDict,LightPathDict)
 #    NodeDict1,LinkDict1,LightPathDict1=NodeDict,LinkDict,LightPathDict
     #%% Test for schemas.py
     from schemas import *
@@ -279,10 +279,10 @@ if __name__=='__main__':
     print(PowerOptNodeIn(**NodeDict['A']))
     print(PowerOptLightpathIn(**LightPathDict[1]))
 #    print(PowerOptIn(**NodeDict))
+#    print(PowerOptIn(nodes=NodeDict,links=LinkDict,lightpaths=LightPathDict))
     
-    PowerOptIn(nodes=NodeDict,links=LinkDict,lightpaths=LightPathDict)
-    
-    
+    print(SpanOutput(**LinkDict1['A','B'][1]))
+    print(PowerOptLinkOut(**LinkDict1['A','B']))
 #    PowerOptVOA
     
 #    t0=time()
