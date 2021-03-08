@@ -204,9 +204,9 @@ def LookUpTableEntryAdder(
                     ]=(D_temp,E_temp,F_temp,G_temp)
 
     LookUpTableSpec={
-            'ChannelBandwidth': CHANNELBANDWIDTH,
-            'Numoflambdas': MAXNUMLAMBDA,
-            'NumofMonteCarloPoints': _NMC
+            'ChannelBandwidth': float(CHANNELBANDWIDTH),
+            'Numoflambdas': float(MAXNUMLAMBDA),
+            'NumofMonteCarloPoints': float(_NMC)
             }
 
     return LookUpTable,LookUpTableSpec
@@ -262,22 +262,22 @@ def SNRCalculator(LPID,LookUpTable,LookUpTableSpec,LightPathDict,LinkDict):
     TotalNoise_Var=0
     LinkLPIDDict={}
 
-    COINodes=LightPathDict[LPID]['NodeList']
+    COINodes=LightPathDict[LPID]['node_list']
     COILinks=list(zip(COINodes,COINodes[1:]))
-    COIlambda=LightPathDict[LPID]['Wavelength']
+    COIlambda=LightPathDict[LPID]['wavelength']
 
     for iLinkID in COILinks:
         LinkLPIDDict[iLinkID]=[]
 
     for iLightPath in LightPathDict.values():
 
-        if iLightPath['ModulationType']=='QPSK':
+        if iLightPath['modulation_type']=='QPSK':
             iLightPath_Phi=-1
             iLightPath_Psi=4
         else:
-            raise Exception('Unknown Modulation Format "{}"'.format(iLightPath['ModulationType']))
+            raise Exception('Unknown modulation format; valid "QPSK"')
 
-        iLPLinkList=list(zip(iLightPath['NodeList'],iLightPath['NodeList'][1:]))
+        iLPLinkList=list(zip(iLightPath['node_list'],iLightPath['node_list'][1:]))
 
         for iLinkID in iLPLinkList:
 
@@ -287,8 +287,8 @@ def SNRCalculator(LPID,LookUpTable,LookUpTableSpec,LightPathDict,LinkDict):
                 continue
 
             LinkLPIDDict[iLinkID].append({
-                    'LaunchPower': 10**(iLightPath['LaunchPower']*0.1-3),
-                    'Wavelength': iLightPath['Wavelength'],
+                    'launch_power_dbm': 10**(iLightPath['launch_power_dbm']*0.1-3),
+                    'wavelength': iLightPath['wavelength'],
                     'Phi': iLightPath_Phi,
                     'Psi': iLightPath_Psi
                     })
@@ -310,14 +310,16 @@ def SNRCalculator(LPID,LookUpTable,LookUpTableSpec,LightPathDict,LinkDict):
         '''Adding NLIN'''
         for ituple1,ituplet,ituple2 in LinkTripleLPIDDict[iLink]:
             templambdatuple=(
-                    ituple1['Wavelength'],
-                    ituplet['Wavelength'],
-                    ituple2['Wavelength'],
+                    ituple1['wavelength'],
+                    ituplet['wavelength'],
+                    ituple2['wavelength'],
                     COIlambda
                     )
 
             try:
-                TotalNoise_Var+=ituple1['LaunchPower']*ituple2['LaunchPower']*ituplet['LaunchPower']*\
+                TotalNoise_Var+=ituple1['launch_power_dbm']*\
+                ituple2['launch_power_dbm']*\
+                ituplet['launch_power_dbm']*\
                 (NLI_terms[templambdatuple][0]+\
                  NLI_terms[templambdatuple][1]*ituple2['Phi']+\
                  NLI_terms[templambdatuple][2]*ituple1['Phi']+\
@@ -340,4 +342,6 @@ def SNRCalculator(LPID,LookUpTable,LookUpTableSpec,LightPathDict,LinkDict):
         
 #        print(10**(_ampgain_/10+LinkSpec['amp_nf']/10)-1)
 
-    return LightPathDict[LPID]['LaunchPower']-30-10*log10(TotalNoise_Var)
+    return LightPathDict[LPID]['launch_power_dbm']-30-10*log10(TotalNoise_Var)
+#%%
+#def lut_api():

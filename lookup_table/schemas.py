@@ -13,6 +13,14 @@ class LookUpTableLink(BaseModel):
     amp_gain: float = Field(None)
     amp_nf: float = Field(5)
 
+class LookUpTableLightPath(BaseModel):
+    node_list: List[str]
+    wavelength: int
+    modulation_type: RWAForm.ModulationType = RWAForm.ModulationType.QPSK
+    launch_power_dbm: float
+    
+##############################################################################
+
 class LookUpTableInput(BaseModel):
     """
         keys for **links** are links source and destination
@@ -20,33 +28,33 @@ class LookUpTableInput(BaseModel):
     links: Dict[Tuple[str, str], LookUpTableLink]
     symbol_rate: float = Field(32e9, ge=0)
     channel_bandwith: float = Field(32e9, ge=0)
-    _nmc: float = Field(1e6, ge=1000)
-    printlog: bool = Field(False)
+    _nmc: Optional[float] = Field(1e6, ge=1000)
+    printlog: Optional[bool] = Field(False)
     max_num_lambda: int = Field(10, ge=1)
     roll_off_factor: float = Field(0, ge=0, le=1)
 
-class LookUpTableOutput:
+class LookUpTableOutput(BaseModel):
     lookup_table: Dict[
             Tuple[float, float, float, float, int],
-            Tuple[float, float, float, float]
+            Dict[
+                    Tuple[int, int, int, int],
+                    Tuple[float, float, float, float]
+                    ]
             ]
     lookup_table_spec: Dict[str, float]
-    
-
-class SNRCalculatorLightpath(BaseModel):
-    node_list: List[str]
-    wavelength: int
-    modulation_type: RWAForm.ModulationType = RWAForm.ModulationType.QPSK
-    launch_power: float
 
 class SNRCalculatorInput(BaseModel):
     links: Dict[Tuple[str, str], LookUpTableLink]
-    lightpaths: Dict[str, SNRCalculatorLightpath]
+    lightpaths: Dict[str, LookUpTableLightPath]
     lpid: str
-    lookuptableout: Dict[
-            Tuple[float,float,float,float,int],
-            Dict[Tuple[int,int,int,int],float]
+    lookup_table: Dict[
+            Tuple[float, float, float, float, int],
+            Dict[
+                    Tuple[int, int, int, int],
+                    Tuple[float, float, float, float]
+                    ]
             ]
+    lookup_table_spec: Dict[str, float]
 
 class SNRCalculatorOutput(BaseModel):
     snr_db: float
