@@ -2,9 +2,6 @@ from fastapi.testclient import TestClient
 from main import app
 from ..setup import PREFIX, HEADER
 import pytest
-import json
-import copy
-import os
 
 client = TestClient(app)
 # TODO: add username and password to environment variables
