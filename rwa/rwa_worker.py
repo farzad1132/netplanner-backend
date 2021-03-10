@@ -32,7 +32,7 @@ class RWAHandle(Task):
         if (register:=db.query(RWARegisterModel)\
             .filter_by(id=task_id).one_or_none()) is not None:
             register.is_failed = True
-            register.exception = exc
+            register.exception = exc.__repr__()
 
             db.add(register)
             db.commit()

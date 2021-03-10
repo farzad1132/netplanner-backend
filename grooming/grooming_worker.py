@@ -27,7 +27,6 @@ class GroomingHandle(Task):
                                             tm_version=register.tm_version,
                                             form=register.form,
                                             manager_id=register.manager_id,
-                                            comment=register.comment,
                                             with_clustering=register.with_clustering,
                                             clusters=register.clusters,
                                             is_finished=True,
@@ -45,7 +44,7 @@ class GroomingHandle(Task):
         if (register:=db.query(GroomingRegisterModel)\
             .filter_by(id=task_id).one_or_none()) is not None:
             register.is_failed = True
-            register.exception = exc
+            register.exception = exc.__repr__()
 
             db.add(register)
             db.commit()
