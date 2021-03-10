@@ -51,7 +51,7 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
                                 mp1h_threshold=grooming_form.mp1h_threshold,
                                 clusters=clusters, 
                                 Physical_topology=PhysicalTopologyDB.parse_obj(physical_topology).dict())
-    if not clusters:
+    if not clusters["clusters"]:
         with_clustering = False
     else:
         with_clustering = True
@@ -64,7 +64,6 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
                                                 tm_version=project_db["traffic_matrix"]["version"],
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
-                                                comment=grooming_form.comment,
                                                 with_clustering=with_clustering,
                                                 clusters=clusters)
     db.add(grooming_register)

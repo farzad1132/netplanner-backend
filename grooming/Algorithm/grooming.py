@@ -436,7 +436,7 @@ def PS6X(Services_lower10_i):
 
 
 
-def grooming_fun( TM, MP1H_Threshold,  tmId, MP2X_Threshold=None):
+def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, MP2X_Threshold = None ):
         
         service_lower10_SDH=[]
         service_lower10_E=[]
@@ -483,7 +483,11 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, MP2X_Threshold=None):
         MP1H_dict={}
         device_dict={}
         lightpathId=1
+        nume=1
         for i in TM['demands'].keys():
+            per = math.ceil(percentage[0] + (nume/len(TM['demands'].keys())) * (percentage[1] - percentage[0]))
+            state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+            nume = nume + 1
             if TM['demands'][i]["source"] not in device_dict.keys():
                         device_dict.update({TM['demands'][i]["source"]:{        
                                     "TP1H": [],

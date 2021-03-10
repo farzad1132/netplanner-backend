@@ -1,8 +1,9 @@
-def Nodestructureservices(device_dict, Physical_topology):  
+import math
+def Nodestructureservices(device_dict, Physical_topology, state, percentage):  
     nodess={}
     for k in range(0,len(Physical_topology['data']['nodes'])):
-
-    
+        per = math.ceil(percentage[0] + (k/len(Physical_topology['data']['nodes'])) * (percentage[1] - percentage[0]))
+        state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
         rackn=0
         shelfn=0
         slotn=0
