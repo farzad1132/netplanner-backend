@@ -12,6 +12,7 @@ from models import UserModel
 from database import session
 from physical_topology.schemas import PhysicalTopologyDB
 from grooming.Algorithm.NodeStructure import Nodestructureservices
+import math
 
 class GroomingHandle(Task):
     def on_success(self, retval, task_id, *args, **kwargs):
@@ -79,26 +80,34 @@ class GroomingHandle(Task):
 def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters:ClusterDict, Physical_topology:PhysicalTopologyDB):
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
     if clusters != None:
-        service_mapping,clusteerdtm=Change_TM_acoordingTo_Clusters(traffic_matrix,clusters,mp1h_threshold)
+        service_mapping,clusteerdtm=Change_TM_acoordingTo_Clusters(traffic_matrix,clusters,mp1h_threshold, state = self, percentage =[0,40])
         finalres={"traffic":{}}
         devicee={}
         self.update_state(state='PROGRESS', meta={'current': 40, 'total': 100, 'status': 'Clustering Finished'})
+        pr=40 
+        le= 0
+        for i in clusteerdtm['sub_tms'].keys():
+            le= le + len(traffic_matrix['data']['demands'].keys())
         for i in clusteerdtm['sub_tms'].keys():
             if i != traffic_matrix['id']:
-                res, dev=grooming_fun(TM = clusteerdtm['sub_tms'][i]['tm'], MP1H_Threshold = mp1h_threshold, tmId = i)
+                le2 = math.ceil((len(clusteerdtm['sub_tms'][i]['tm']['demands'].keys())/le) * (40))
+                res, dev=grooming_fun(TM = clusteerdtm['sub_tms'][i]['tm'], MP1H_Threshold = mp1h_threshold, tmId = i, state = self, percentage = [pr,pr+le2] )
+                pr = pr + le2
                 res.update({'cluster_id':i})
                 devicee.update({i:dev})
                 finalres["traffic"].update({i:res})
-        device_final = Nodestructureservices(devicee, Physical_topology)
+        self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Grooming Finished'})
+        device_final = Nodestructureservices(devicee, Physical_topology, state = self, percentage =[80,90])
         
         finalres.update({"service_devices":device_final})
-        self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Algorithm Finished'})
+        self.update_state(state='PROGRESS', meta={'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":ServiceMapping(**service_mapping).dict(), "clustered_tms":ClusteredTMs(**clusteerdtm).dict()}
     else:
-        res, dev=grooming_fun(TM = traffic_matrix['data'], MP1H_Threshold = mp1h_threshold, tmId = traffic_matrix['id'])
+        res, dev=grooming_fun(TM = traffic_matrix['data'], MP1H_Threshold = mp1h_threshold, tmId = traffic_matrix['id'], state = self, percentage = [0,60] )
         devicee={traffic_matrix['id']:dev}
-        device_final = Nodestructureservices(devicee, Physical_topology)
-        self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Algorithm Finished'})
+        self.update_state(state='PROGRESS', meta={'current': 60, 'total': 100, 'status': 'Grooming Finished'})
+        device_final = Nodestructureservices(devicee, Physical_topology, state = self, percentage = [60,90])
+        self.update_state(state='PROGRESS', meta={'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
         res.update({'cluster_id':traffic_matrix['id']})
         finalres={"traffic":{traffic_matrix['id']:res},"service_devices":device_final}
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":None, "clustered_tms":None}
