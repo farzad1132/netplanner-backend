@@ -64,7 +64,6 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
                                                 tm_version=project_db["traffic_matrix"]["version"],
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
-                                                comment=grooming_form.comment,
                                                 with_clustering=with_clustering,
                                                 clusters=clusters)
     db.add(grooming_register)

@@ -36,10 +36,10 @@ class GroomingInformation(BaseModel):
     tm_id: str
     pt_version: int
     tm_version: int
+    form: GroomingForm
     start_date: datetime
     end_date: datetime
     with_clustering: bool
-    comment: str
 
     class Config:
         orm_mode = True
@@ -50,10 +50,10 @@ class FailedGroomingInfo(BaseModel):
     tm_id: str
     pt_version: int
     tm_version: int
+    form: GroomingForm
     start_date: datetime
     exception: str
     with_clustering: bool
-    comment: str
 
     class Config:
         orm_mode = True
