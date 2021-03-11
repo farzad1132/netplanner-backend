@@ -5,6 +5,9 @@ from sqlalchemy import pool
 
 from alembic import context
 import os
+from models import *
+from grooming.models import *
+from rwa.models import *
 from database import base
 
 # this is the Alembic Config object, which provides
