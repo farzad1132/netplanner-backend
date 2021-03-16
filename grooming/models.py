@@ -5,18 +5,6 @@ from sqlalchemy.orm import relationship
 from database import base
 from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime
 
-def null_condition(context):
-    if context.current_parameters.get("with_clustering") is True:
-        return False
-    else:
-        return True
-
-def exception_null_condition(context):
-    if context.current_parameters.get("is_failed") is True:
-        return False
-    else:
-        return True
-
 class GroomingRegisterModel(base):
     __tablename__ = "GroomingRegister"
     __table_args__ = {'extend_existing': True}
@@ -33,9 +21,9 @@ class GroomingRegisterModel(base):
     manager = relationship("UserModel", back_populates="grooming_registers")
     start_date = Column(DateTime, default=datetime.utcnow)
     with_clustering = Column("with_clustering", Boolean, nullable=False)
-    clusters = Column("clusters", JSON, nullable=null_condition)
+    clusters = Column("clusters", JSON)
     is_failed = Column("is_failed", Boolean, nullable=False, default=False)
-    exception = Column("exception", String, nullable=exception_null_condition)
+    exception = Column("exception", String)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
 
@@ -56,15 +44,15 @@ class GroomingModel(base):
     start_date = Column(DateTime, default=datetime.utcnow)
     end_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     with_clustering = Column("with_clustering", Boolean, nullable=False)
-    clusters = Column("clusters", JSON, nullable=null_condition)
+    clusters = Column("clusters", JSON)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
 
     # actual result
     traffic = Column("traffic", JSON, nullable=False)
     service_devices = Column("service_devices", JSON, nullable=False)
-    clustered_tms = Column("clustered_tms", JSON, nullable=null_condition)
-    service_mapping = Column("service_mapping", JSON, nullable=null_condition)
+    clustered_tms = Column("clustered_tms", JSON)
+    service_mapping = Column("service_mapping", JSON)
 
     def __repr__(self):
         return  f"Grooming(id={self.id}, pt_id={self.pt_id}, tm_id={self.tm_id},"\
