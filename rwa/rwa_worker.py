@@ -239,13 +239,16 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
             else:
                 lightpath_dict['restoration_type'] = lightpath.demand.restoration_type
             routing_info_dict = {}
+            selected_wavelength = lightpath.selected_regen_option.main_option.path_wavelengths
             routing_info_dict['working'] = {
+                'wavelength': [selected_wavelength]*len(lightpath.main_osnr),
                 'path': lightpath.selected_regen_option.main_option.path,
                 'regenerators': lightpath.selected_regen_option.main_option.regen_nodes_index,
                 'snr': lightpath.main_osnr,
             }
             if lightpath.selected_regen_option.protection_option.path:
                 routing_info_dict['protection'] = {
+                    'wavelength': [lightpath.selected_regen_option.protection_option.path_wavelengths]*len(lightpath.protection_osnr),
                     'path': lightpath.selected_regen_option.protection_option.path,
                     'regenerators': lightpath.selected_regen_option.protection_option.regen_nodes_index,
                     'snr': lightpath.protection_osnr,
@@ -276,6 +279,7 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
                                     'second_failure': restorationFailedLinks[restoration_index][second_restoration_index][2:4],
                                     'restoration_algorithm': 'Advanced',
                                     'info': {
+                                        'wavelength': [selected_wavelength]*len(snr),
                                         'path': restorationPathList[restoration_index][second_restoration_index],
                                         'regenerators': restorationPathRegenerators[restoration_index][second_restoration_index],
                                         'snr': snr,
@@ -289,6 +293,7 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
                                 'first_failure': restorationFailedLinks[restoration_index][0:2],
                                 'restoration_algorithm': 'Basic',
                                 'info': {
+                                    'wavelength': [selected_wavelength]*len(snr),
                                     'path': restorationPathList[restoration_index],
                                     'regenerators': restorationPathRegenerators[restoration_index],
                                     'snr': snr,
@@ -302,8 +307,8 @@ def rwa_task(self, physical_topology: PhysicalTopologySchema, cluster_info: Clus
             output_lightpath_dict[lightpath.demand.previous_id] = lightpath_output
     result_dict = {'lightpaths': output_lightpath_dict}
     rwa_result = RWAResult(**result_dict)
-    # import json
-    # print(json.dumps(rwa_result.dict(), indent=4))
+    import json
+    print(json.dumps(rwa_result.dict(), indent=4))
     self.update_state(state='SUCCESS', meta={'current': 100, 'total': 100, 'status':'RWA finished. Sending back the results'})
     return rwa_result.dict()
 
