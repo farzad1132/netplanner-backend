@@ -12,3 +12,4 @@ celeryapp.conf.imports = [
     'grooming.grooming_worker',
     'rwa.rwa_worker'
 ]
+celeryapp.conf.task_track_started = True
