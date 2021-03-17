@@ -1,6 +1,5 @@
 import unittest
 from grooming.grooming_worker import grooming_task
-from grooming.schemas import RoutingType, ProtectionType, RestorationType
 from grooming.schemas import GroomingResult, ClusteredTMs, ServiceMapping
 
 class GromingTestCase(unittest.TestCase):
