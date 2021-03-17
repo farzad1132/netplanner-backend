@@ -5,7 +5,7 @@ from celery.app.task import Task
 from traffic_matrix.schemas import TrafficMatrixDB
 from clusters.schemas import ClusterDict
 from grooming.Algorithm.grooming import grooming_fun
-from grooming.schemas import GroomingResult, ClusteredTMs, ServiceMapping
+from grooming.schemas import GroomingResult, ClusteredTMs, MP1HThreshold, ServiceMapping
 from grooming.Algorithm.change_tm_according_clustering import Change_TM_acoordingTo_Clusters
 from grooming.models import GroomingModel, GroomingRegisterModel
 from models import UserModel
@@ -78,8 +78,8 @@ class GroomingHandle(Task):
 
 @celeryapp.task(bind=True, base=GroomingHandle)
 def grooming_task(self, traffic_matrix: TrafficMatrixDB,
-                        mp1h_threshold_clustering,
-                        mp1h_threshold_grooming,
+                        mp1h_threshold_clustering: MP1HThreshold,
+                        mp1h_threshold_grooming: MP1HThreshold,
                         clusters: ClusterDict,
                         Physical_topology: PhysicalTopologyDB,
                         test: bool = False):
