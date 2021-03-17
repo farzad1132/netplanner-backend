@@ -77,7 +77,12 @@ class GroomingHandle(Task):
 
 
 @celeryapp.task(bind=True, base=GroomingHandle)
-def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold_clustering, mp1h_threshold_grooming, clusters:ClusterDict, Physical_topology:PhysicalTopologyDB, test):
+def grooming_task(self, traffic_matrix: TrafficMatrixDB,
+                        mp1h_threshold_clustering,
+                        mp1h_threshold_grooming,
+                        clusters: ClusterDict,
+                        Physical_topology: PhysicalTopologyDB,
+                        test: bool = False):
     ArashId = arashId()
     if test == True:
         def uuid():return id_gen(ArashId=ArashId, test = True)
