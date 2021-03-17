@@ -1,25 +1,10 @@
-from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, PULP_CBC_CMD
 import math
 import numpy as np
-#from Common_Object_def import makeobj as makeobj
-#import pylab as plt
-from pydantic import BaseModel
-import uuid
 from grooming.Algorithm.NodeStructure import Nodestructureservices
-
 from pydantic import BaseModel
-
 from grooming.schemas import LowRateGrooming, GroomingLightPath, GroomingOutput, RemaningServices, GroomOutType, RoutingType, NodeStructure
-
-
-
-
-
-
-
-    
-    
-
+from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, PULP_CBC_CMD
+from pydantic import BaseModel
 
 
 def MP2X(Services_lower10):
@@ -143,9 +128,6 @@ def MP2X(Services_lower10):
     #    print(Output)
     #    print('dsdsss')
     return Output
-
-
-
 
 
 def PS6X(Services_lower10_i):
@@ -431,13 +413,7 @@ def PS6X(Services_lower10_i):
     
 
 
-
-
-
-
-
-def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, MP2X_Threshold = None ):
-        
+def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Threshold = None ):
         service_lower10_SDH=[]
         service_lower10_E=[]
         service_lower100=[]
@@ -455,7 +431,8 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, MP2X_Threshold =
         remaningnservices={"demands":{}}
         FinalLightPath={}
         FinalLightPath.update({'LightPaths':{}})
-        FinalLightPath.update({"id":uuid.uuid4().hex})
+        FinalLightPath.update({"id":uuid()})
+        
         def addlightpath(source,destination,capacity,service_id_list,demand_id,Routing_type,groomout10_id_list, protection_type, restoration_type):
             lst=[]
             for u in service_id_list:
@@ -463,7 +440,7 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, MP2X_Threshold =
             if groomout10_id_list != "None":
                 for u in groomout10_id_list:
                     lst.append({"id":u,"type":"groomout"})
-            lightpathId = uuid.uuid4().hex
+            lightpathId = uuid()
             lp1={
 
                 "id": lightpathId,
@@ -579,7 +556,7 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, MP2X_Threshold =
                     for nu in range(0,len(output_10[0][1][num])):
                         listofs.append(str (output_10[0][1][num][nu][0]))
                         cap = cap + output_10[0][1][num][nu][1]
-                    GroomOutId = uuid.uuid4().hex
+                    GroomOutId = uuid()
                     LastId = GroomOutId
                     Groomout10["demands"][i]["groomouts"].update({ GroomOutId:
                     {"quantity": 1,

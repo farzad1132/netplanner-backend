@@ -1,4 +1,5 @@
 aiofiles==0.6.0
+alembic==1.5.6
 amply==0.1.4
 amqp==5.0.2
 astroid==2.4.2
@@ -31,6 +32,7 @@ jdcal==1.4.1
 Jinja2==2.11.2
 kombu==5.0.2
 lazy-object-proxy==1.4.3
+Mako==1.1.4
 MarkupSafe==1.1.1
 mccabe==0.6.1
 networkx==2.5
@@ -53,6 +55,7 @@ pyparsing==2.4.7
 pytest==6.2.2
 python-dateutil==2.8.1
 python-dotenv==0.15.0
+python-editor==1.0.4
 python-jose==3.2.0
 python-multipart==0.0.5
 pytz==2020.5
