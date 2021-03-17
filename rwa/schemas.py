@@ -55,6 +55,7 @@ class RWACheckList(BaseModel):
     rwa_check_list: List[RWACheck]
 
 class Path(BaseModel):
+    wavelength: List[str]
     path: List[str]
     regenerators: List[str]
     snr: List[float]
