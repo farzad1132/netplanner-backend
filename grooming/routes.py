@@ -48,7 +48,8 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     clusters = ClusterDict.parse_obj(cluster_dict).dict()
     # starting algorithm
     task = grooming_task.delay( traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(),
-                                mp1h_threshold=grooming_form.mp1h_threshold,
+                                mp1h_threshold_clustering=grooming_form.mp1h_threshold,
+                                mp1h_threshold_grooming=grooming_form.mp1h_threshold,
                                 clusters=clusters, 
                                 Physical_topology=PhysicalTopologyDB.parse_obj(physical_topology).dict())
     if not clusters["clusters"]:
