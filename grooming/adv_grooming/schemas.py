@@ -74,7 +74,7 @@ class Network:
                     self.services.pop(id)
             
             def __repr__(self) -> str:
-                return f"(Demand id:{self.id} service count:{len(self.services)}"
+                return f"(Demand id:{self.id} service count:{len(self.services)})"
 
         def __init__(self, tm: tschema.TrafficMatrixDB) -> None:
             self.demands = {}
@@ -93,7 +93,7 @@ class Network:
             self.remove_empty_demand(demand_id)
         
         def remove_empty_demand(self, demand_id: str) -> None:
-            if len(self.demands[demand_id]) == 0:
+            if len(self.demands[demand_id].services) == 0:
                 self.demands.pop(demand_id)
             
     def __init__(self,  pt: pschema.PhysicalTopologyDB,
@@ -108,8 +108,7 @@ class Network:
         self.traffic_matrix.remove_service(service_id_list=groomout['service_id_list'],
                                             demand_id=demand_id)
     
-    def remove_service(self, groom_res: gschema.GroomingResult) -> None:
-        traffic = groom_res['traffic']
+    def remove_service(self, traffic: gschema.GroomingOutput) -> None:
         for lightpath in traffic['main']['lightpaths'].values():
             demand_id = lightpath['demand_id']
             for service in lightpath['service_id_list']:
@@ -119,5 +118,5 @@ class Network:
                                                         demand_id=demand_id)
                 else:
                     self.remove_groomout_services(demand_id=demand_id,
-                        groomout=traffic['main']['low_rate_grooming_result'][demand_id][id])
+                        groomout=traffic['main']['low_rate_grooming_result']['demands'][demand_id]['groomouts'][id])
 
