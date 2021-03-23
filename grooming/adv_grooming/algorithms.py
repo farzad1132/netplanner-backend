@@ -33,8 +33,17 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
 
 def degree_1_operation(network: Network, node: str, report: Report) \
     -> Network:
+    """
+        In this function we are going to complete the process in 2 steps:
+            1. slipping each demand which its source is degree 1 node and its
+               destination is not its adjacent node into 2 demands. One from degree 1
+               to adjacent node (type one )and from adjacent node to original
+               destination of demand (type two)
+            
+            2. aggregating all type one demands that was produced in step 1
+    """
 
-    # step 1: breaking demands with non adjacent node destination
+    # Step 1
     adj_node = list(network.physical_topology.nodes[node].links.keys())[0]
 
     target_demands = network.traffic_matrix.get_demands(source=node,
@@ -60,7 +69,7 @@ def degree_1_operation(network: Network, node: str, report: Report) \
         else:
             second_demand.services.update(services)
 
-    # Step 2: multiplexing demands of first type
+    # Step 2
     services = {}
     for demand in target_demands:
         services.update(deepcopy(demand.services))
@@ -70,10 +79,12 @@ def degree_1_operation(network: Network, node: str, report: Report) \
                                     source=node,
                                     destination=adj_node)
     
+    # Updating report object
     report.add_degree_one_operation(node=node,
                                     demand_id=id,
                                     network=network)
     
+    # Deleting unwanted parts of network
     copy_network = deepcopy(network)
     copy_network.remove_demand(id)
     copy_network.remove_nodes(nodes=[node])
