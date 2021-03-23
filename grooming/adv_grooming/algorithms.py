@@ -62,7 +62,7 @@ def split_demands(network: Network, node: str, gateway: str) -> str:
         services.update(deepcopy(demand.services))
         network.remove_demand(demand.id)
     
-    id = network.add_demand_with_service(services=services.keys(),
+    id = network.add_demand_with_service(services=services,
                                         source=node,
                                         destination=gateway)
 
