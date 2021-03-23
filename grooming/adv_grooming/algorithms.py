@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 from copy import copy, deepcopy
 from sqlalchemy.sql.operators import desc_op
 from grooming.adv_grooming.schemas import Network, Report
@@ -31,6 +31,43 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
 
     print("hi")
 
+def split_demands(network: Network, node: str, gateway: str) -> str:
+
+    target_demands = network.traffic_matrix \
+        .get_demands(source=node, destinations=[gateway], include=False)
+
+    for demand in target_demands:
+        sample_service = list(demand.services.values())[0]
+        if sample_service._source == node:
+            dst = sample_service._destination
+        else:
+            dst = sample_service._source
+        
+        # finding/creating demand to place services in (second type demand)
+        services=deepcopy(demand.services)
+        network.change_services_src_or_dst(services=services,
+                                        old_val=node,
+                                        new_val=gateway)
+        if not (second_demand:=network.traffic_matrix \
+            .get_demands(gateway, [dst], True)):
+            network.add_demand_with_service(services=services,
+                            source=gateway,
+                            destination=dst)
+        else:
+            second_demand.services.update(services)
+
+    # Step 2
+    services = {}
+    for demand in target_demands:
+        services.update(deepcopy(demand.services))
+        network.remove_demand(demand.id)
+    
+    id = network.add_demand_with_service(services=services.keys(),
+                                        source=node,
+                                        destination=gateway)
+
+    return id
+
 def degree_1_operation(network: Network, node: str, report: Report) \
     -> Network:
     """
@@ -46,41 +83,13 @@ def degree_1_operation(network: Network, node: str, report: Report) \
     # Step 1
     adj_node = list(network.physical_topology.nodes[node].links.keys())[0]
 
-    target_demands = network.traffic_matrix.get_demands(source=node,
-                                                        destinations=[adj_node],
-                                                        include=False)
-    for demand in target_demands:
-        sample_service = list(demand.services.values())[0]
-        if sample_service._source == node:
-            dst = sample_service._destination
-        else:
-            dst = sample_service._source
-        
-        # finding/creating demand to place services in (second type demand)
-        services=deepcopy(demand.services)
-        network.change_services_src_or_dst(services=services,
-                    old_val=node,
-                    new_val=adj_node)
-        if not (second_demand:=network.traffic_matrix\
-            .get_demands(adj_node, [dst], True)):
-            network.add_demand_with_service(services=services,
-                            source=adj_node,
-                            destination=dst)
-        else:
-            second_demand.services.update(services)
-
-    # Step 2
-    services = {}
-    for demand in target_demands:
-        services.update(deepcopy(demand.services))
-        network.remove_demand(demand.id)
-    
-    id = network.add_demand_with_service(services=services,
-                                    source=node,
-                                    destination=adj_node)
+    id = split_demands(network=network,
+                        node=node,
+                        gateway=adj_node)
     
     # Updating report object
     report.add_degree_one_operation(node=node,
+                                    adj_node=adj_node,
                                     demand_id=id,
                                     network=network)
     

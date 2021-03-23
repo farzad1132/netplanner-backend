@@ -260,16 +260,29 @@ class Network:
 
 
 class Report:
+    class LoopOperation:
+        def __init__(self, nodes: List[str], gateway: str,
+                     demand_ids: List[str], network: Network) -> None:
+            self.nodes = nodes
+            self.gateway = gateway
+            self.demand_ids = demand_ids
+            self.network = network
+
     class DegreeOneOperation:
         def __init__(self, node: str, demand_id: str,
-                    network: Network) -> None:
+                    network: Network, adj_node: str) -> None:
             self.node = node
             self.demand_id = demand_id
             self.network = network
+            self.adj_node = adj_node
     
     def __init__(self) -> None:
         self.events = []
     
     def add_degree_one_operation(self, node: str, demand_id: str,
-        network: Network) -> None:
-        self.events.append(self.DegreeOneOperation(node, demand_id, network))
+        network: Network, adj_node: str) -> None:
+        self.events.append(self.DegreeOneOperation(node, demand_id, network, adj_node))
+    
+    def add_loop_operation(self, nodes: List[str], gateway: str,
+            demand_ids: List[str], network: Network) -> None:
+        self.events.append(self.LoopOperation(nodes, gateway, demand_ids, network))
