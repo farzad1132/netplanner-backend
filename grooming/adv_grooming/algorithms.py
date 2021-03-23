@@ -32,7 +32,17 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
     print("hi")
 
 def split_demands(network: Network, node: str, gateway: str) -> str:
+    """
+        In this function we are going to complete the process in 2 steps:
+            1. slipping each demand which its source is node and its
+               destination is not gateway into 2 demands. One from node
+               gateway (type one )and from gateway to original
+               destination of demand (type two)
+            
+            2. aggregating all type one demands that was produced in step 1
+    """
 
+    # Step 1
     target_demands = network.traffic_matrix \
         .get_demands(source=node, destinations=[gateway], include=False)
 
@@ -71,15 +81,10 @@ def split_demands(network: Network, node: str, gateway: str) -> str:
 def degree_1_operation(network: Network, node: str, report: Report) \
     -> Network:
     """
-        In this function we are going to complete the process in 2 steps:
-            1. slipping each demand which its source is degree 1 node and its
-               destination is not its adjacent node into 2 demands. One from degree 1
-               to adjacent node (type one )and from adjacent node to original
-               destination of demand (type two)
-            
-            2. aggregating all type one demands that was produced in step 1
+        In this function we are just going to split demands from degree 1 node
+        to its adjacent node and then aggregate demands that start in degree 1 ond
+        ends in adjacent node
     """
-
     # Step 1
     adj_node = list(network.physical_topology.nodes[node].links.keys())[0]
 
