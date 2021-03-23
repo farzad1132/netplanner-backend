@@ -31,6 +31,35 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
 
     print("hi")
 
+def corner_loop_operation(network: Network, nodes: List[str], gateway: str,
+        report: Report) -> Network:
+    """
+        In this function we are going to execute the process of 1 degree nodes
+        for each non gateway node
+    """
+    
+    demand_ids = []
+
+    # 1 degree node process
+    for node in nodes:
+        demand_ids.append(split_demands(network, node, gateway))
+    
+    # Updating report object
+    report.add_loop_operation(nodes=nodes,
+                            gateway=gateway,
+                            demand_ids=demand_ids,
+                            network=network)
+    
+    # Deleting unwanted parts of network
+    copy_network = deepcopy(network)
+
+    for id in demand_ids:
+        copy_network.remove_demand(id)
+    for node in nodes:
+        copy_network.remove_nodes(nodes=[node])
+    
+    return copy_network
+
 def split_demands(network: Network, node: str, gateway: str) -> str:
     """
         In this function we are going to complete the process in 2 steps:
