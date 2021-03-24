@@ -67,18 +67,24 @@ class Network:
             self.nodes[link["source"]].links[link["destination"]] = self.Link(link)
             self.nodes[link["destination"]].links[link["source"]] = self.Link(link)
         
-        def export(self) -> pschema.PhysicalTopologyDB:
-            nodes = [node.export() for node in self.nodes.values()]
+        def export(self, nodes: List[str] = None) -> pschema.PhysicalTopologyDB:
+            if nodes is None:
+                nodes = [node.export() for node in self.nodes.values()]
+            else:
+                nodes = [node.export() for node in list(filter(
+                    lambda x: x in nodes, self.nodes.values()))]
             links = []
             pt = deepcopy(self)
             for source, node in list(self.nodes.items()):
-                for destination, link in node.links.items():
-                    links.append(pschema.Link(**{
-                        'source':source,
-                        'destination':destination,
-                        'length':link.length,
-                        'fiber_type':link.fiber_type
-                    }).dict())
+                if source in nodes:
+                    for destination, link in node.links.items():
+                        if destination in nodes:
+                            links.append(pschema.Link(**{
+                                'source':source,
+                                'destination':destination,
+                                'length':link.length,
+                                'fiber_type':link.fiber_type
+                            }).dict())
 
                 pt.remove_node(source)
             del(pt)
@@ -166,6 +172,8 @@ class Network:
                     self.destination = None
                     self.services = {}
                     self.id = None
+                    self.protection_type = None
+                    self.restoration_type = None
             
             def export(self) -> tschema.NormalDemand:
                 services = []
@@ -218,11 +226,25 @@ class Network:
         def __repr__(self) -> str:
             return f"TrafficMatrix demand count:{len(self.demands)}"
         
-        def export(self) -> tschema.TrafficMatrixDB:
-            return tschema.TrafficMatrixDB(**{
-                'data':tschema.TrafficMatrixSchema(**{'demands':
+        def prune_traffic_matrix(self, lightpaths: Dict[str, gschema.GroomingLightPath])\
+            -> None:
+            for lightpath in lightpaths.values():
+                self.demands[lightpath['demand_id']].prune_demand(lightpath['service_id_list'])
+        
+        def export(self, demands: List[str] = None) -> tschema.TrafficMatrixDB:
+            if demands is None:
+                data = tschema.TrafficMatrixSchema(**{'demands':
                     {key: value.export() for key, value in self.demands.items()}
-                }).dict(),
+                }).dict()
+            else:
+                target_demands = {}
+                for key, value in self.demands.items():
+                    if key in demands:
+                        target_demands[key] = value.export()
+                data = tschema.TrafficMatrixSchema(**{'demands': target_demands}).dict()
+
+            return tschema.TrafficMatrixDB(**{
+                'data':data,
                 'id':self.id,
                 'version': -1,
                 'name':self.name,
@@ -255,12 +277,15 @@ class Network:
             self.demands[id] = demand
         
         def add_demand_with_service(self, services: Dict[str, Demand.Service], id: str,
-            source: str, destination: str) -> Demand:
+            source: str, destination: str, restoration_type: tschema.RestorationType,
+            protection_type: tschema.ProtectionType) -> Demand:
             demand = self.Demand()
             demand.id = id
             demand.services.update(services)
             demand.source = source
             demand.destination = destination
+            demand.protection_type = protection_type
+            demand.restoration_type = restoration_type
 
             self.add_demand(demand, id)
 
@@ -321,12 +346,15 @@ class Network:
                 self.physical_topology.nodes[destination].demands[source] = id
     
     def add_demand_with_service(self, services: Dict[str, TrafficMatrix.Demand.Service],
-        source: str, destination: str) -> str:
+        source: str, destination: str, restoration_type: tschema.RestorationType,
+            protection_type: tschema.ProtectionType) -> str:
         id = uuid4().hex
         demand = self.traffic_matrix.add_demand_with_service(services=services,
                                 id=id,
                                 source=source,
-                                destination=destination)
+                                destination=destination,
+                                restoration_type=restoration_type,
+                                protection_type=protection_type)
         self.add_demands(demands=[demand], ids=[id])
         return id
     
