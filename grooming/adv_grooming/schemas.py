@@ -1,8 +1,11 @@
-from typing import Dict, List, Optional, Union
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Union
+from pulp.utilities import value
 from physical_topology import schemas as pschema
 from traffic_matrix import schemas as tschema
 from grooming import schemas as gschema
 from uuid import uuid4
+from copy import deepcopy
 
 class Network:
     class PhysicalTopology:
@@ -14,6 +17,14 @@ class Network:
                 self.roadm_type = node['roadm_type']
                 self.links = {}
                 self.demands = {}
+            
+            def export(self) -> pschema.Node:
+                return pschema.Node(**{
+                    'name':self.name,
+                    'lat':self.lat,
+                    'lng':self.lng,
+                    'roadm_type':self.roadm_type
+                }).dict()
             
             def __repr__(self) -> str:
                 str = f"[({self.name}) "
@@ -31,6 +42,8 @@ class Network:
                 
         def __init__(self, pt: pschema.PhysicalTopologyDB) -> None:
             self.nodes = {}
+            self.id = pt['id']
+            self.name = pt['name']
 
             for node in pt['data']['nodes']:
                 self.add_node(node)
@@ -54,6 +67,30 @@ class Network:
             self.nodes[link["source"]].links[link["destination"]] = self.Link(link)
             self.nodes[link["destination"]].links[link["source"]] = self.Link(link)
         
+        def export(self) -> pschema.PhysicalTopologyDB:
+            nodes = [node.export() for node in self.nodes.values()]
+            links = []
+            pt = deepcopy(self)
+            for source, node in list(self.nodes.items()):
+                for destination, link in node.links.items():
+                    links.append(pschema.Link(**{
+                        'source':source,
+                        'destination':destination,
+                        'length':link.length,
+                        'fiber_type':link.fiber_type
+                    }).dict())
+
+                pt.remove_node(source)
+            del(pt)
+            
+            return pschema.PhysicalTopologyDB(**{
+                'data':pschema.PhysicalTopologySchema(**{'nodes':nodes, 'links':links}),
+                'id':self.id,
+                'version': -1,
+                'create_date': datetime.utcnow(),
+                'name':self.name
+            }).dict()
+
         def get_degree_n_nodes(self, n: int, include: bool = True,
                 nodes: Optional[List[str]] = None) -> List[str]:
             if nodes is None:
@@ -120,6 +157,8 @@ class Network:
                     self.destination = demand['destination']
                     self.services = {}
                     self.id = demand["id"]
+                    self.protection_type = demand['protection_type']
+                    self.restoration_type = demand['restoration_type']
                     for service in demand["services"]:
                         self.add_service(service, self.source, self.destination)
                 else:
@@ -127,6 +166,32 @@ class Network:
                     self.destination = None
                     self.services = {}
                     self.id = None
+            
+            def export(self) -> tschema.NormalDemand:
+                services = []
+                service_dict = {}
+                for service in self.services.values():
+                    type = service.type
+                    if type in service_dict:
+                        service_dict[type].append(service._id)
+                    else:
+                        service_dict[type] = [service._id]
+
+                for type, service_id_list in service_dict.items():
+                    services.append(tschema.Service(**{
+                        'quantity': len(service_id_list),
+                        'service_id_list':service_id_list,
+                        'type':type
+                    }).dict())
+                
+                return tschema.NormalDemand(**{
+                    'id':self.id,
+                    'source':self.source,
+                    'destination':self.destination,
+                    'protection_type':self.protection_type,
+                    'restoration_type':self.restoration_type,
+                    'services':services
+                }).dict()
 
             def add_service(self, service: tschema.Service, source: str,
                             destination: str) -> None:
@@ -144,12 +209,26 @@ class Network:
 
         def __init__(self, tm: tschema.TrafficMatrixDB) -> None:
             self.demands = {}
+            self.id = tm['id']
+            self.name = tm['name']
 
             for id, demand in tm['data']['demands'].items():
                 self.add_ext_demand(demand, id)
             
         def __repr__(self) -> str:
             return f"TrafficMatrix demand count:{len(self.demands)}"
+        
+        def export(self) -> tschema.TrafficMatrixDB:
+            return tschema.TrafficMatrixDB(**{
+                'data':tschema.TrafficMatrixSchema(**{'demands':
+                    {key: value.export() for key, value in self.demands.items()}
+                }).dict(),
+                'id':self.id,
+                'version': -1,
+                'name':self.name,
+                'create_date':datetime.utcnow(),
+                'comment': 'generated by adv grooming'
+            }).dict()
         
         def get_demands(self, source: str,
             destinations: Optional[List[str]] = None,
@@ -288,6 +367,15 @@ class Report:
             self.network = network
             self.adj_node = adj_node
     
+    class BridgeOperation:
+        def __init__(self, island: List[str], gateway: str,
+         bridge: Tuple[str, str], demand_ids: List[str], network: str) -> None:
+            self.island = island
+            self.gateway = gateway
+            self.demand_ids = demand_ids
+            self.network = network
+            self.bridge = bridge
+            
     def __init__(self) -> None:
         self.events = []
     
@@ -298,3 +386,7 @@ class Report:
     def add_loop_operation(self, nodes: List[str], gateway: str,
             demand_ids: List[str], network: Network) -> None:
         self.events.append(self.LoopOperation(nodes, gateway, demand_ids, network))
+    
+    def add_bridge_operation(self, island: List[str], gateway: str, bridge: Tuple[str, str],
+        demand_ids: List[str], network: Network):
+        self.events.append(self.BridgeOperation(island, gateway, bridge, demand_ids, network))
