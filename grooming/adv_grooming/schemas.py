@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from physical_topology import schemas as pschema
 from traffic_matrix import schemas as tschema
 from grooming import schemas as gschema
@@ -53,6 +53,18 @@ class Network:
         def add_link(self, link: pschema.Link) -> None:
             self.nodes[link["source"]].links[link["destination"]] = self.Link(link)
             self.nodes[link["destination"]].links[link["source"]] = self.Link(link)
+        
+        def get_degree_n_nodes(self, n: int, include: bool = True,
+                nodes: Optional[List[str]] = None) -> List[str]:
+            if nodes is None:
+                target_nodes = self.nodes.keys()
+            else:
+                target_nodes = nodes
+            
+            if include:
+                return list(filter(lambda x: len(self.nodes[x].links) == n, target_nodes))
+            else:
+                return list(filter(lambda x: len(self.nodes[x].links) != n, target_nodes))
     
     class TrafficMatrix:
         class Demand:

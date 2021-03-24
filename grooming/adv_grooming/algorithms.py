@@ -1,35 +1,69 @@
-from typing import List, Optional, Tuple, Union
-from copy import copy, deepcopy
-from sqlalchemy.sql.operators import desc_op
+from typing import List
+from copy import deepcopy
 from grooming.adv_grooming.schemas import Network, Report
-from uuid import uuid4
 
 def find_corner_cycles(topology: Network.PhysicalTopology) \
-    -> Union[List[List[str]], None]:
+    -> List[List[str]]:
+    """
+        This function finds corner loop with the help of DFS algorithm
+        procedure:
+            1. Delete all non degree 2 nodes
+            2. Delete all degree 0 nodes in new graph
+            3. find all connected parts in new graph
+            4. check whether in each connected component, there is commen *deleted degree* between
+               degree 1 nodes. If there is then *deleted degree* and tree construct a corner graph 
+    """
 
-    def find_degree_2_neighbor(node: Optional[str] = None) \
-        -> Union[List[str], None]:
+    def DFSUtil(tmp: List[str], node: str, visited: List[str],
+            pt: Network.PhysicalTopology) -> List[str]:
+        """
+            This function implement DFS like procedure in order to find connected
+            components of a graph
+        """
 
-        if node is None:
-            return list(filter(lambda x :len(topology.nodes[x].links) == 2,
-                    topology.nodes.keys()))
-        else:
-            return list(filter(lambda x :len(topology.nodes[x].links) == 2,
-                        topology.nodes[node].links.keys()))
+        visited.append(node)
+        tmp.append(node)
+        for adj in pt.nodes[node].links.keys():
+            if not adj in visited:
+                DFSUtil(tmp, adj, visited, pt)
+        return tmp
 
-    # finding degree 2 nodes
-    cand_nodes = find_degree_2_neighbor()
+    pt = deepcopy(topology)
+
+    # removing nodes with degree != 2
+    non_d2_nodes = pt.get_degree_n_nodes(2, False)
+    for node in non_d2_nodes:
+        pt.remove_node(node)
     
-    while not cand_nodes:
-        visit_node = cand_nodes.pop(0)
-        cycle = []
+    # removing degree 0 nodes
+    d0_nodes = pt.get_degree_n_nodes(0)
+    for node in d0_nodes:
+        pt.remove_node(node)
+    
+    # finding connected parts
+    visited = []
+    cc = []
+    for node in pt.nodes.keys():
+        if not node in visited:
+            cc.append(DFSUtil([], node, visited, pt))
+    
+    loops = []
 
-        neighbors = find_degree_2_neighbor(visit_node)
-        while not neighbors:
-            cycle.append(visit_node)
-            visit_node = neighbors.pop(0)
-
-    print("hi")
+    # checking if degree 1 nodes in each tree has common removed node or not
+    for tree in cc:
+        d1_nodes = pt.get_degree_n_nodes(1, True, tree)
+        if len(d1_nodes) != 2:
+            raise Exception("more than 2 degree 1 nodes in tree")
+        
+        set0 = set(topology.nodes[d1_nodes[0]].links.keys())
+        set1 = set(topology.nodes[d1_nodes[1]].links.keys())
+        if (cand_gateway:=set0.intersection(set1)) is not None:
+            for cand in cand_gateway:
+                if cand not in tree:
+                    tree.insert(0, cand)
+                    loops.append(tree)
+        
+    return loops
 
 def corner_loop_operation(network: Network, nodes: List[str], gateway: str,
         report: Report) -> Network:
