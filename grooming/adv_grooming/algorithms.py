@@ -1,9 +1,10 @@
+from numpy import source
 from traffic_matrix.schemas import TrafficMatrixDB
 from physical_topology.schemas import PhysicalTopologyDB
 from grooming.schemas import GroomingLightPath
-from typing import Dict, List, Tuple
-from copy import deepcopy
-from grooming.adv_grooming.schemas import Network, Report
+from typing import Dict, List, Optional, Tuple
+from copy import copy, deepcopy
+from grooming.adv_grooming.schemas import AdvGroomingResult, Network, Report, LineRate
 from grooming.grooming_worker import grooming_task
 
 def find_bridges(topology: Network.PhysicalTopology) \
@@ -79,135 +80,81 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
         
     return loops
 
-def corner_loop_operation(network: Network, nodes: List[str], gateway: str,
-        multiplex_fun: grooming_task, report: Report) \
-            -> Tuple[Network, Dict[str, GroomingLightPath]]:
-    """
-        In this function we are going to execute the process of 1 degree nodes
-        for each non gateway node
-    """
-    
-    demand_ids = []
-    lightpaths = {}
+def corner_loop_operation(network: Network, nodes: List[str], gateway: str) \
+    -> Network:
 
+    """
+        TODO: complete comments
+    """
+
+    direct_demands = []
     # 1 degree node process
     for node in nodes:
-        r_lightpaths, id = split_demands(network, node, gateway, multiplex_fun=grooming_task)
-        demand_ids.append(id)
-        lightpaths.update(r_lightpaths)
-
-    # Updating report object
-    report.add_loop_operation(nodes=nodes,
-                            gateway=gateway,
-                            demand_ids=demand_ids,
-                            network=network)
+        exclude = nodes.copy()
+        exclude.remove(node)
+        direct_demands.extend(split_demands(network, node, gateway, exclude=exclude))
     
     # Deleting unwanted parts of network
     copy_network = deepcopy(network)
 
-    for id in demand_ids:
+    for id in direct_demands:
         copy_network.remove_demand(id)
     for node in nodes:
         copy_network.remove_nodes(nodes=[node])
     
-    return copy_network, lightpaths
+    return copy_network
 
 def split_demands(network: Network, node: str, gateway: str,
-        multiplex_fun: grooming_task) -> Tuple[Dict[str, GroomingLightPath], str]:
+            exclude: List[str]) -> Optional[List[str]]:
     """
-        In this function we are going to complete the process in 2 steps:
-            1. slipping each demand which its source is node and its
-               destination is not gateway into 2 demands. One from node
-               gateway (type one )and from gateway to original
-               destination of demand (type two)
-            
-            2. aggregating all type one demands that was produced in step 1
+        TODO: complete comments
     """
 
-    # Step 1
+    # create a connection and add all demands between degree 1 node
+    # and adj node to it
     target_demands = network.traffic_matrix \
-        .get_demands(source=node, destinations=[gateway], include=False)
-
-    for demand in target_demands:
-        sample_service = list(demand.services.values())[0]
-        if sample_service._source == node:
-            dst = sample_service._destination
-        else:
-            dst = sample_service._source
-        
-        # finding/creating demand to place services in (second type demand)
-        services=deepcopy(demand.services)
-        protection_type = demand.protection_type
-        restoration_type = demand.restoration_type
-        network.change_services_src_or_dst(services=services,
-                                        old_val=node,
-                                        new_val=gateway)
-        if not (second_demand:=network.traffic_matrix \
-            .get_demands(gateway, [dst], True)):
-            network.add_demand_with_service(services=services,
-                            source=gateway,
-                            destination=dst,
-                            restoration_type=restoration_type,
-                            protection_type=protection_type)
-        else:
-            if len(second_demand) != 1:
-                raise Exception("more than one demand")
-            second_demand[0].services.update(services)
-
-    # Step 2
-    services = {}
-    # NOTE: as you can see all demands in the target demands list must have similar SLA
-    protection_type = target_demands[0].protection_type
-    restoration_type = target_demands[0].restoration_type
-    for demand in target_demands:
-        services.update(deepcopy(demand.services))
-        
-        network.remove_demand(demand.id)
+        .get_demands(source=node, destinations=[gateway].extend(exclude),
+                                             include=False)
     
-    id = network.add_demand_with_service(services=services,
-                                        source=node,
-                                        destination=gateway,
-                                        protection_type=protection_type,
-                                        restoration_type=restoration_type)
+    target_ids = list(map(lambda x: x.id, target_demands))
+
+    conn_id = network.grooming.add_connection(source=node, destination=gateway)
+    network.grooming.add_demand_to_connection(conn_id=conn_id,
+                                            demands=target_ids)
     
-    groom_res = multiplex_fun(  traffic_matrix=network.traffic_matrix.export(demands=[id]),
-                                Physical_topology=network.physical_topology.export(),
-                                mp1h_threshold=0.001,
-                                clusters={"clusters": {}})
+    if not (direct_demand:=network.traffic_matrix \
+        .get_demands(source=node, destinations=[gateway])):
+        network.grooming.add_demand_to_connection(conn_id=conn_id,
+                                            demands=direct_demand)
 
-    return groom_res['grooming_result']['traffic']['main']['lightpaths'], id
+    # change above demands source to adj node
+    for id in target_ids:
+        network.change_demand_src_or_dst(id, node, gateway)
 
-def degree_1_operation(network: Network, node: str, multiplex_fun: grooming_task,
-    report: Report) -> Tuple[Network, GroomingLightPath]:
+    # add adj node to grooming nodes
+    network.grooming.add_grooming_node(gateway)
+
+    return direct_demand
+
+def degree_1_operation(network: Network, node: str) -> Network:
     """
-        In this function we are just going to split demands from degree 1 node
-        to its adjacent node and then aggregate demands that start in degree 1 ond
-        ends in adjacent node
+        TODO: complete comments
     """
     # Step 1
     adj_node = list(network.physical_topology.nodes[node].links.keys())[0]
 
-    lightpaths, id = split_demands(network=network,
-                        node=node,
-                        gateway=adj_node,
-                        multiplex_fun=multiplex_fun)
-    
-    # Updating report object
-    report.add_degree_one_operation(node=node,
-                                    adj_node=adj_node,
-                                    demand_id=id,
-                                    network=network)
-    
+    ids = split_demands(network=network, node=node, gateway=adj_node, exclude=[])
+
     # Deleting unwanted parts of network
     copy_network = deepcopy(network)
-    copy_network.remove_demand(id)
+    map(lambda x: copy_network.remove_demand(x), ids)
     copy_network.remove_nodes(nodes=[node])
 
-    return copy_network, lightpaths
+    return copy_network
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
-    pt: PhysicalTopologyDB, tm: TrafficMatrixDB, report: Report) \
-    -> Tuple[Dict[str, GroomingLightPath], Network]:
+    pt: PhysicalTopologyDB, tm: TrafficMatrixDB) \
+        -> Tuple[Dict[str, GroomingLightPath], Network]:
 
     res_network = deepcopy(network)
     
@@ -227,29 +174,17 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
 
         while (d1_nodes:=res_network.physical_topology.get_degree_n_nodes(1)):
             for d1_node in d1_nodes:
-                res_network, r_lightpath = degree_1_operation(network=res_network,
-                                            node=d1_node,
-                                            report=report,
-                                            multiplex_fun=end_to_end_fun)
-                lightpaths.update(r_lightpath)
+                res_network = degree_1_operation(network=res_network,
+                                                node=d1_node)
         
         while (loops:=find_corner_cycles(res_network.physical_topology)):
             for loop in loops:
-                res_network, r_lightpath = corner_loop_operation(network=res_network,
-                                                nodes=loop[1:],
-                                                gateway=loop[0],
-                                                report=report,
-                                                multiplex_fun=end_to_end_fun)
-                lightpaths.update(r_lightpath)
-    
-    # performing end to end multiplexing with threshold of 70
-    groom_res = end_to_end_fun( traffic_matrix=res_network.traffic_matrix.export(),
-                                Physical_topology=res_network.physical_topology.export(),
-                                mp1h_threshold=70,
-                                clusters={"clusters":{}})
-
-    # removing services that construct lightpath
-    res_network.remove_service(groom_res['grooming_result']['traffic'])
-    lightpaths.update(groom_res['grooming_result']['traffic']['main']['lightpaths'])
+                res_network = corner_loop_operation(network=res_network,
+                                                    nodes=loop[1:],
+                                                    gateway=loop[0])
 
     return lightpaths, res_network
+
+def adv_grooming_phase_2(network: Network, line_rate: LineRate,
+        report: Report) -> AdvGroomingResult:
+    pass
