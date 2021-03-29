@@ -11,7 +11,7 @@ from copy import deepcopy
 from pydantic import BaseModel
 import networkx as nx
 
-class LineRate(Enum, str):
+class LineRate(str, Enum):
     t40 = "40"
     t100 = "100"
     t200 = "200"
@@ -347,6 +347,9 @@ class Network:
             
             def add_demand(self, demands: List[str]) -> None:
                 self.demands.extend(demands)
+            
+            def __repr__(self) -> str:
+                return f"Connection id:{self.id} Source:{self.source} Destination:{self.destination}"
         
         def __init__(self) -> None:
             self.connections = {}
@@ -363,7 +366,8 @@ class Network:
             self.connections[conn_id].add_demand(demands)
         
         def add_grooming_node(self, node: str) -> None:
-            self.grooming_nodes.append(node)
+            if not node in self.grooming_nodes:
+                self.grooming_nodes.append(node)
 
     def __init__(self,  pt: pschema.PhysicalTopologyDB,
                         tm: tschema.TrafficMatrixDB) -> None:
@@ -389,6 +393,27 @@ class Network:
         self.traffic_matrix.remove_demand(demand_id)
         self.physical_topology.nodes[source].demands.pop(destination)
         self.physical_topology.nodes[destination].demands.pop(source)
+    
+    def change_demand_src_or_dst(self, id: str, old_val: str, new_val: str) -> None:
+        demand = self.traffic_matrix.demands[id]
+        if demand.source == old_val:
+            peer = demand.destination
+            demand.source = new_val
+        elif demand.destination == old_val:
+            peer = demand.source
+            demand.destination = new_val
+        else:
+            raise Exception("not src or dst")
+
+        target_node = self.physical_topology.nodes[old_val]
+        peer_node = self.physical_topology.nodes[peer]
+
+        target_node.demands[peer].remove(id)
+        peer_node.demands[old_val].remove(id)
+
+        target_node = self.physical_topology.nodes[new_val]
+
+        self.add_demand_id_into_pt(src=new_val, dst=peer, id=id)
 
     def add_demands(self, demands: Optional[List[TrafficMatrix.Demand]] = None,
                 ids : Optional[List[str]] = None) -> None:
@@ -396,9 +421,7 @@ class Network:
             for id, demand in self.traffic_matrix.demands.items():
                 source = demand.source
                 destination = demand.destination
-
-                self.physical_topology.nodes[source].demands[destination] = id
-                self.physical_topology.nodes[destination].demands[source] = id
+                self.add_demand_id_into_pt(src=source, dst=destination, id=id)
         else:
             for i, demand in enumerate(demands):
                 source = demand.source
@@ -406,9 +429,19 @@ class Network:
                 id = ids[i]
 
                 self.traffic_matrix.add_demand(demand, id)
-                self.physical_topology.nodes[source].demands[destination] = id
-                self.physical_topology.nodes[destination].demands[source] = id
-    
+                self.add_demand_id_into_pt(src=source, dst=destination, id=id)
+        
+    def add_demand_id_into_pt(self, src: str, dst: str, id: str) -> None:
+        if not dst in self.physical_topology.nodes[src].demands:
+            self.physical_topology.nodes[src].demands[dst] = [id]
+        else:
+            self.physical_topology.nodes[src].demands[dst].append(id)
+        
+        if not src in  self.physical_topology.nodes[dst].demands:
+            self.physical_topology.nodes[dst].demands[src] = [id]
+        else:
+            self.physical_topology.nodes[dst].demands[src].append(id)
+
     def add_demand_with_service(self, services: Dict[str, TrafficMatrix.Demand.Service],
         source: str, destination: str, restoration_type: tschema.RestorationType,
             protection_type: tschema.ProtectionType, rate: LineRate) -> str:
