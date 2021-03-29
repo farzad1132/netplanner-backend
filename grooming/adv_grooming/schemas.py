@@ -1,11 +1,20 @@
 from datetime import datetime
+from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
+from matplotlib.pyplot import connect
 from pulp.utilities import value
 from physical_topology import schemas as pschema
 from traffic_matrix import schemas as tschema
 from grooming import schemas as gschema
 from uuid import uuid4
 from copy import deepcopy
+from pydantic import BaseModel
+import networkx as nx
+
+class LineRate(Enum, str):
+    t40 = "40"
+    t100 = "100"
+    t200 = "200"
 
 class Network:
     class PhysicalTopology:
@@ -67,6 +76,16 @@ class Network:
             self.nodes[link["source"]].links[link["destination"]] = self.Link(link)
             self.nodes[link["destination"]].links[link["source"]] = self.Link(link)
         
+        def export_networkx_model(self) -> nx.Graph:
+            graph = nx.Graph()
+            for src, value in self.nodes.items():
+                for dst, link in value.links.items():
+                    weight = link.length
+                    if not graph.has_edge(src, dst):
+                        graph.add_edge(src, dst, weight=weight)
+
+            return graph
+        
         def export(self, nodes: List[str] = None) -> pschema.PhysicalTopologyDB:
             if nodes is None:
                 nodes = [node.export() for node in self.nodes.values()]
@@ -111,6 +130,18 @@ class Network:
     
     class TrafficMatrix:
         class Demand:
+            Line_Rates = {
+                'E1': 0.002,
+                "STM1 Electrical": 0.155,
+                "STM1 Optical": 0.155,
+                "STM4": 0.622,
+                "STM16": 2.488,
+                "STM64": 9.953,
+                "FE": 0.1,
+                "GE": 1,
+                "10GE": 10,
+                "100GE": 100
+            }
             class Service:
                 def __init__(self, type: tschema.ServiceType,
                             id: str, source: str, destination: str) -> None:
@@ -165,6 +196,7 @@ class Network:
                     self.id = demand["id"]
                     self.protection_type = demand['protection_type']
                     self.restoration_type = demand['restoration_type']
+                    self.rate = 0
                     for service in demand["services"]:
                         self.add_service(service, self.source, self.destination)
                 else:
@@ -174,6 +206,7 @@ class Network:
                     self.id = None
                     self.protection_type = None
                     self.restoration_type = None
+                    self.rate = 0
             
             def export(self) -> tschema.NormalDemand:
                 services = []
@@ -204,6 +237,7 @@ class Network:
             def add_service(self, service: tschema.Service, source: str,
                             destination: str) -> None:
                 type = service["type"]
+                self.rate += self.Line_Rates[type]
                 for id in service["service_id_list"]:
                     self.services[id] = self.Service(type, id, source, destination)
             
@@ -278,7 +312,7 @@ class Network:
         
         def add_demand_with_service(self, services: Dict[str, Demand.Service], id: str,
             source: str, destination: str, restoration_type: tschema.RestorationType,
-            protection_type: tschema.ProtectionType) -> Demand:
+            protection_type: tschema.ProtectionType, rate: LineRate) -> Demand:
             demand = self.Demand()
             demand.id = id
             demand.services.update(services)
@@ -286,6 +320,7 @@ class Network:
             demand.destination = destination
             demand.protection_type = protection_type
             demand.restoration_type = restoration_type
+            demand.rate = rate
 
             self.add_demand(demand, id)
 
@@ -301,12 +336,41 @@ class Network:
         def remove_empty_demand(self, demand_id: str) -> None:
             if len(self.demands[demand_id].services) == 0:
                 self.demands.pop(demand_id)
+    
+    class Grooming:
+        class Connection:
+            def __init__(self, source: str, destination: str, id: str) -> None:
+                self.source = source
+                self.destination = destination
+                self.id = id
+                self.demands = []
             
+            def add_demand(self, demands: List[str]) -> None:
+                self.demands.extend(demands)
+        
+        def __init__(self) -> None:
+            self.connections = {}
+            self.grooming_nodes = []
+        
+        def add_connection(self, source: str, destination: str) -> str:
+            id = uuid4().hex
+            connection = self.Connection(source, destination, id)
+            self.connections[id] = connection
+
+            return id
+        
+        def add_demand_to_connection(self, conn_id: str, demands: List[str]) -> None:
+            self.connections[conn_id].add_demand(demands)
+        
+        def add_grooming_node(self, node: str) -> None:
+            self.grooming_nodes.append(node)
+
     def __init__(self,  pt: pschema.PhysicalTopologyDB,
                         tm: tschema.TrafficMatrixDB) -> None:
 
         self.physical_topology = self.PhysicalTopology(pt)
         self.traffic_matrix = self.TrafficMatrix(tm)
+        self.grooming = self.Grooming()
         self.add_demands()
     
     def remove_nodes(self, nodes: List[str]) -> None:
@@ -347,14 +411,15 @@ class Network:
     
     def add_demand_with_service(self, services: Dict[str, TrafficMatrix.Demand.Service],
         source: str, destination: str, restoration_type: tschema.RestorationType,
-            protection_type: tschema.ProtectionType) -> str:
+            protection_type: tschema.ProtectionType, rate: LineRate) -> str:
         id = uuid4().hex
         demand = self.traffic_matrix.add_demand_with_service(services=services,
                                 id=id,
                                 source=source,
                                 destination=destination,
                                 restoration_type=restoration_type,
-                                protection_type=protection_type)
+                                protection_type=protection_type,
+                                rate=rate)
         self.add_demands(demands=[demand], ids=[id])
         return id
     
@@ -418,3 +483,13 @@ class Report:
     def add_bridge_operation(self, island: List[str], gateway: str, bridge: Tuple[str, str],
         demand_ids: List[str], network: Network):
         self.events.append(self.BridgeOperation(island, gateway, bridge, demand_ids, network))
+
+class GroomingConnection(BaseModel):
+    source: str
+    destination: str
+    id: str
+    demands_id_list: List[str]
+
+class AdvGroomingResult(BaseModel):
+    connections: List[GroomingConnection]
+    grooming_nodes: List[str]
