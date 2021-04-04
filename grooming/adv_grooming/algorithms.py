@@ -1,4 +1,3 @@
-from numpy import source
 from traffic_matrix.schemas import TrafficMatrixDB
 from physical_topology.schemas import PhysicalTopologyDB
 from grooming.schemas import GroomingLightPath
@@ -6,6 +5,7 @@ from typing import Dict, List, Optional, Tuple
 from copy import copy, deepcopy
 from grooming.adv_grooming.schemas import AdvGroomingResult, Network, Report, LineRate
 from grooming.grooming_worker import grooming_task
+import networkx as nx
 
 def find_bridges(topology: Network.PhysicalTopology) \
     -> List[Tuple[List[str], Tuple[str, str]]]:
@@ -185,6 +185,47 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
 
     return lightpaths, res_network
 
-def adv_grooming_phase_2(network: Network, line_rate: LineRate,
-        report: Report) -> AdvGroomingResult:
-    pass
+def adv_grooming_phase_2(network: Network, line_rate: LineRate) \
+    -> AdvGroomingResult:
+    
+    # sort demands
+    demands = network.get_demands_by_rate()
+
+    # pick first
+    visit_demand = demands.pop(0)
+
+    # find shortest route
+    route = network.physical_topology.get_shortest_path(src=visit_demand.source,
+                                                        dst=visit_demand.destination)
+
+    # make route a connection
+    network.add_connection(source=visit_demand.source,
+                            destination=visit_demand.destination,
+                            route=route,
+                            traffic_rate=visit_demand.rate,
+                            line_rate=line_rate)
+
+    last_src = visit_demand.source
+    last_dst = visit_demand.destination
+    while not demands:
+        # choosing visit demand
+        if not (visit_demand:=network.traffic_matrix\
+            .get_demands(source=last_src)):
+            demands.remove(visit_demand)
+        elif not (visit_demand:=network.traffic_matrix\
+            .get_demands(source=last_dst)):
+            demands.remove(visit_demand)
+        else:
+            visit_demand = demands.pop(0)
+        
+        # find shortest route
+        route = network.physical_topology.get_shortest_path(src=visit_demand.source,
+                                                        dst=visit_demand.destination)
+
+        # create or break connections
+        intersections = network.grooming.find_connection_intersection(route)
+        for conn_id, node, inter_route in intersections:
+            pass
+
+    # create advanced grooming result
+    return
