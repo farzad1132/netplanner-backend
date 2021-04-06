@@ -1,15 +1,17 @@
+from copy import deepcopy
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Union
-from matplotlib.pyplot import connect
-from pulp.utilities import value
-from physical_topology import schemas as pschema
-from traffic_matrix import schemas as tschema
-from grooming import schemas as gschema
 from uuid import uuid4
-from copy import deepcopy
-from pydantic import BaseModel
+
 import networkx as nx
+from grooming import schemas as gschema
+from matplotlib.pyplot import connect
+from physical_topology import schemas as pschema
+from pulp.utilities import value
+from pydantic import BaseModel
+from traffic_matrix import schemas as tschema
+
 
 class LineRate(str, Enum):
     t40 = "40"
@@ -378,8 +380,13 @@ class Network:
             if len(self.demands[demand_id].services) == 0:
                 self.demands.pop(demand_id)
     
-    class Grooming:
+    class Grooming: 
         class Connection:
+            class Node:
+                def __init__(self, forward: str, backward: str) -> None:
+                    self.forward = forward
+                    self.backward = backward
+            
             def __init__(self, source: str, destination: str, id: str,
                 route: List[str]) -> None:
                 self.source = source
@@ -387,6 +394,18 @@ class Network:
                 self.id = id
                 self.demands = []
                 self.route = route
+            
+            def cal_route_dict_form(self, route: List[str]) -> Dict[str, Node]:
+                dict_form = {}
+                for i in range(len(route)):
+                    if i != len(route)-1 and i != 0:
+                        dict_form[route[i]] = self.Node(route[i+1], route[i-1])
+                    elif i == 0:
+                        dict_form[route[i]] = self.Node(route[i+1], None)
+                    else:
+                        dict_form[route[i]] = self.Node(None, route[i-1])
+                
+                return dict_form
             
             def add_demand(self, demands: List[str]) -> None:
                 self.demands.extend(demands)
