@@ -47,26 +47,26 @@ class Network:
             def __init__(self, link: pschema.Link) -> None:
                 self.length = link["length"]
                 self.fiber_type = link["fiber_type"]
-                self.capacity = None
-                self.cost = self.length
+                self.capacity = 0
+                self.cost = self.length * 100
             
             def __repr__(self) -> str:
-                return f"--{self.length}-->"
+                return f"--{self.cost}-->"
                 
         def __init__(self, pt: pschema.PhysicalTopologyDB) -> None:
             self.nodes = {}
             self.id = pt['id']
             self.name = pt['name']
-            self.graph = None
-
-            self.export_networkx_model()
+            self.graph = nx.Graph()
 
             for node in pt['data']['nodes']:
                 self.add_node(node)
             
             for link in pt['data']['links']:
                 self.add_link(link)
-        
+
+            self.export_networkx_model()
+
         def __repr__(self) -> str:
             return f"PhysicalTopology node count:{len(self.nodes)}"
 
@@ -104,6 +104,8 @@ class Network:
                 
                 return new_capacity, cost
             
+            line_rate = int(line_rate)
+            
             capacity, cost = update_capacity_cost(capacity=self.nodes[src].links[dst].capacity,
                                                 traffic_rate=traffic_rate,
                                                 line_rate=line_rate,
@@ -118,7 +120,6 @@ class Network:
             self.graph[dst][src]['weight'] = cost
 
         def export_networkx_model(self) -> None:
-            self.graph = nx.Graph()
             for src, value in self.nodes.items():
                 for dst, link in value.links.items():
                     weight = link.cost
@@ -394,6 +395,7 @@ class Network:
                 self.id = id
                 self.demands = []
                 self.route = route
+                self.route_dict_form = self.cal_route_dict_form(self.route)
             
             def cal_route_dict_form(self, route: List[str]) -> Dict[str, Node]:
                 dict_form = {}
@@ -407,67 +409,176 @@ class Network:
                 
                 return dict_form
             
+            def find_common_nodes(self, demand_path: List[str]) -> List[str]:
+                com = []
+                for node in demand_path:
+                    if node in self.route_dict_form:
+                        com.append(node)
+                
+                return com
+            
+            def find_intersection(self, demand_path: List[str]) -> List[List[str]]:
+                com_nodes = self.find_common_nodes(demand_path)
+
+                inters = []
+                i = 0
+                while i+1< len(com_nodes):
+                    node  = com_nodes[i]
+                    next_node = com_nodes[i+1]
+                    node_obj = self.route_dict_form[node]
+                    tmp = [node]
+                    while node_obj.forward == next_node or node_obj.backward == next_node:
+                        tmp.append(next_node)
+                        i += 1
+                        if i+1 >= len(com_nodes):
+                            break
+                        node  = com_nodes[i]
+                        next_node = com_nodes[i+1]
+                        node_obj = self.route_dict_form[node]
+                    
+                    if len(tmp) >= 2:
+                        inters.append(tmp)
+                
+                return inters
+
             def add_demand(self, demands: List[str]) -> None:
                 self.demands.extend(demands)
             
             def __repr__(self) -> str:
-                return f"Connection id:{self.id} Source:{self.source} Destination:{self.destination}"
+                return f"Connection route: {self.route} Demands:{self.demands}"
         
         def __init__(self) -> None:
             self.connections = {}
             self.grooming_nodes = []
         
-        def add_connection(self, source: str, destination: str, route: List[str]) -> str:
+        def __repr__(self) -> str:
+            return f"Grooming connection count:{len(self.connections)}"
+        
+        def add_connection(self, source: str, destination: str, route: List[str],
+                demands: Optional[List[str]] = None) -> str:
+
             id = uuid4().hex
             connection = self.Connection(source, destination, id,
                 route=route)
             self.connections[id] = connection
 
-            return id
-        
-        def split_connection(self, node: str, conn_id: str) -> str:
-            id = uuid4().hex
-            conn = deepcopy(self.connections[conn_id])
-            conn.source = node
-            conn.id = id
-            self.connections[id] = conn
-            self.connections[conn_id].destination = node
+            if demands is not None:
+                self.connections[id].demands = demands
 
             return id
         
-        def find_connection_intersection(self, route: List[str]) \
-            -> List[Tuple[str, str, List[str]]]:
-            result = []
+        def split_connection(self, com_sections: List[List[str]], non_com_sections: List[List[str]],
+                conn_id: str, demand_id: str) -> None:
 
-            src = route[0]
-            dst = route[-1]
-            flag = False
-            for conn_id, conn in self.connections.items():
-                if conn.source == src:
-                    flag = True
-                elif conn.destination == src:
-                    flag = True
-                    conn.route.reverse()
-                elif conn.source == dst:
-                    flag = True
-                    route.reverse()
-                elif conn.destination == dst:
-                    flag = True
-                    conn.route.reverse()
-                    route.reverse()
+            demands = self.connections[conn_id].demands
+            extended_demands = deepcopy(demands)
+            extended_demands.append(demand_id)
+            del self.connections[conn_id]
 
-                if not flag:
-                    continue
+            for sec in com_sections:
+                src = sec[0]
+                dst = sec[-1]
+                self.add_connection(source=src,
+                                    destination=dst,
+                                    route=sec,
+                                    demands=extended_demands)
+            for sec in non_com_sections:
+                src = sec[0]
+                dst = sec[-1]
+                self.add_connection(source=src,
+                                    destination=dst,
+                                    route=sec,
+                                    demands=deepcopy(demands))
 
-                last_node = route[0]
-                inter_route = [route[0]]
-                for i in range(1, len(route)):
-                    if route[i] == conn.route[i]:
-                        last_node = route[route]
-                        inter_route.append(last_node)
+        def find_split_sections(self, intersections: List[List[str]], demand_path: List[str],
+                        demand_id: str) -> None:
+
+            def extract_path(path: List[str], start: int, end: int) -> List[str]:
+                part = []
+                while start <= end:
+                    part.append(path[start])
+                    start += 1
                 
-                result.append((conn_id, last_node, inter_route))
-                flag = False
+                return part
+
+            end_points_d = []
+            rem_dem_secs = []
+            for conn_id, inters in intersections.items():
+                conn_path = self.connections[conn_id].route
+                end_points_c = []
+                
+                com_sections = []
+                non_com_sections = []
+                for inter in inters:
+                    # connection part
+                    start = conn_path.index(inter[0])
+                    end = conn_path.index(inter[-1])
+
+                    if start < end:
+                        end_points_c.append((start, end))
+                    else:
+                        end_points_c.append((end, start))
+                    
+                    # demand part
+                    start = demand_path.index(inter[0])
+                    end = demand_path.index(inter[-1])
+
+                    if start < end:
+                        end_points_d.append((start, end))
+                    else:
+                        end_points_d.append((end, start))
+
+                end_points_c.sort(key= lambda x: x[0])
+                end_points_d.sort(key= lambda x: x[0])
+                
+                # connection analysis
+                if len(end_points_c) != 0:
+                    if end_points_c[0][0] != 0:
+                        non_com_sections.append(extract_path(conn_path, 0, end_points_c[0][0]))
+                    
+                    com_sections.append(extract_path(conn_path, end_points_c[0][0], end_points_c[0][1]))
+                    
+                    for i in range(1, len(end_points_c)):
+                        non_com_sections.append(extract_path(conn_path, end_points_c[i-1][1], end_points_c[i][0]))
+                        com_sections.append(extract_path(conn_path, end_points_c[i][0], end_points_c[i][1]))
+                    
+                    if end_points_c[-1][1] != len(conn_path)-1:
+                        non_com_sections.append(extract_path(conn_path, end_points_c[-1][1], len(conn_path)-1))
+                    
+                    self.split_connection(com_sections=com_sections,
+                                        non_com_sections=non_com_sections,
+                                        conn_id=conn_id,
+                                        demand_id=demand_id)
+
+            # demand analysis
+            if len(end_points_d) != 0:
+                if end_points_d[0][0] != 0:
+                    rem_dem_secs.append(extract_path(demand_path, 0, end_points_d[0][0]))
+                
+                for i in range(1, len(end_points_d)):
+                    if end_points_d[i-1][1] != end_points_d[i][0]:
+                        rem_dem_secs.append(extract_path(demand_path, end_points_d[i-1][1], end_points_d[i][0]))
+
+                if end_points_d[-1][1] != len(demand_path)-1:
+                    rem_dem_secs.append(extract_path(demand_path, end_points_d[-1][1], len(demand_path)-1))
+
+                for sec in rem_dem_secs:
+                    self.add_connection(source=sec[0],
+                                        destination=sec[-1],
+                                        route=sec,
+                                        demands=[demand_id])
+            else:
+                self.add_connection(source=demand_path[0],
+                                    destination=demand_path[-1],
+                                    route=demand_path,
+                                    demands=[demand_id])
+        
+        def find_intersections(self, demand_path: List[str]) -> Dict[str, List[List[str]]]:
+            result = {}
+            for conn_id, conn in self.connections.items():
+                inter = conn.find_intersection(demand_path)
+                if len(inter) != 0:
+                    result[conn_id] = inter
             
             return result
 
@@ -486,23 +597,37 @@ class Network:
         self.grooming = self.Grooming()
         self.add_demands()
     
-    def add_connection(self, source: str, destination: str, traffic_rate: float,
-            line_rate: int, route: Optional[List[str]] = None) -> None:
+    def add_connection(self, source: str, destination: str, line_rate: int,
+            traffic_rate: float, route: Optional[List[str]] = None) -> str:
         if route is None:
             path = self.physical_topology.get_shortest_path(src=source, dst=destination)
         else:
             path = route
 
-        self.grooming.add_connection(source=source,
+        id = self.grooming.add_connection(source=source,
                                     destination=destination,
                                     route=path)
-
-        for i in range(len(route)-1):
-            self.physical_topology.update_link(src=route[i],
-                                            dst=route[i+1],
+        
+        for i in range(len(path)-1):
+            self.physical_topology.update_link(src=path[i],
+                                            dst=path[i+1],
                                             traffic_rate=traffic_rate,
                                             line_rate=line_rate)
+        
+        return id
+    
+    def update_connections(self, demand_id: str, demand_path: List[str],
+                line_rate: int, traffic_rate: float) -> None:
+                
+        intersections = self.grooming.find_intersections(demand_path=demand_path)
+        self.grooming.find_split_sections(intersections=intersections, demand_path=demand_path, demand_id=demand_id)
 
+        for i in range(len(demand_path)-1):
+            self.physical_topology.update_link(src=demand_path[i],
+                                            dst=demand_path[i+1],
+                                            traffic_rate=traffic_rate,
+                                            line_rate=line_rate)
+ 
     def get_demands_by_rate(self) -> List[TrafficMatrix.Demand]:
         demands = list(self.traffic_matrix.demands.values())
         demands.sort(key= lambda x: x.rate, reverse=True)

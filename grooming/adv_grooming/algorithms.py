@@ -1,11 +1,14 @@
-from traffic_matrix.schemas import TrafficMatrixDB
-from physical_topology.schemas import PhysicalTopologyDB
-from grooming.schemas import GroomingLightPath
-from typing import Dict, List, Optional, Tuple
 from copy import copy, deepcopy
-from grooming.adv_grooming.schemas import AdvGroomingResult, Network, Report, LineRate
-from grooming.grooming_worker import grooming_task
+from typing import Dict, List, Optional, Tuple
+
 import networkx as nx
+from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
+                                           Network, Report)
+from grooming.grooming_worker import grooming_task
+from grooming.schemas import GroomingLightPath
+from physical_topology.schemas import PhysicalTopologyDB
+from traffic_matrix.schemas import TrafficMatrixDB
+
 
 def find_bridges(topology: Network.PhysicalTopology) \
     -> List[Tuple[List[str], Tuple[str, str]]]:
@@ -199,22 +202,31 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate) \
                                                         dst=visit_demand.destination)
 
     # make route a connection
-    network.add_connection(source=visit_demand.source,
+    conn_id = network.add_connection(source=visit_demand.source,
                             destination=visit_demand.destination,
                             route=route,
                             traffic_rate=visit_demand.rate,
                             line_rate=line_rate)
+    network.grooming.add_demand_to_connection(conn_id=conn_id, demands=[visit_demand.id])
 
     last_src = visit_demand.source
     last_dst = visit_demand.destination
-    while not demands:
+    while len(demands) != 0:
         # choosing visit demand
-        if not (visit_demand:=network.traffic_matrix\
-            .get_demands(source=last_src)):
+        cand_demands = list(filter(lambda x: (x.source == last_src or x.destination == last_src),
+                            demands))
+        new_cands = list(filter(lambda x: (x.source == last_dst or x.destination == last_dst),
+                            demands))
+        cand_demands.extend(new_cands)
+        cand_demands.sort(key=lambda x: x.rate, reverse=True)
+
+        if len(cand_demands) != 0:
+            visit_demand = cand_demands.pop(0)
             demands.remove(visit_demand)
-        elif not (visit_demand:=network.traffic_matrix\
-            .get_demands(source=last_dst)):
-            demands.remove(visit_demand)
+            try:
+                cand_demands.remove(visit_demand)
+            except:
+                pass
         else:
             visit_demand = demands.pop(0)
         
@@ -223,9 +235,12 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate) \
                                                         dst=visit_demand.destination)
 
         # create or break connections
-        intersections = network.grooming.find_connection_intersection(route)
-        for conn_id, node, inter_route in intersections:
-            pass
+        network.update_connections(demand_id=visit_demand.id,
+                                    demand_path=route,
+                                    line_rate=line_rate,
+                                    traffic_rate=visit_demand.rate)
+        
+        # update link metrics
 
     # create advanced grooming result
-    return
+    return 
