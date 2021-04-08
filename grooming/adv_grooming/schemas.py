@@ -1,3 +1,4 @@
+import math
 from copy import deepcopy
 from datetime import datetime
 from enum import Enum
@@ -17,6 +18,20 @@ class LineRate(str, Enum):
     t40 = "40"
     t100 = "100"
     t200 = "200"
+
+class GroomingConnection(BaseModel):
+    source: str
+    destination: str
+    id: str
+    path: List[str]
+    lambda_link: int
+    capacity_link: float
+    demands_id_list: List[str]
+
+class AdvGroomingResult(BaseModel):
+    connections: List[GroomingConnection]
+    lambda_link: int
+    average_lambda_capacity_usage: float
 
 class Network:
     class PhysicalTopology:
@@ -382,6 +397,7 @@ class Network:
                 self.demands.pop(demand_id)
     
     class Grooming: 
+        ref_id = 1
         class Connection:
             class Node:
                 def __init__(self, forward: str, backward: str) -> None:
@@ -396,6 +412,7 @@ class Network:
                 self.demands = []
                 self.route = route
                 self.route_dict_form = self.cal_route_dict_form(self.route)
+                self.rate = 0
             
             def cal_route_dict_form(self, route: List[str]) -> Dict[str, Node]:
                 dict_form = {}
@@ -424,7 +441,12 @@ class Network:
                 i = 0
                 while i+1< len(com_nodes):
                     node  = com_nodes[i]
-                    next_node = com_nodes[i+1]
+
+                    #next_node = com_nodes[i+1]
+                    for i, d_node in enumerate(demand_path):
+                        if d_node == node:
+                            next_node = demand_path[i+1]
+
                     node_obj = self.route_dict_form[node]
                     tmp = [node]
                     while node_obj.forward == next_node or node_obj.backward == next_node:
@@ -446,6 +468,17 @@ class Network:
             
             def __repr__(self) -> str:
                 return f"Connection route: {self.route} Demands:{self.demands}"
+            
+            def export_result(self) -> GroomingConnection:
+                return GroomingConnection(**{
+                    'id': self.id,
+                    'source': self.source,
+                    'destination': self.destination,
+                    'capacity_link': 0,
+                    'lambda_link': 0,
+                    'path': self.route,
+                    'demands_id_list': self.demands
+                }).dict()
         
         def __init__(self) -> None:
             self.connections = {}
@@ -457,7 +490,9 @@ class Network:
         def add_connection(self, source: str, destination: str, route: List[str],
                 demands: Optional[List[str]] = None) -> str:
 
-            id = uuid4().hex
+            #id = uuid4().hex
+            id = str(self.ref_id)
+            self.ref_id += 1
             connection = self.Connection(source, destination, id,
                 route=route)
             self.connections[id] = connection
@@ -563,10 +598,11 @@ class Network:
                     rem_dem_secs.append(extract_path(demand_path, end_points_d[-1][1], len(demand_path)-1))
 
                 for sec in rem_dem_secs:
-                    self.add_connection(source=sec[0],
-                                        destination=sec[-1],
-                                        route=sec,
-                                        demands=[demand_id])
+                    if len(sec) != 0:       # NOTE: with caution
+                        self.add_connection(source=sec[0],
+                                            destination=sec[-1],
+                                            route=sec,
+                                            demands=[demand_id])
             else:
                 self.add_connection(source=demand_path[0],
                                     destination=demand_path[-1],
@@ -588,6 +624,14 @@ class Network:
         def add_grooming_node(self, node: str) -> None:
             if not node in self.grooming_nodes:
                 self.grooming_nodes.append(node)
+        
+        def export_result(self) -> AdvGroomingResult:
+            return AdvGroomingResult(**{
+                'connections': list(map(lambda x: x.export_result(), self.connections.values())),
+                'average_lambda_capacity_usage': 0,
+                'lambda_link': 0
+            }).dict()
+
 
     def __init__(self,  pt: pschema.PhysicalTopologyDB,
                         tm: tschema.TrafficMatrixDB) -> None:
@@ -618,7 +662,7 @@ class Network:
     
     def update_connections(self, demand_id: str, demand_path: List[str],
                 line_rate: int, traffic_rate: float) -> None:
-                
+
         intersections = self.grooming.find_intersections(demand_path=demand_path)
         self.grooming.find_split_sections(intersections=intersections, demand_path=demand_path, demand_id=demand_id)
 
@@ -730,6 +774,27 @@ class Network:
                     self.remove_groomout_services(demand_id=demand_id,
                         groomout=traffic['main']['low_rate_grooming_result'] \
                             ['demands'][demand_id]['groomouts'][id])
+    
+    def export_result(self, line_rate: str) -> AdvGroomingResult:
+        result = self.grooming.export_result()
+        tot_lambda_link = 0
+        tot_capacity_link = 0
+        for connection in result['connections']:
+            rate = 0
+            for demand_id in connection['demands_id_list']:
+                rate += self.traffic_matrix.demands[demand_id].rate
+
+            rate_by_line_rate = rate/(int(line_rate))
+            connection['lambda_link'] = math.ceil(rate_by_line_rate) * (len(connection['path']))
+            connection['capacity_link'] = rate_by_line_rate * (len(connection['path']))
+
+            tot_lambda_link += connection['lambda_link']
+            tot_capacity_link += connection['capacity_link']
+        
+        result['lambda_link'] = tot_lambda_link
+        result['average_lambda_capacity_usage'] = tot_capacity_link / tot_lambda_link
+        
+        return result
 
 
 class Report:
@@ -773,12 +838,4 @@ class Report:
         demand_ids: List[str], network: Network):
         self.events.append(self.BridgeOperation(island, gateway, bridge, demand_ids, network))
 
-class GroomingConnection(BaseModel):
-    source: str
-    destination: str
-    id: str
-    demands_id_list: List[str]
 
-class AdvGroomingResult(BaseModel):
-    connections: List[GroomingConnection]
-    grooming_nodes: List[str]
