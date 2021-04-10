@@ -460,6 +460,8 @@ class Network:
                         next_node = com_nodes[i+1]
                         node_obj = self.route_dict_form[node]
                     
+                    i += 1
+                    
                     if len(tmp) >= 2:
                         inters.append(tmp)
                 
@@ -813,8 +815,8 @@ class Network:
                 rate += self.traffic_matrix.demands[demand_id].rate
 
             rate_by_line_rate = rate/(int(line_rate))
-            connection['lambda_link'] = math.ceil(rate_by_line_rate) * (len(connection['path']))
-            connection['capacity_link'] = rate_by_line_rate * (len(connection['path']))
+            connection['lambda_link'] = math.ceil(rate_by_line_rate) * (len(connection['path'])-1)
+            connection['capacity_link'] = rate_by_line_rate * (len(connection['path'])-1)
             connection['rate_by_line_rate'] = rate_by_line_rate
 
             tot_lambda_link += connection['lambda_link']
