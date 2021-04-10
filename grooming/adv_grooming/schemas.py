@@ -445,9 +445,9 @@ class Network:
                     node  = com_nodes[i]
 
                     #next_node = com_nodes[i+1]
-                    for i, d_node in enumerate(demand_path):
+                    for t, d_node in enumerate(demand_path):
                         if d_node == node:
-                            next_node = demand_path[i+1]
+                            next_node = demand_path[t+1]
 
                     node_obj = self.route_dict_form[node]
                     tmp = [node]
