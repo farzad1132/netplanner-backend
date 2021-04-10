@@ -240,7 +240,5 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate) \
                                     line_rate=line_rate,
                                     traffic_rate=visit_demand.rate)
         
-        # update link metrics
-
     # create advanced grooming result
     return network.export_result(line_rate)
