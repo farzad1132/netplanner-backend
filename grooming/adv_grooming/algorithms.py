@@ -87,7 +87,8 @@ def corner_loop_operation(network: Network, nodes: List[str], gateway: str) \
     -> Network:
 
     """
-        TODO: complete comments
+        This function does all degree 1 node operation on corner loop nodes except
+        the gateway
     """
 
     direct_demands = []
@@ -110,7 +111,12 @@ def corner_loop_operation(network: Network, nodes: List[str], gateway: str) \
 def split_demands(network: Network, node: str, gateway: str,
             exclude: List[str]) -> Optional[List[str]]:
     """
-        TODO: complete comments
+        This function job is to split demand which are described by parameters
+        
+        Parameters:
+            node: source of target demands
+            gateway: breaking point of target demands
+            exclude: list of nodes that target demands can not be originated from
     """
 
     # create a connection and add all demands between degree 1 node
@@ -141,16 +147,30 @@ def split_demands(network: Network, node: str, gateway: str,
 
 def degree_1_operation(network: Network, node: str) -> Network:
     """
-        TODO: complete comments
+        In this function we are going to complete degree 1 operation in 2 steps:\n
+        Step 1. finding demands that their source is degree 1 node and their destination
+                aren't adjacent node\n
+        Step 2. breaking each demand found in step 1 into 2 sections:
+                section 1. from degree 1 node to adjacent node
+                section 2. from adjacent node to original destination\n
+
+        Also adding all section 1 demands to a connection with source of degree 1 node
+        and destination of adjacent node.\n
+
+        After all above we are deleteing degree 1 node from physical topology.
     """
+
     # Step 1
     adj_node = list(network.physical_topology.nodes[node].links.keys())[0]
-
+    
+    # Step 2
     ids = split_demands(network=network, node=node, gateway=adj_node, exclude=[])
 
     # Deleting unwanted parts of network
     copy_network = deepcopy(network)
     map(lambda x: copy_network.remove_demand(x), ids)
+
+    # removing degree 1 node
     copy_network.remove_nodes(nodes=[node])
 
     return copy_network
@@ -158,28 +178,37 @@ def degree_1_operation(network: Network, node: str) -> Network:
 def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
     pt: PhysicalTopologyDB, tm: TrafficMatrixDB, multiplex_threshold: int) \
         -> Tuple[Dict[str, GroomingLightPath], Network]:
+    """
+        In this phase we are performing hierarchial clustering and end-to-end multiplexing.
+        At the output we have potential series of lightpaths (generated in end-to-end multiplexing)
+        and pruned network object 
+    """
 
+    # we are making a copy of network because we don't want to modify original network object
     res_network = deepcopy(network)
     
-    # performing end to end multiplexing with threshold of 90
+    # performing end to end multiplexing with specific threshold
     groom_res = end_to_end_fun( traffic_matrix=tm,
                                 Physical_topology=pt,
                                 mp1h_threshold=multiplex_threshold,
                                 clusters={"clusters":{}})
     
-    # removing services that construct lightpath
+    # removing services that construct lightpaths
     lightpaths = {}
     res_network.remove_service(groom_res['grooming_result']['traffic'])
     lightpaths.update(groom_res['grooming_result']['traffic']['main']['lightpaths'])
 
+    # checking if we are done with clustering or not
     while len(res_network.physical_topology.get_degree_n_nodes(1)) != 0 \
         or  len(find_corner_cycles(res_network.physical_topology)) != 0:
 
+        # performing degree 1 node operation
         while (d1_nodes:=res_network.physical_topology.get_degree_n_nodes(1)):
             for d1_node in d1_nodes:
                 res_network = degree_1_operation(network=res_network,
                                                 node=d1_node)
         
+        # performing corner cycles operation
         while (loops:=find_corner_cycles(res_network.physical_topology)):
             for loop in loops:
                 res_network = corner_loop_operation(network=res_network,
@@ -190,6 +219,9 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
 
 def adv_grooming_phase_2(network: Network, line_rate: LineRate) \
     -> AdvGroomingResult:
+    """
+        This phase performs mid-grooming operation and calculates several connections.
+    """
     
     # sort demands
     demands = network.get_demands_by_rate()
@@ -234,7 +266,7 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate) \
         route = network.physical_topology.get_shortest_path(src=visit_demand.source,
                                                         dst=visit_demand.destination)
 
-        # create or break connections
+        # create or break connections (also updating link metrics)
         network.update_connections(demand_id=visit_demand.id,
                                     demand_path=route,
                                     line_rate=line_rate,
