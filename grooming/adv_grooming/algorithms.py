@@ -156,7 +156,7 @@ def degree_1_operation(network: Network, node: str) -> Network:
     return copy_network
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
-    pt: PhysicalTopologyDB, tm: TrafficMatrixDB) \
+    pt: PhysicalTopologyDB, tm: TrafficMatrixDB, multiplex_threshold: int) \
         -> Tuple[Dict[str, GroomingLightPath], Network]:
 
     res_network = deepcopy(network)
@@ -164,7 +164,7 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
     # performing end to end multiplexing with threshold of 90
     groom_res = end_to_end_fun( traffic_matrix=tm,
                                 Physical_topology=pt,
-                                mp1h_threshold=90,
+                                mp1h_threshold=multiplex_threshold,
                                 clusters={"clusters":{}})
     
     # removing services that construct lightpath
