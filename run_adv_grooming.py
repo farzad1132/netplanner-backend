@@ -1,3 +1,4 @@
+import math
 from grooming.grooming_worker import grooming_task
 import networkx as nx
 from matplotlib import pyplot as plt
@@ -29,7 +30,6 @@ with open('/home/farzad/Desktop/BProject/G2/G2_pt.json', 'rb') as jfile:
 
 G2_network = Network(pt=G2_pt[0],
                     tm=G2_tm[0])
-
 """ G2_graph = G2_network.physical_topology.export_networkx_model()
 nx.draw(G2_graph, pos=nx.spring_layout(G2_graph), with_labels=True)
 plt.show() """
@@ -43,16 +43,57 @@ with open('/home/farzad/Desktop/BProject/G1/G1_tm.json', 'rb') as jfile:
 with open('/home/farzad/Desktop/BProject/G1/G1_pt.json', 'rb') as jfile:
     G1_pt = json.loads(jfile.read())
 
-G1_network = Network(pt=G1_pt[0], tm=G1_tm[0]) """
+G1_network = Network(pt=G1_pt[0], tm=G1_tm[0])
+nx.draw(G1_network.physical_topology.graph, pos=nx.spring_layout(G1_network.physical_topology.graph), with_labels=True)
+plt.show() """
 
 """ lightpaths, res_network = adv_grooming_phase_1(network=G2_network,
                                     end_to_end_fun=grooming_task,
                                     pt=G2_pt[0],
                                     tm=G2_tm[0]) """
-x = 
-res = [[listA[i], listA[i + 1]]
-   for i in range(len(listA) - 1)]
 
+with open('./rwa_test/pt.json', 'rb') as jfile:
+    kerman_pt = json.loads(jfile.read())
+
+# reading G1 pt
+with open('./rwa_test/tm.json', 'rb') as jfile:
+    kerman_tm = json.loads(jfile.read())
+
+kerman_network = Network(pt=kerman_pt[0],
+                        tm=kerman_tm[0])
+
+""" nx.draw(kerman_network.physical_topology.graph, with_labels=True)
+plt.show() """
+""" lightpaths, res_network = adv_grooming_phase_1(network=kerman_network,
+                                    end_to_end_fun=grooming_task,
+                                    pt=kerman_pt[0],
+                                    tm=kerman_tm[0],
+                                    multiplex_threshold=70) """
 result = adv_grooming_phase_2(network=G2_network,
                             line_rate="40")
 print("done")
+
+transponders = 0
+for connection in result['connections']:
+    transponders += 2*(math.ceil(connection['rate_by_line_rate']))
+
+print("hi")
+
+""" with open('/home/farzad/Desktop/BProject/G3/groom.json', 'rb') as jfile:
+    groom_kerman = json.loads(jfile.read())
+
+
+with open('/home/farzad/Desktop/BProject/G3/end_to_end.json', 'rb') as jfile:
+    rwa_kerman = json.loads(jfile.read())
+
+capacity_link = 0
+lambda_link = 0
+for lightpath_id, lightpath in rwa_kerman['lightpaths'].items():
+    capacity = groom_kerman['traffic']['main']['lightpaths'][lightpath_id]['capacity']
+    path_len = len(lightpath['routing_info']['working']["path"])
+
+    capacity_link += capacity * path_len
+    lambda_link += path_len
+
+ALCU = capacity_link / lambda_link """
+print("hi")
