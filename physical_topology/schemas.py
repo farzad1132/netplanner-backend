@@ -52,6 +52,7 @@ class PhysicalTopologyDB(BaseModel):
     version: int
     create_date: datetime
     name: str
+    comment: str
 
     class Config:
         orm_mode = True
