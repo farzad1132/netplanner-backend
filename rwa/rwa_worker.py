@@ -14,7 +14,18 @@ import pickle
 import codecs
 import warnings
 
-class RWAHandle(Task):
+class RWAHandleFailure(Task):
+    def on_failure(self, exc, task_id, *args, **kwargs):
+        db = session()
+        if (register:=db.query(RWARegisterModel)\
+            .filter_by(id=task_id).one_or_none()) is not None:
+            register.is_failed = True
+            register.exception = exc.__repr__()
+
+            db.add(register)
+            db.commit()
+            db.close()
+class RWAHandle(RWAHandleFailure):
     def on_success(self, retval, task_id, *args, **kwargs):
         db = session()
         if (register:=db.query(RWARegisterModel)\
@@ -28,23 +39,11 @@ class RWAHandle(Task):
                                 tm_version=register.tm_version,
                                 manager_id=register.manager_id,
                                 form=register.form,
-                                lightpaths=retval["lightpaths"],
+                                lightpaths=retval["result"]["lightpaths"],
                                 start_date=register.start_date)
             db.add(rwa_res)
             db.commit()
             db.close()
-
-    def on_failure(self, exc, task_id, *args, **kwargs):
-        db = session()
-        if (register:=db.query(RWARegisterModel)\
-            .filter_by(id=task_id).one_or_none()) is not None:
-            register.is_failed = True
-            register.exception = exc.__repr__()
-
-            db.add(register)
-            db.commit()
-            db.close()
-
 
 def run_rwa(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
             grooming_result: GroomingResult, rwa_form: RWAForm) -> ChainTaskID:
@@ -111,7 +110,7 @@ def generate_rwa_task_info(demand_number, num_iterations):
     chain_task_id_info['chain_info'] = chain_info
     return chain_task_id_info, preprocess_task_id, group_planner_id_list, finilize_task_id
 
-@celeryapp.task(bind=True)
+@celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
                   grooming_result: GroomingResult, rwa_form: RWAForm, demand_num):
     from rwa.algorithm.components import Node, Link, Demand, RegenOption
@@ -259,7 +258,7 @@ def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info
     print(type(pickled))    
     return {'result': pickled, 'current': total_steps, 'total': total_steps}
 
-@celeryapp.task(bind=True)
+@celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_greedy_iteration(self, net_module_bytes, rwa_form):
     from rwa.algorithm.oldnetwork import random_shuffle_solver
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 1, 'current_stage_info': 'Starting RWA greedy algorithm.'})
@@ -277,7 +276,7 @@ def rwa_greedy_iteration(self, net_module_bytes, rwa_form):
     pickled = codecs.encode(pickle.dumps(result_net), "base64").decode() 
     return {'result': pickled, 'current': 7, 'total': 7}
 
-@celeryapp.task(bind=True)
+@celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_gilp_iteration(self):
     from rwa.algorithm.oldnetwork import random_shuffle_solver
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 1, 'current_stage_info': 'Starting RWA GILP algorithm.'})
@@ -297,7 +296,7 @@ def rwa_gilp_iteration(self):
     pickled = codecs.encode(pickle.dumps(result_net), "base64").decode() 
     return {'result': pickled, 'current': 7, 'total': 7}
 
-@celeryapp.task(bind=True)
+@celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_ilp(self):
     from rwa.algorithm.oldnetwork import random_shuffle_solver
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 1, 'current_stage_info': 'Starting RWA GILP algorithm.'})
@@ -327,7 +326,7 @@ def rwa_ilp(self):
 #     # Nothing here!
 #     return {'result': x_list, 'current': 2, 'total': 2}
 
-@celeryapp.task(bind=True)
+@celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_group_planner(self, preprocess_output, rwa_form, group_planner_id_list, finilize_task_id):
     net_module_bytes = preprocess_output['result']
     algorithm = rwa_form["algorithm"]
