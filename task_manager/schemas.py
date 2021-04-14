@@ -32,6 +32,7 @@ class ChainStatus(BaseModel):
 
 class ChainProgressReport(BaseModel):
     id: str
+    current_stage_info: str
     status: ChainStatus
     progress: int = Field(0, ge=0)
     total_subtasks: int = Field(1, ge=0)
