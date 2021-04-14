@@ -2,8 +2,7 @@ from copy import copy, deepcopy
 from typing import Dict, List, Optional, Tuple
 
 import networkx as nx
-from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
-                                           Network, Report)
+from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate, Network
 from grooming.grooming_worker import grooming_task
 from grooming.schemas import GroomingLightPath
 from physical_topology.schemas import PhysicalTopologyDB
@@ -15,7 +14,7 @@ def find_bridges(topology: Network.PhysicalTopology) \
     pass
 
 def bridge_operation(network: Network, nodes: List[str], gateway: str,
-    bridge: Tuple[str, str], report: Report) -> Network:
+    bridge: Tuple[str, str]) -> Network:
     pass
 
 def find_corner_cycles(topology: Network.PhysicalTopology) \
