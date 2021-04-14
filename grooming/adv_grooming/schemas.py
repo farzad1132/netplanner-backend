@@ -92,6 +92,7 @@ class Network:
         
         def remove_node(self, node: str) -> None:
             degrees = self.nodes[node].links.keys()
+            self.graph.remove_node(node)
             self.nodes.pop(node)
             for degree in degrees:
                 self.nodes[degree].links.pop(node)
@@ -725,12 +726,13 @@ class Network:
             service.change_src_or_dst(old_val, new_val)
 
     def remove_demand(self, demand_id: str) -> None:
-        demand = self.traffic_matrix.demands[demand_id]
-        source = demand.source
-        destination = demand.destination
-        self.traffic_matrix.remove_demand(demand_id)
-        self.physical_topology.nodes[source].demands.pop(destination)
-        self.physical_topology.nodes[destination].demands.pop(source)
+        if demand_id in self.traffic_matrix.demands:
+            demand = self.traffic_matrix.demands[demand_id]
+            source = demand.source
+            destination = demand.destination
+            self.traffic_matrix.remove_demand(demand_id)
+            self.physical_topology.nodes[source].demands[destination].remove(demand_id)
+            self.physical_topology.nodes[destination].demands[source].remove(demand_id)
     
     def change_demand_src_or_dst(self, id: str, old_val: str, new_val: str) -> None:
         demand = self.traffic_matrix.demands[id]
@@ -813,16 +815,19 @@ class Network:
                         groomout=traffic['main']['low_rate_grooming_result'] \
                             ['demands'][demand_id]['groomouts'][id])
     
-    def export_result(self, line_rate: str) -> AdvGroomingResult:
+    def export_result(self, line_rate: str, original_network) -> AdvGroomingResult:
         result = self.grooming.export_result()
-        grooming_nodes = self.find_grooming_nodes()
+
+        # TODO: take care of grooming nodes
+        #grooming_nodes = self.find_grooming_nodes()
+        grooming_nodes = []
 
         tot_lambda_link = 0
         tot_capacity_link = 0
         for connection in result['connections']:
             rate = 0
             for demand_id in connection['demands_id_list']:
-                rate += self.traffic_matrix.demands[demand_id].rate
+                rate += original_network.traffic_matrix.demands[demand_id].rate
 
             rate_by_line_rate = rate/(int(line_rate))
             connection['lambda_link'] = math.ceil(rate_by_line_rate) * (len(connection['path'])-1)
