@@ -1,4 +1,4 @@
-from schemas import ChainTaskID, ChainProgressReport
+from task_manager.schemas import ChainTaskID, ChainProgressReport
 from celery.result import AsyncResult
 
 def status_check(chain_task_id: ChainTaskID):
@@ -14,6 +14,7 @@ def status_check(chain_task_id: ChainTaskID):
     }
     progress_report = {
         'id': chain_task_id['chain_id'],
+        'current_stage_info': '',
         'progress': 0,
         'total_subtasks': 0,
     }
@@ -39,6 +40,7 @@ def status_check(chain_task_id: ChainTaskID):
                     if isinstance(task_result.info, dict):
                         progress_report['progress'] += task_result.info.get('current', 0)
                         progress_report['total_subtasks'] += task_result.info.get('total', 1)
+                        progress_report['current_stage_info'] = task_result.info.get('current_stage_info', 'Not defined')
                     else:
                         progress_report['progress'] += 0
                         progress_report['total_subtasks'] += 1
