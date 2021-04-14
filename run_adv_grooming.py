@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import json
 
 from pydantic import networks
-from grooming.adv_grooming.schemas import Network, Report
+from grooming.adv_grooming.schemas import Network
 from grooming.adv_grooming.algorithms import adv_grooming_phase_1, adv_grooming_phase_2, find_corner_cycles
 from grooming.adv_grooming.algorithms import degree_1_operation
 
@@ -68,14 +68,18 @@ plt.show() """
                                     end_to_end_fun=grooming_task,
                                     pt=kerman_pt[0],
                                     tm=kerman_tm[0],
-                                    multiplex_threshold=70) """
-result = adv_grooming_phase_2(network=G2_network,
-                            line_rate="40")
+                                    multiplex_threshold=80) """
+result = adv_grooming_phase_2(network=kerman_network,
+                            line_rate="100")
 print("done")
 
 transponders = 0
 for connection in result['connections']:
     transponders += 2*(math.ceil(connection['rate_by_line_rate']))
+
+""" lambda_link = 0
+for lightpath in lightpaths.values():
+    lambda_link += len(lightpath['routing_info']['working']["path"]) """
 
 print("hi")
 
