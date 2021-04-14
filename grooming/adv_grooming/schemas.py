@@ -319,9 +319,16 @@ class Network:
             for id, demand in tm['data']['demands'].items():
                 self.add_ext_demand(demand, id)
             
+            self.remove_empty_demands()
+            
         def __repr__(self) -> str:
             return f"TrafficMatrix demand count:{len(self.demands)}"
         
+        def remove_empty_demands(self) -> None:
+            #map(lambda x: self.remove_empty_demand(x), self.demands.keys())
+            for demand_id in list(self.demands.keys()):
+                self.remove_empty_demand(demand_id)
+
         def prune_traffic_matrix(self, lightpaths: Dict[str, gschema.GroomingLightPath])\
             -> None:
             for lightpath in lightpaths.values():
@@ -468,7 +475,10 @@ class Network:
                 return inters
 
             def add_demand(self, demands: List[str]) -> None:
-                self.demands.extend(demands)
+                for demand in demands:
+                    if not demand in self.demands:
+                        self.demands.append(demand)
+                #self.demands.extend(demands)
             
             def __repr__(self) -> str:
                 return f"Connection route: {self.route} Demands:{self.demands}"
