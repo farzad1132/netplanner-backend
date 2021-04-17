@@ -199,7 +199,7 @@ def degree_1_operation(network: Network, node: str) -> Network:
     return copy_network
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
-    pt: PhysicalTopologyDB, tm: TrafficMatrixDB, multiplex_threshold: int) \
+    pt: PhysicalTopologyDB, multiplex_threshold: int) \
         -> Tuple[Dict[str, GroomingLightPath], Network]:
     """
         In this phase we are performing hierarchial clustering and end-to-end multiplexing.
@@ -305,3 +305,22 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
         
     # create advanced grooming result
     return network.export_result(line_rate, original_network)
+
+def adv_grooming(network: Network, end_to_end_fun: grooming_task, pt: PhysicalTopologyDB,
+    multiplex_threshold: int, line_rate: LineRate) \
+        -> Tuple[Dict[str, GroomingLightPath], AdvGroomingResult]:
+    """
+        This function executes 2 phase of advanced grooming functions and returns a set of\n
+        lightpaths and set of connections.
+    """
+
+    lightpaths, res_network = adv_grooming_phase_1(network=network,
+                                                    end_to_end_fun=end_to_end_fun,
+                                                    pt=pt,
+                                                    multiplex_threshold=multiplex_threshold)
+    
+    result = adv_grooming_phase_2(network=res_network,
+                                line_rate=line_rate,
+                                original_network=network)
+    
+    return lightpaths, result
