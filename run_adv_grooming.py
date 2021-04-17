@@ -6,7 +6,7 @@ import json
 
 from pydantic import networks
 from grooming.adv_grooming.schemas import Network
-from grooming.adv_grooming.algorithms import adv_grooming_phase_1, adv_grooming_phase_2, find_corner_cycles
+from grooming.adv_grooming.algorithms import adv_grooming, adv_grooming_phase_1, adv_grooming_phase_2, find_corner_cycles
 from grooming.adv_grooming.algorithms import degree_1_operation
 
 """ # building test graph 1
@@ -76,14 +76,13 @@ d2 = kerman_network.traffic_matrix.get_demands(source='سیرچ',
 
 """ nx.draw(kerman_network.physical_topology.graph, with_labels=True)
 plt.show() """
-lightpaths, res_network = adv_grooming_phase_1(network=kerman_network,
-                                    end_to_end_fun=grooming_task,
-                                    pt=kerman_pt[0],
-                                    tm=kerman_tm[0],
-                                    multiplex_threshold=70)
-result = adv_grooming_phase_2(network=res_network,
-                            original_network=kerman_network,
-                            line_rate="100")
+
+lightpaths, result = adv_grooming(network=kerman_network,
+                                end_to_end_fun=grooming_task,
+                                pt=kerman_pt[0],
+                                multiplex_threshold=70,
+                                line_rate="100")
+
 print("done")
 
 transponders = 0
