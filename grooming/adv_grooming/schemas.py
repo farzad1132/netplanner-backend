@@ -59,6 +59,19 @@ class Network:
                 for degree, link in self.links.items():
                     str += link.__repr__() + degree + " "
                 return str + "]"
+        
+        class Queue:
+            def __init__(self) -> None:
+                self.queue = []
+            
+            def add(self, item: str) -> None:
+                self.queue.append(item)
+            
+            def get(self) -> str:
+                return self.queue.pop(0)
+            
+            def size(self) -> None:
+                return len(self.queue)
             
         class Link:
             def __init__(self, link: pschema.Link) -> None:
@@ -147,6 +160,44 @@ class Network:
         def get_shortest_path(self, src: str, dst: str) -> List[str]:
             return nx.shortest_path(self.graph, source=src, target=dst, weight='weight')
         
+        def BFS(self, start: str, visited: Dict[str, int], processed: Dict[str, int],
+            parent: Dict[str, Union[str, None]], components: Dict[str, int], new_component_id: int)\
+                -> None:
+
+            """
+                This method is a BFS algorithm implementation.
+                notes:
+                    1. this method doesn't return updated inputs because it performs in place changes on inputs.
+                    2. we are not getting graph at the input because we have it in out object (nodes attribute).
+            """
+
+            # initialization
+            queue = self.Queue()
+            queue.add(start)
+            visited[start] = 1
+            parent[start] = None
+            components[start] = new_component_id
+
+            # graph traversal procedure
+            while queue.size() != 0:
+                node_name = queue.get()
+                cur_node = self.nodes[node_name]
+                links = list(cur_node.keys())
+
+                while len(links) != 0:
+                    adj_node = links.pop(0)
+
+                    if not adj_node in processed:
+                        # process link
+                        pass
+                        
+                    if not adj_node in visited:
+                        visited[adj_node] = 1
+                        queue.add(adj_node)
+                        parent[adj_node] = node_name
+                
+                processed[node_name] = 1
+
         def export(self, nodes: List[str] = None) -> pschema.PhysicalTopologyDB:
             if nodes is None:
                 nodes = [node.export() for node in self.nodes.values()]
