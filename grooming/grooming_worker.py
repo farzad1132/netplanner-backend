@@ -5,7 +5,7 @@ from celery.app.task import Task
 from traffic_matrix.schemas import TrafficMatrixDB
 from clusters.schemas import ClusterDict
 from grooming.Algorithm.grooming import grooming_fun
-from grooming.schemas import GroomingResult, ClusteredTMs, ServiceMapping
+from grooming.schemas import GroomingResult, ClusteredTMs, MP1HThreshold, ServiceMapping
 from grooming.Algorithm.change_tm_according_clustering import Change_TM_acoordingTo_Clusters
 from grooming.models import GroomingModel, GroomingRegisterModel
 from models import UserModel
@@ -13,6 +13,7 @@ from database import session
 from physical_topology.schemas import PhysicalTopologyDB
 from grooming.Algorithm.NodeStructure import Nodestructureservices
 import math
+from grooming.Algorithm.id_generator import arashId, id_gen
 
 class GroomingHandle(Task):
     def on_success(self, retval, task_id, *args, **kwargs):
@@ -76,10 +77,20 @@ class GroomingHandle(Task):
 
 
 @celeryapp.task(bind=True, base=GroomingHandle)
-def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters:ClusterDict, Physical_topology:PhysicalTopologyDB):
+def grooming_task(self, traffic_matrix: TrafficMatrixDB,
+                        mp1h_threshold_clustering: MP1HThreshold,
+                        mp1h_threshold_grooming: MP1HThreshold,
+                        clusters: ClusterDict,
+                        Physical_topology: PhysicalTopologyDB,
+                        test: bool = False):
+    ArashId = arashId()
+    if test == True:
+        def uuid():return id_gen(ArashId=ArashId, test = True)
+    else:
+        def uuid():return id_gen(ArashId=ArashId, test = False)
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
     if clusters != None:
-        service_mapping,clusteerdtm=Change_TM_acoordingTo_Clusters(traffic_matrix,clusters,mp1h_threshold, state = self, percentage =[0,40])
+        service_mapping,clusteerdtm=Change_TM_acoordingTo_Clusters(traffic_matrix,clusters,MP1H_Threshold=mp1h_threshold_clustering, state = self, percentage =[0,40], uuid=uuid)
         finalres={"traffic":{}}
         devicee={}
         self.update_state(state='PROGRESS', meta={'current': 40, 'total': 100, 'status': 'Clustering Finished'})
@@ -90,7 +101,7 @@ def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters
         for i in clusteerdtm['sub_tms'].keys():
             if i != traffic_matrix['id']:
                 le2 = math.ceil((len(clusteerdtm['sub_tms'][i]['tm']['demands'].keys())/le) * (40))
-                res, dev=grooming_fun(TM = clusteerdtm['sub_tms'][i]['tm'], MP1H_Threshold = mp1h_threshold, tmId = i, state = self, percentage = [pr,pr+le2] )
+                res, dev=grooming_fun(TM = clusteerdtm['sub_tms'][i]['tm'], MP1H_Threshold = mp1h_threshold_grooming, tmId = i, state = self, percentage = [pr,pr+le2], uuid=uuid )
                 pr = pr + le2
                 res.update({'cluster_id':i})
                 devicee.update({i:dev})
@@ -100,9 +111,10 @@ def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters
         
         finalres.update({"service_devices":device_final})
         self.update_state(state='PROGRESS', meta={'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
+        result3= {"grooming_result": finalres, "serviceMapping":service_mapping, "clustered_tms":clusteerdtm}
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":ServiceMapping(**service_mapping).dict(), "clustered_tms":ClusteredTMs(**clusteerdtm).dict()}
     else:
-        res, dev=grooming_fun(TM = traffic_matrix['data'], MP1H_Threshold = mp1h_threshold, tmId = traffic_matrix['id'], state = self, percentage = [0,60] )
+        res, dev=grooming_fun(TM = traffic_matrix['data'], MP1H_Threshold = mp1h_threshold_grooming, tmId = traffic_matrix['id'], state = self, percentage = [0,60], uuid = uuid )
         devicee={traffic_matrix['id']:dev}
         self.update_state(state='PROGRESS', meta={'current': 60, 'total': 100, 'status': 'Grooming Finished'})
         device_final = Nodestructureservices(devicee, Physical_topology, state = self, percentage = [60,90])
