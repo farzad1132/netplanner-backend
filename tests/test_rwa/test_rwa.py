@@ -52,7 +52,9 @@ def test_run_rwa_v2_0_0():
     
     assert response.status_code == 201
     GLOBAL["rwa_id"] = response.json()["rwa_id"]
-    time.sleep(30)
+
+    # TODO: uncomment below after updating tests
+    # time.sleep(30)
 
 # TODO: update below test according to last rwa changes (and report function)
 
