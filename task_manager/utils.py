@@ -17,10 +17,12 @@ def status_check(chain_task_id: ChainTaskID):
         'current_stage_info': '',
         'progress': 0,
         'total_subtasks': 0,
+        'estimated_total_subtasks': 0,
     }
-
+    estimated_total_subtasks = 0
     for level in sorted(chain_task_id['chain_info']):
         multiprocess_task_list = chain_task_id['chain_info'][level]['task_id_list']
+        estimated_total_subtasks += chain_task_id['chain_info'][level]['task_number']
         for task in multiprocess_task_list:
             task_id = task['id']
             task_result = AsyncResult(task_id)
@@ -63,7 +65,8 @@ def status_check(chain_task_id: ChainTaskID):
                 except AttributeError:
                     print('Success task has no attribute info:')
                     print(task_result)
-
+    progress_report['estimated_total_subtasks'] = estimated_total_subtasks
     progress_report['status'] = status
-
+    if status['total'] == status['success']:
+        progress_report['current_stage_info']='Finished successfully.'
     return ChainProgressReport(**progress_report)

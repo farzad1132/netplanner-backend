@@ -36,3 +36,4 @@ class ChainProgressReport(BaseModel):
     status: ChainStatus
     progress: int = Field(0, ge=0)
     total_subtasks: int = Field(1, ge=0)
+    estimated_total_subtasks: int = Field(1, ge=0)
