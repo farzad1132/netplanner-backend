@@ -55,9 +55,17 @@ def run_rwa(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict
         rwa_input: RWAResult (without routing info!)
         physical_topology: PhysicalTopology
     output:
-        rwa_result: RWAResult
+        ChainTaskID
     """
-    
+    chain_of_all_tasks, chain_task_id_info = create_rwa_task_chain( physical_topology=physical_topology, 
+                                                                    cluster_info=cluster_info,
+                                                                    grooming_result=grooming_result,
+                                                                    rwa_form=rwa_form)
+    chain_of_all_tasks_async = chain_of_all_tasks.apply_async()
+    return ChainTaskID(**chain_task_id_info)
+
+def create_rwa_task_chain(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
+                          grooming_result: GroomingResult, rwa_form: RWAForm):
     # Assign an id to the entire rwa tasks submitted to the frontend 
     demand_num = 0
     for sub_tm_id, grooming_output in grooming_result['traffic'].items():
@@ -66,17 +74,29 @@ def run_rwa(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict
     num_iterations = int(rwa_form["iterations"])
     algorithm = rwa_form["algorithm"]
     chain_task_id_info, preprocess_task_id, group_planner_id_list, finilize_task_id =\
-                            generate_rwa_task_info(demand_num, num_iterations)
+                            generate_rwa_task_info(demand_num, num_iterations, algorithm)
     chain_of_all_tasks = chain(rwa_preprocess.signature(args=(physical_topology, cluster_info,
                                                               grooming_result, rwa_form, demand_num),
                                         options = ({'task_id': preprocess_task_id}))|
                                rwa_group_planner.signature(args=(rwa_form, group_planner_id_list, finilize_task_id))
                                )
-    chain_of_all_tasks_async = chain_of_all_tasks.apply_async()
+    return chain_of_all_tasks, chain_task_id_info
 
-    return ChainTaskID(**chain_task_id_info)
+def run_rwa_test(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
+                grooming_result: GroomingResult, rwa_form: RWAForm):
+    """
+    This function is similar to run_rwa but returns the result instead of ids
+    """
+    chain_of_all_tasks, chain_task_id_info = create_rwa_task_chain( physical_topology=physical_topology, 
+                                                                    cluster_info=cluster_info,
+                                                                    grooming_result=grooming_result,
+                                                                    rwa_form=rwa_form)
+    rwa_result = chain_of_all_tasks().collect()
+    print(list(rwa_result))
+    return rwa_result['result']
 
-def generate_rwa_task_info(demand_number, num_iterations):
+
+def generate_rwa_task_info(demand_number, num_iterations, algorithm):
     chain_task_id_info = {
         'chain_id': uuid()
     }
@@ -85,7 +105,7 @@ def generate_rwa_task_info(demand_number, num_iterations):
     preprocess_task_id = uuid()
     preprocess_task_info = {
         'task_level': 0,
-        'task_number': demand_number,
+        'task_number': demand_number+7,
         'task_id_list': [{'id': preprocess_task_id}]
     }
     chain_info[0] = preprocess_task_info
@@ -97,12 +117,14 @@ def generate_rwa_task_info(demand_number, num_iterations):
         'task_number': num_iterations*demand_number,
         'task_id_list': group_planner_id_dict
     }
+    if algorithm=="ILP":
+        group_planner_task_info['task_number'] = 1
     chain_info[1] = group_planner_task_info
 
     finilize_task_id = uuid()
     finilize_task_info = {
         'task_level': 0,
-        'task_number': 1,
+        'task_number': 4,
         'task_id_list': [{'id': finilize_task_id}]
     }
     chain_info[2] = finilize_task_info
@@ -253,7 +275,7 @@ def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info
     net_module = NetModule(NET, NET.lower_bound, NET.upper_bound, k, is_root = True)
     net_module.estimate_link_noise()
     self.update_state(state='PROGRESS', meta={'current': 7, 'total': total_steps, 'current_stage_info': 'Preprocess: Generating candidate lighpaths.'})  
-    net_module.gen_protected_lightpaths(k)
+    net_module.gen_protected_lightpaths(k, celeryapp_instance=self)
     pickled = codecs.encode(pickle.dumps(net_module), "base64").decode()
     print(type(pickled))    
     return {'result': pickled, 'current': total_steps, 'total': total_steps}
@@ -261,9 +283,10 @@ def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info
 @celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_greedy_iteration(self, net_module_bytes, rwa_form):
     from rwa.algorithm.oldnetwork import random_shuffle_solver
-    self.update_state(state='PROGRESS', meta={'current': 0, 'total': 1, 'current_stage_info': 'Starting RWA greedy algorithm.'})
     num_second_restoration_random_samples = 10
     net_module = pickle.loads(codecs.decode(net_module_bytes.encode(), "base64"))
+    total_steps = len(net_module.demand_list)
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps, 'current_stage_info': 'Starting RWA greedy algorithm.'})
     iterations = int(rwa_form["iterations"])
     if rwa_form["restoration_k"]:
         k_restoration = int(rwa_form["restoration_k"])
@@ -272,16 +295,18 @@ def rwa_greedy_iteration(self, net_module_bytes, rwa_form):
         k_restoration = 2
     k_second_restoration = 1
     result_net = random_shuffle_solver(net_module, solver = "Greedy", k_restoration=k_restoration, k_second_restoration=k_second_restoration,
-                                       num_second_restoration_random_samples=num_second_restoration_random_samples)
+                                       num_second_restoration_random_samples=num_second_restoration_random_samples,
+                                       celeryapp_instance=self)
     pickled = codecs.encode(pickle.dumps(result_net), "base64").decode() 
-    return {'result': pickled, 'current': 7, 'total': 7}
+    return {'result': pickled, 'current': total_steps, 'total': total_steps}
 
 @celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_gilp_iteration(self):
     from rwa.algorithm.oldnetwork import random_shuffle_solver
-    self.update_state(state='PROGRESS', meta={'current': 0, 'total': 1, 'current_stage_info': 'Starting RWA GILP algorithm.'})
     num_second_restoration_random_samples = 10
     net_module = pickle.loads(codecs.decode(net_module_bytes.encode(), "base64"))
+    total_steps = len(net_module.demand_list)
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps, 'current_stage_info': 'Starting RWA GILP algorithm.'})
     solver = "window_ILP"
     if rwa_form["restoration_k"]:
         k_restoration = int(rwa_form["restoration_k"])
@@ -292,9 +317,10 @@ def rwa_gilp_iteration(self):
     GroupSize = int(rwa_form["group_size"])
     History = int(rwa_form["history_window"])
     result_net = random_shuffle_solver(net_module, solver = "window_ILP", k_restoration=k_restoration, k_second_restoration=k_second_restoration,
-                                        history_window = History, demand_group_size = GroupSize, max_new_wavelength_num = History)
+                                        history_window = History, demand_group_size = GroupSize, max_new_wavelength_num = History,
+                                        celeryapp_instance=self)
     pickled = codecs.encode(pickle.dumps(result_net), "base64").decode() 
-    return {'result': pickled, 'current': 7, 'total': 7}
+    return {'result': pickled, 'current': total_steps, 'total': total_steps}
 
 @celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_ilp(self):
@@ -314,7 +340,7 @@ def rwa_ilp(self):
     net_module.solve_two_way_protected_ILP()
     result_net = net_module
     pickled = codecs.encode(pickle.dumps(result_net), "base64").decode() 
-    return {'result': pickled, 'current': 7, 'total': 7}
+    return {'result': pickled, 'current': 1, 'total': 1}
 
 # @celeryapp.task(bind=True)
 # def rwa_group_result_collector(self, x_dict_list):
@@ -355,6 +381,8 @@ def rwa_group_planner(self, preprocess_output, rwa_form, group_planner_id_list, 
 def rwa_finilize_results(self, result_dict_list): #group_collected_results
     from rwa.algorithm.Analysis import detect_wavelength_collisions
     from rwa.schemas import RWAResult, Lightpath, RoutingType
+    total_steps = 4
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps, 'current_stage_info': 'Finalizing RWA results.'})
     for i in range(len(result_dict_list)):
         planned_net_module = pickle.loads(codecs.decode(result_dict_list[i]['result'].encode(), "base64"))
         objective=100000
@@ -367,10 +395,13 @@ def rwa_finilize_results(self, result_dict_list): #group_collected_results
                 #print(result_net.total_num_wavelengths)
         else:
             warnings.warn("Solution of iteration {} is invalid".format(i))
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps, 'current_stage_info': 'Re-calculating SNRs.'})
     result_net.exact_link_noise()
     result_net.assign_extracted_lightpath_osnr()
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps, 'current_stage_info': 'Checking the lightpaths.'})
     detect_wavelength_collisions(result_net, print_collisions=True)
     output_lightpath_dict = {}
+    self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps, 'current_stage_info': 'Preparing the output.'})
     if result_net is not None:
         # result_net.print_results()
         # result_net.print_demand_list()
@@ -455,6 +486,6 @@ def rwa_finilize_results(self, result_dict_list): #group_collected_results
             output_lightpath_dict[lightpath.demand.previous_id] = lightpath_output
     result_dict = {'lightpaths': output_lightpath_dict}
     rwa_result = RWAResult(**result_dict)
-    import json 
-    print(json.dumps(rwa_result.dict(), indent=4))
-    return {'result': rwa_result.dict(), 'current': 1, 'total': 1}
+    # import json 
+    # print(json.dumps(rwa_result.dict(), indent=4))
+    return {'result': rwa_result.dict(), 'current': total_steps, 'total': total_steps}

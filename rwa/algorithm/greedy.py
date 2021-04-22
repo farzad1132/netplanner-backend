@@ -18,14 +18,18 @@ def initialize_solver_lists(network):
         for failed_link in list(network.graph.edges):
             network.num_used_shared_regens[node][failed_link] = 0
 
-def greedy_protected_solver(network, k_restoration, k_second_restoration, num_second_restoration_random_samples):
+def greedy_protected_solver(network, k_restoration, k_second_restoration, num_second_restoration_random_samples, celeryapp_instance=None):
     from rwa.algorithm.components import ExtractedLightpath
     from rwa.algorithm.restoration import process_joint_restoration_single_demand
     from rwa.algorithm.restoration_adv import process_adv_joint_restoration_single_demand
     initialize_solver_lists(network)
     all_wavelengths = [list(range(network.wavelength_num)) for _ in range(len(list(network.graph.edges)))]
+    total_steps = len(network.demand_list)
+    current_step = 0 
     for d_index, demand in enumerate(network.demand_list):
-
+        if celeryapp_instance is not None:
+            celeryapp_instance.update_state(state='PROGRESS', meta={'current': current_step, 'total': total_steps, 'current_stage_info': 'RWA greedy algorithm is processing demands.'})  
+            current_step += 1
         option = (demand.ingress_node.index, demand.egress_node.index, demand.modulation, demand.protection_type, demand.cluster_id)
         protection_failed_print = False
         for regen_option in network.RegenOptionDict[option]:
