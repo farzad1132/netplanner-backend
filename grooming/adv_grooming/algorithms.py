@@ -2,8 +2,8 @@ from copy import copy, deepcopy
 from typing import Callable, Dict, List, Optional, Tuple
 
 import networkx as nx
-from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate, Network
-from grooming.schemas import GroomingLightPath, MP1HThreshold
+from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate, Network, MultiplexThreshold
+from grooming.schemas import GroomingLightPath
 from physical_topology.schemas import PhysicalTopologyDB
 from pydantic import validate_arguments
 from traffic_matrix.schemas import TrafficMatrixDB
@@ -308,7 +308,7 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
 
 @validate_arguments
 def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB,
-    tm: TrafficMatrixDB, multiplex_threshold: MP1HThreshold, line_rate: LineRate) \
+    tm: TrafficMatrixDB, multiplex_threshold: MultiplexThreshold, line_rate: LineRate) \
         -> Tuple[Dict[str, GroomingLightPath], AdvGroomingResult]:
     """
         This function executes 2 phase of advanced grooming functions and returns a set of\n
@@ -320,7 +320,7 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB,
     lightpaths, res_network = adv_grooming_phase_1(network=network,
                                                     end_to_end_fun=end_to_end_fun,
                                                     pt=pt,
-                                                    multiplex_threshold=multiplex_threshold)
+                                                    multiplex_threshold=int(multiplex_threshold))
     
     result = adv_grooming_phase_2(network=res_network,
                                 line_rate=line_rate,
