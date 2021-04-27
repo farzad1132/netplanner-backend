@@ -1,18 +1,21 @@
-from celery_app import celeryapp
-import time
-import random
+import math
+
 from celery.app.task import Task
-from traffic_matrix.schemas import TrafficMatrixDB
+from celery_app import celeryapp
 from clusters.schemas import ClusterDict
-from grooming.Algorithm.grooming import grooming_fun
-from grooming.schemas import GroomingResult, ClusteredTMs, ServiceMapping
-from grooming.Algorithm.change_tm_according_clustering import Change_TM_acoordingTo_Clusters
-from grooming.models import GroomingModel, GroomingRegisterModel
-from models import UserModel
 from database import session
 from physical_topology.schemas import PhysicalTopologyDB
+from traffic_matrix.schemas import TrafficMatrixDB
+
+from grooming.adv_grooming.algorithms import adv_grooming
+from grooming.adv_grooming.schemas import LineRate
+from grooming.Algorithm.change_tm_according_clustering import \
+    Change_TM_acoordingTo_Clusters
+from grooming.Algorithm.grooming import grooming_fun
 from grooming.Algorithm.NodeStructure import Nodestructureservices
-import math
+from grooming.models import GroomingModel, GroomingRegisterModel
+from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
+                              ServiceMapping)
 
 class GroomingHandle(Task):
     def on_success(self, retval, task_id, *args, **kwargs):
@@ -119,3 +122,14 @@ def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters
 
     return result
 
+@celeryapp.task(bind=True)
+def adv_grooming_worker(self, pt: PhysicalTopologyDB,
+                            tm: TrafficMatrixDB,
+                            multiplex_threshold: MP1HThreshold,
+                            line_rate: LineRate):
+
+    return adv_grooming(end_to_end_fun=grooming_task,
+                        pt=pt,
+                        tm=tm,
+                        multiplex_threshold=multiplex_threshold,
+                        line_rate=line_rate)
