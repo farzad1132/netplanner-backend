@@ -13,11 +13,27 @@ from pulp.utilities import value
 from pydantic import BaseModel
 from traffic_matrix import schemas as tschema
 
+class MultiplexThreshold(str, Enum):
+    t0 = "0"
+    t10 = "10"
+    t20 = "20"
+    t30 = "30"
+    t40 = "40"
+    t50 = "50"
+    t60 = "60"
+    t70 = "70"
+    t80 = "80"
+    t90 = "90"
 
 class LineRate(str, Enum):
     t40 = "40"
     t100 = "100"
     t200 = "200"
+
+class AdvGroomingForm(BaseModel):
+    multiplex_threshold: MultiplexThreshold
+    line_rate: LineRate
+    comment: str
 
 class GroomingConnection(BaseModel):
     source: str
