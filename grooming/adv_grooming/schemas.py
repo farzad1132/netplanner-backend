@@ -33,7 +33,6 @@ class AdvGroomingResult(BaseModel):
     connections: List[GroomingConnection]
     lambda_link: int
     average_lambda_capacity_usage: float
-    grooming_nodes: List[str]
 
 class Network:
     class PhysicalTopology:
@@ -549,7 +548,6 @@ class Network:
         
         def __init__(self) -> None:
             self.connections = {}
-            self.grooming_nodes = {}
         
         def __repr__(self) -> str:
             return f"Grooming connection count:{len(self.connections)}"
@@ -688,16 +686,11 @@ class Network:
         def add_demand_to_connection(self, conn_id: str, demands: List[str]) -> None:
             self.connections[conn_id].add_demand(demands)
         
-        def add_grooming_node(self, node: str) -> None:
-            if not node in self.grooming_nodes:
-                self.grooming_nodes[node] = None
-        
         def export_result(self) -> AdvGroomingResult:
             return AdvGroomingResult(**{
                 'connections': list(map(lambda x: x.export_result(), self.connections.values())),
                 'average_lambda_capacity_usage': 0,
-                'lambda_link': 0,
-                'grooming_nodes': []
+                'lambda_link': 0
             }).dict()
 
 
@@ -739,28 +732,6 @@ class Network:
                                             dst=demand_path[i+1],
                                             traffic_rate=traffic_rate,
                                             line_rate=line_rate)
-    
-    def find_grooming_nodes(self) -> List[str]:
-        for connection in self.grooming.connections.values():
-            src = connection.source
-            dst = connection.destination
-            src_flag = True
-            dst_flag = True
-
-            for demand in connection.demands:
-                demand_src_dst = [
-                    self.traffic_matrix.demands[demand].source,
-                    self.traffic_matrix.demands[demand].destination
-                ]
-
-                if src_flag and src not in demand_src_dst:
-                    self.grooming.add_grooming_node(src)
-                elif dst_flag and dst not in demand_src_dst:
-                    self.grooming.add_grooming_node(dst)
-                else:
-                    break
-        
-        return list(self.grooming.grooming_nodes.keys())
  
     def get_demands_by_rate(self) -> List[TrafficMatrix.Demand]:
         demands = list(self.traffic_matrix.demands.values())
@@ -869,10 +840,6 @@ class Network:
     def export_result(self, line_rate: str, original_network) -> AdvGroomingResult:
         result = self.grooming.export_result()
 
-        # TODO: take care of grooming nodes
-        #grooming_nodes = self.find_grooming_nodes()
-        grooming_nodes = []
-
         tot_lambda_link = 0
         tot_capacity_link = 0
         for connection in result['connections']:
@@ -890,6 +857,5 @@ class Network:
         
         result['lambda_link'] = tot_lambda_link
         result['average_lambda_capacity_usage'] = tot_capacity_link / tot_lambda_link
-        result['grooming_nodes'] = grooming_nodes
         
         return result
