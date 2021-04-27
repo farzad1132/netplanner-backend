@@ -1,11 +1,11 @@
 from copy import copy, deepcopy
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import networkx as nx
 from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate, Network
-from grooming.grooming_worker import grooming_task
-from grooming.schemas import GroomingLightPath
+from grooming.schemas import GroomingLightPath, MP1HThreshold
 from physical_topology.schemas import PhysicalTopologyDB
+from pydantic import validate_arguments
 from traffic_matrix.schemas import TrafficMatrixDB
 
 
@@ -198,7 +198,7 @@ def degree_1_operation(network: Network, node: str) -> Network:
 
     return copy_network
 
-def adv_grooming_phase_1(network: Network, end_to_end_fun: grooming_task,
+def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
     pt: PhysicalTopologyDB, multiplex_threshold: int) \
         -> Tuple[Dict[str, GroomingLightPath], Network]:
     """
@@ -306,13 +306,16 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     # create advanced grooming result
     return network.export_result(line_rate, original_network)
 
-def adv_grooming(network: Network, end_to_end_fun: grooming_task, pt: PhysicalTopologyDB,
-    multiplex_threshold: int, line_rate: LineRate) \
+@validate_arguments
+def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB,
+    tm: TrafficMatrixDB, multiplex_threshold: MP1HThreshold, line_rate: LineRate) \
         -> Tuple[Dict[str, GroomingLightPath], AdvGroomingResult]:
     """
         This function executes 2 phase of advanced grooming functions and returns a set of\n
         lightpaths and set of connections.
     """
+
+    network = Network(pt=pt, tm=tm)
 
     lightpaths, res_network = adv_grooming_phase_1(network=network,
                                                     end_to_end_fun=end_to_end_fun,
