@@ -13,35 +13,11 @@ from grooming.Algorithm.change_tm_according_clustering import \
     Change_TM_acoordingTo_Clusters
 from grooming.Algorithm.grooming import grooming_fun
 from grooming.Algorithm.NodeStructure import Nodestructureservices
-from grooming.models import GroomingModel, GroomingRegisterModel
+from grooming.models import AdvGroomingModel, GroomingModel, GroomingRegisterModel
 from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
                               ServiceMapping)
 
-class GroomingHandle(Task):
-    def on_success(self, retval, task_id, *args, **kwargs):
-        db = session()
-        if (register:=db.query(GroomingRegisterModel)\
-            .filter_by(id=task_id).one_or_none()) is not None:                            
-            grooming_res = GroomingModel(   id=task_id,
-                                            project_id=register.project_id,
-                                            pt_id=register.pt_id,
-                                            tm_id=register.tm_id,
-                                            pt_version=register.pt_version,
-                                            tm_version=register.tm_version,
-                                            form=register.form,
-                                            manager_id=register.manager_id,
-                                            with_clustering=register.with_clustering,
-                                            clusters=register.clusters,
-                                            is_finished=True,
-                                            start_date=register.start_date,
-                                            traffic=retval["grooming_result"]["traffic"],
-                                            service_devices=retval["grooming_result"]["service_devices"],
-                                            clustered_tms=retval["clustered_tms"],
-                                            service_mapping=retval["serviceMapping"])
-            db.add(grooming_res)
-            db.commit()
-            db.close()
-    
+class GroomingBaseHandle(Task):
     def on_failure(self, exc, task_id, *args, **kwargs):
         db = session()
         if (register:=db.query(GroomingRegisterModel)\
@@ -50,6 +26,58 @@ class GroomingHandle(Task):
             register.exception = exc.__repr__()
 
             db.add(register)
+            db.commit()
+            db.close()
+
+class GroomingHandle(GroomingBaseHandle):
+    def on_success(self, retval, task_id, *args, **kwargs):
+        db = session()
+        if (register:=db.query(GroomingRegisterModel)\
+            .filter_by(id=task_id).one_or_none()) is not None:                            
+            grooming_res = GroomingModel(
+                id=task_id,
+                project_id=register.project_id,
+                pt_id=register.pt_id,
+                tm_id=register.tm_id,
+                pt_version=register.pt_version,
+                tm_version=register.tm_version,
+                form=register.form,
+                manager_id=register.manager_id,
+                with_clustering=register.with_clustering,
+                clusters=register.clusters,
+                is_finished=True,
+                start_date=register.start_date,
+                traffic=retval["grooming_result"]["traffic"],
+                service_devices=retval["grooming_result"]["service_devices"],
+                clustered_tms=retval["clustered_tms"],
+                service_mapping=retval["serviceMapping"]
+            )
+            db.add(grooming_res)
+            db.commit()
+            db.close()
+
+class AdvGroomingHandle(GroomingBaseHandle):
+    def on_success(self, retval, task_id, *args, **kwargs):
+        db = session()
+        if (register:=db.query(GroomingRegisterModel)\
+            .filter_by(id=task_id).one_or_none()) is not None:                            
+            grooming_res = AdvGroomingModel(
+                id=task_id,
+                project_id=register.project_id,
+                pt_id=register.pt_id,
+                tm_id=register.tm_id,
+                pt_version=register.pt_version,
+                tm_version=register.tm_version,
+                form=register.form,
+                manager_id=register.manager_id,
+                is_finished=True,
+                start_date=register.start_date,
+                connections=retval['connections'],
+                lambda_link=retval['lambda_link'],
+                average_lambda_capacity_usage=retval['average_lambda_capacity_usage'],
+                lightpaths=retval['lightpaths']
+            )
+            db.add(grooming_res)
             db.commit()
             db.close()
 
@@ -122,7 +150,7 @@ def grooming_task(self, traffic_matrix:TrafficMatrixDB, mp1h_threshold, clusters
 
     return result
 
-@celeryapp.task(bind=True)
+@celeryapp.task(bind=True, base=AdvGroomingHandle)
 def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                             tm: TrafficMatrixDB,
                             multiplex_threshold: MP1HThreshold,
