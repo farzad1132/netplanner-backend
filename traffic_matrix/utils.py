@@ -64,7 +64,7 @@ def get_tm_last_version(id: str, db: Session) -> TrafficMatrixDB:
 
 def excel_to_tm(tm_binary: bytes) -> Tuple[bool, TrafficMatrixSchema]:
     GENERAL_COLUMNS = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
-    SERVICE_HEADERS = ['Quantity_E1', 'Quantity_STM1_E', 'Quantity_STM1_O', 'Quantity_STM4', 'Quantity_STM16', 
+    SERVICE_HEADERS = ['Quantity_E1', 'Quantity_STM1 Electrical', 'Quantity_STM1 Optical', 'Quantity_STM4', 'Quantity_STM16', 
                         'Quantity_STM64', 'Quantity_FE', 'Quantity_GE', 'Quantity_10GE', 'Quantity_100GE']
 
     def service_quantity_check(cell):
