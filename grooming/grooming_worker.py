@@ -16,6 +16,7 @@ from grooming.Algorithm.NodeStructure import Nodestructureservices
 from grooming.models import AdvGroomingModel, GroomingModel, GroomingRegisterModel
 from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
                               ServiceMapping)
+from models import UserModel
 
 class GroomingBaseHandle(Task):
     def on_failure(self, exc, task_id, *args, **kwargs):
@@ -47,6 +48,7 @@ class GroomingHandle(GroomingBaseHandle):
                 clusters=register.clusters,
                 is_finished=True,
                 start_date=register.start_date,
+                algorithm=register.algorithm,
                 traffic=retval["grooming_result"]["traffic"],
                 service_devices=retval["grooming_result"]["service_devices"],
                 clustered_tms=retval["clustered_tms"],
@@ -73,6 +75,7 @@ class AdvGroomingHandle(GroomingBaseHandle):
                 is_finished=True,
                 with_clustering=register.with_clustering,
                 start_date=register.start_date,
+                algorithm=register.algorithm,
                 connections=retval['connections'],
                 lambda_link=retval['lambda_link'],
                 average_lambda_capacity_usage=retval['average_lambda_capacity_usage'],
