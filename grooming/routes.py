@@ -32,7 +32,8 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
     """
-        starting automatic grooming algorithm
+        starting automatic grooming algorithm\n
+        ***Recomendation***: use **/automatic/end_to_end** for same functionality
     """
 
     # fetching project and traffic matrix
@@ -174,12 +175,13 @@ def check_automatic(grooming_id_list: GroomingIdList,
     grooming_id_list = grooming_id_list.dict()
     return status_check(id_list=grooming_id_list["grooming_id_list"], background_task=grooming_task)
 
-grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200,
+@grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200,
                 response_model=GroomingDBOut, deprecated=True)
-def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
+def result_automatic_2_0_0(   grooming_id: str, db: Session = Depends(get_db),
                         user: User = Depends(get_current_user)):
     """
-        getting grooming algorithm result
+        getting grooming algorithm result\n
+        ***Recomendation***: use **2.0.1 version of this path**
     """
     if (grooming_result:=db.query(GroomingModel)\
         .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
@@ -192,10 +194,11 @@ def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
 
 @grooming_router.get("/v2.0.1/algorithms/grooming/result", status_code=200,
                      response_model=Union[GroomingDBOut, AdvGroomingDBOut])
-def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
+def result_automatic_v2_0_1(   grooming_id: str, db: Session = Depends(get_db),
                         user: User = Depends(get_current_user)):
     """
-        getting grooming algorithm result
+        getting grooming algorithm result\n
+        ***Whats New***: this path now returns both grooming results
     """
     if (record:=db.query(GroomingRegisterModel)\
         .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
