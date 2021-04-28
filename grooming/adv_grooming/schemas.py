@@ -7,9 +7,7 @@ from uuid import uuid4
 
 import networkx as nx
 from grooming import schemas as gschema
-from matplotlib.pyplot import connect
 from physical_topology import schemas as pschema
-from pulp.utilities import value
 from pydantic import BaseModel
 from traffic_matrix import schemas as tschema
 
