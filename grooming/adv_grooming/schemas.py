@@ -31,8 +31,8 @@ class LineRate(str, Enum):
     t200 = "200"
 
 class AdvGroomingForm(BaseModel):
-    multiplex_threshold: MultiplexThreshold
-    line_rate: LineRate
+    multiplex_threshold: MultiplexThreshold = MultiplexThreshold.t70
+    line_rate: LineRate = LineRate.t100
     comment: str
 
 class GroomingConnection(BaseModel):
@@ -50,6 +50,16 @@ class AdvGroomingResult(BaseModel):
     lambda_link: int
     average_lambda_capacity_usage: float
     lightpaths: Dict[str, gschema.GroomingLightPath]
+
+class AdvGroomingDBOut(gschema.GroomingInformation):
+    connections: List[GroomingConnection]
+    lambda_link: int
+    average_lambda_capacity_usage: float
+    lightpaths: Dict[str, gschema.GroomingLightPath]
+    form: AdvGroomingForm
+
+    class Config:
+        orm_mode = True
 
 class Network:
     class PhysicalTopology:
