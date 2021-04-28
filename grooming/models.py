@@ -1,9 +1,12 @@
-from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
-import uuid
-from sqlalchemy.orm import relationship
+
 from database import base
-from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime, Float
+from sqlalchemy import (Boolean, Column, DateTime, Enum, Float, ForeignKey,
+                        Integer, String)
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import relationship
+
+from grooming.schemas import GroomingAlgorithm
 
 class GroomingRegisterModel(base):
     __tablename__ = "GroomingRegister"
@@ -26,6 +29,7 @@ class GroomingRegisterModel(base):
     exception = Column("exception", String)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
+    algorithm = Column("algorithm", Enum(GroomingAlgorithm), nullable=False)
 
 class GroomingModel(base):
     __tablename__ = "Grooming"
@@ -47,6 +51,7 @@ class GroomingModel(base):
     clusters = Column("clusters", JSON)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
+    algorithm = Column("algorithm", Enum(GroomingAlgorithm), nullable=False)
 
     # actual result
     traffic = Column("traffic", JSON, nullable=False)
@@ -71,12 +76,13 @@ class AdvGroomingModel(base):
     tm_version = Column("tm_version", Integer, nullable=False)
     form = Column("form", JSON, nullable=False)
     manager_id = Column(String, ForeignKey("User.id"))
-    manager = relationship("UserModel", back_populates="grooming_algorithms")
+    manager = relationship("UserModel", back_populates="adv_grooming_algorithms")
     with_clustering = Column("with_clustering", Boolean, nullable=False)
     start_date = Column(DateTime, default=datetime.utcnow)
     end_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
+    algorithm = Column("algorithm", Enum(GroomingAlgorithm), nullable=False)
 
     # actual result
     connections = Column("connections", JSON, nullable=False)
