@@ -26,8 +26,8 @@ get_project_mode_get = GetProject()
 
 # SHARE access is only for managers so we can use it for checking authorization in running algorithm mode
 get_project_mode_share = GetProject(mode="SHARE")
-@grooming_router.post("/v2.0.0/algorithms/grooming/start/automatic", status_code=201, response_model=GroomingId,
-        deprecated=True)
+@grooming_router.post("/v2.0.0/algorithms/grooming/start/automatic", status_code=201,
+                    response_model=GroomingId, deprecated=True)
 def start_automatic(project_id: str, grooming_form: GroomingForm,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
@@ -51,7 +51,8 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     clusters = ClusterDict.parse_obj(cluster_dict).dict()
     # starting algorithm
     task = grooming_task.delay( traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(),
-                                mp1h_threshold=grooming_form.mp1h_threshold,
+                                mp1h_threshold_clustering=grooming_form.mp1h_threshold,
+                                mp1h_threshold_grooming=grooming_form.mp1h_threshold,
                                 clusters=clusters, 
                                 Physical_topology=PhysicalTopologyDB.parse_obj(physical_topology).dict())
     if not clusters["clusters"]:
@@ -74,7 +75,8 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     db.commit()
     return {"grooming_id": task.id}
 
-@grooming_router.post("/v2.0.1/algorithms/grooming/automatic/end_to_end", status_code=201, response_model=GroomingId)
+@grooming_router.post("/v2.0.1/algorithms/grooming/automatic/end_to_end", status_code=201,
+                    response_model=GroomingId)
 def start_end_to_end(project_id: str, grooming_form: GroomingForm,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
@@ -98,7 +100,8 @@ def start_end_to_end(project_id: str, grooming_form: GroomingForm,
     clusters = ClusterDict.parse_obj(cluster_dict).dict()
     # starting algorithm
     task = grooming_task.delay( traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(),
-                                mp1h_threshold=grooming_form.mp1h_threshold,
+                                mp1h_threshold_clustering=grooming_form.mp1h_threshold,
+                                mp1h_threshold_grooming=grooming_form.mp1h_threshold,
                                 clusters=clusters, 
                                 Physical_topology=PhysicalTopologyDB.parse_obj(physical_topology).dict())
     if not clusters["clusters"]:
@@ -121,7 +124,8 @@ def start_end_to_end(project_id: str, grooming_form: GroomingForm,
     db.commit()
     return {"grooming_id": task.id}
 
-@grooming_router.post("/v2.0.1/algorithms/grooming/automatic/advanced", status_code=201, response_model=GroomingId)
+@grooming_router.post("/v2.0.1/algorithms/grooming/automatic/advanced", status_code=201,
+                    response_model=GroomingId)
 def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
                     user: User = Depends(get_current_user),
                     db: Session = Depends(get_db)):
@@ -160,7 +164,8 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
 
     return {"grooming_id": task.id}
 
-@grooming_router.post("/v2.0.0/algorithms/grooming/check", status_code=200, response_model=List[GroomingCheck])
+@grooming_router.post("/v2.0.0/algorithms/grooming/check", status_code=200,
+                response_model=List[GroomingCheck])
 def check_automatic(grooming_id_list: GroomingIdList,
                     user: User = Depends(get_current_user)):
     """
@@ -169,7 +174,23 @@ def check_automatic(grooming_id_list: GroomingIdList,
     grooming_id_list = grooming_id_list.dict()
     return status_check(id_list=grooming_id_list["grooming_id_list"], background_task=grooming_task)
 
-@grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200,
+grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200,
+                response_model=GroomingDBOut, deprecated=True)
+def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
+                        user: User = Depends(get_current_user)):
+    """
+        getting grooming algorithm result
+    """
+    if (grooming_result:=db.query(GroomingModel)\
+        .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
+        raise HTTPException(status_code=404, detail="grooming not found")
+
+    # authorization check
+    _ = get_project_mode_get(id=grooming_result.project_id, user=user, db=db)
+    return grooming_result
+
+
+@grooming_router.get("/v2.0.1/algorithms/grooming/result", status_code=200,
                      response_model=Union[GroomingDBOut, AdvGroomingDBOut])
 def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
                         user: User = Depends(get_current_user)):
@@ -192,7 +213,8 @@ def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
     _ = get_project_mode_get(id=grooming_result.project_id, user=user, db=db)
     return grooming_result
 
-@grooming_router.get("/v2.0.0/algorithms/grooming/all", response_model=List[GroomingDBOut], status_code=200)
+@grooming_router.get("/v2.0.0/algorithms/grooming/all", status_code=200,
+                    response_model=List[GroomingDBOut])
 def get_all(project_id: str, user: User = Depends(get_current_user),
             db: Session = Depends(get_db)):
     """
@@ -206,7 +228,8 @@ def get_all(project_id: str, user: User = Depends(get_current_user),
     grooming_results = db.query(GroomingModel).filter_by(project_id=project_id, is_deleted=False).all()
     return grooming_results
 
-@grooming_router.get("/v2.0.0/algorithms/grooming/faileds", response_model=List[FailedGroomingInfo], status_code=200)
+@grooming_router.get("/v2.0.0/algorithms/grooming/faileds", status_code=200,
+                    response_model=List[FailedGroomingInfo])
 def get_faileds(project_id: str, user: User = Depends(get_current_user),
                 db: Session = Depends(get_db)):
     """

@@ -4,12 +4,13 @@ Created on Tue Dec 29 11:04:16 2020
 
 @author: Arash
 """
-from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, PULP_CBC_CMD
-from grooming.schemas import ServiceMapping, GroomingResult, ClusteredTMs
 import math
 import time
-import uuid
 from grooming.Algorithm.grooming import grooming_fun
+from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, PULP_CBC_CMD
+from grooming.schemas import ServiceMapping, GroomingResult, ClusteredTMs
+
+
 def MP2X(Services_lower10):
     prob = LpProblem("grooming", LpMinimize )
     B=10                    #u
@@ -133,12 +134,10 @@ def MP2X(Services_lower10):
     return Output
 
 
-
-
-
 Groomout10={"id":1,"demands":{}}
 
-def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, MP2X_Threshold=None):
+
+def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, uuid, MP2X_Threshold=None):
     TM=TMi['data']
     service_lower10_SDH=[]
     service_lower10_E=[]
@@ -200,7 +199,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
                 for nu in range(0,len(output_10[0][1][num])):
                     listofs.append(str (output_10[0][1][num][nu][0]))
                     cap = cap + output_10[0][1][num][nu][1]
-                GroomOutId = uuid.uuid4().hex
+                GroomOutId = uuid()
 
                 LastId = GroomOutId
                 Groomout10["demands"][i]["services"].update({GroomOutId:
@@ -254,7 +253,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
     
     remain_lower100_2_newV=[] 
     def add_service_to_exist_demand(did,typee):
-        idd = uuid.uuid4().hex
+        idd = uuid()
         flag=0
         for j in range(0,len(TM['demands'][did]['services'])):
             if TM['demands'][did]['services'][j]['type'] == typee:
@@ -266,8 +265,8 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
         return idd
     
     def add_service_to_new_demand(source, destination, typee, protection_type,restoration_type, stype):
-        did = uuid.uuid4().hex
-        idd = uuid.uuid4().hex
+        did = uuid()
+        idd = uuid()
         TM['demands'].update({did:{'id':did, 
         'source': source,  
         'destination': destination, 
@@ -623,7 +622,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
         if i in didd:
             TMm['demands'].pop(i)
     clusteredTM.update({"main":{'tm': TMm, 'cluster_id': "main"}})
-    #clusteredTMfinal={'data':clusteredTM,'id':uuid.uuid4().hex}
+    #clusteredTMfinal={'data':clusteredTM,'id':uuid()}
     ClusteredTms = {"sub_tms":clusteredTM}
 
 

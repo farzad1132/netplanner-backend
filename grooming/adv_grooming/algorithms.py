@@ -222,7 +222,8 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                                     .export(demands=demands_for_multiplex),
 
                                     Physical_topology=pt,
-                                    mp1h_threshold=multiplex_threshold,
+                                    mp1h_threshold_clustering=multiplex_threshold,
+                                    mp1h_threshold_grooming=multiplex_threshold,
                                     clusters={"clusters":{}})
         
         # removing services that construct lightpaths

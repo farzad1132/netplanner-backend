@@ -6,6 +6,7 @@ from fastapi import Depends, HTTPException, File
 from users.schemas import User
 from physical_topology.schemas import methods, PhysicalTopologyDB, PhysicalTopologySchema
 from pandas import ExcelFile, read_excel
+import math
 
 class GetPT:
     def __init__(self, mode: methods = methods.get):
@@ -123,23 +124,27 @@ def excel_to_pt(pt_binary: bytes) -> Tuple[bool, PhysicalTopologySchema]:
         if not (destination:=temp_dic["Destination"][row]) in nodes_name_list:
             flag = False
             item["destination_error"] = "err_code:3, link 'destination' must be one of the nodes"
-        item["source"] = source
-        item["destination"] = destination
+        item["source"] = str(source)
+        item["destination"] = str(destination)
 
         # TODO: add multi-span support
         try:
+            if math.isnan(temp_dic["Length"][row]):
+                raise Exception()
             length = float(temp_dic["Length"][row])
         except:
             flag = False
             item["length_error"] = "err_code:4, 'length' must be float or integer"
-            length = temp_dic["Length"][row]
+            length = str(temp_dic["Length"][row])
         item["length"] = length
 
         # TODO: complete fiber_type check
         try:
             fiber_type = temp_dic["Fiber Type"][row].strip()
         except:
-            raise HTTPException(status_code=400, detail=f"There is an issue at column Fiber Type and row {row}")
+            #raise HTTPException(status_code=400, detail=f"There is an issue at column Fiber Type and row {row}")
+            item['fiber_type_error'] = f"There is an issue at column Fiber Type and row {row}"
+            fiber_type = str(temp_dic["Fiber Type"][row])
         item["fiber_type"] = fiber_type
 
         proper_list.append(item)
