@@ -1,7 +1,8 @@
-from grooming.adv_grooming.schemas import AdvGroomingForm
+from enum import Flag
+from grooming.adv_grooming.schemas import AdvGroomingDBOut, AdvGroomingForm
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Optional, List
-from grooming.schemas import (GroomingForm, GroomingId, GroomingCheck, GroomingIdList, 
+from typing import Optional, List, Union
+from grooming.schemas import (GroomingAlgorithm, GroomingForm, GroomingId, GroomingCheck, GroomingIdList, 
     GroomingInformation, GroomingDBOut, FailedGroomingInfo)
 from sqlalchemy.orm import Session
 from dependencies import get_db, get_current_user
@@ -15,7 +16,7 @@ from traffic_matrix.schemas import TrafficMatrixDB
 from physical_topology.schemas import PhysicalTopologyDB
 from clusters.schemas import ClusterDict
 from algorithms.utils import status_check
-from grooming.models import GroomingRegisterModel, GroomingModel
+from grooming.models import AdvGroomingModel, GroomingRegisterModel, GroomingModel
 
 grooming_router = APIRouter(
     tags=["Algorithms", "Grooming"]
@@ -67,7 +68,8 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
                                                 with_clustering=with_clustering,
-                                                clusters=clusters)
+                                                clusters=clusters,
+                                                algorithm=GroomingAlgorithm.end_to_end)
     db.add(grooming_register)
     db.commit()
     return {"grooming_id": task.id}
@@ -113,7 +115,8 @@ def start_end_to_end(project_id: str, grooming_form: GroomingForm,
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
                                                 with_clustering=with_clustering,
-                                                clusters=clusters)
+                                                clusters=clusters,
+                                                algorithm=GroomingAlgorithm.end_to_end)
     db.add(grooming_register)
     db.commit()
     return {"grooming_id": task.id}
@@ -150,7 +153,8 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
                                                 with_clustering=False,
-                                                clusters={})
+                                                clusters={},
+                                                algorithm=GroomingAlgorithm.advanced)
     db.add(grooming_register)
     db.commit()
 
@@ -165,21 +169,30 @@ def check_automatic(grooming_id_list: GroomingIdList,
     grooming_id_list = grooming_id_list.dict()
     return status_check(id_list=grooming_id_list["grooming_id_list"], background_task=grooming_task)
 
-@grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200, response_model=GroomingDBOut)
+@grooming_router.get("/v2.0.0/algorithms/grooming/result", status_code=200,
+                     response_model=Union[GroomingDBOut, AdvGroomingDBOut])
 def result_automatic(   grooming_id: str, db: Session = Depends(get_db),
                         user: User = Depends(get_current_user)):
     """
         getting grooming algorithm result
     """
-    if (grooming_result:=db.query(GroomingModel)\
+    if (record:=db.query(GroomingRegisterModel)\
         .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
         raise HTTPException(status_code=404, detail="grooming not found")
+    if record.algorithm == GroomingAlgorithm.advanced:
+        if (grooming_result:=db.query(AdvGroomingModel)\
+            .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
+            raise HTTPException(status_code=404, detail="grooming not found")
+    else:
+        if (grooming_result:=db.query(GroomingModel)\
+            .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
+            raise HTTPException(status_code=404, detail="grooming not found")
 
     # authorization check
     _ = get_project_mode_get(id=grooming_result.project_id, user=user, db=db)
     return grooming_result
 
-@grooming_router.get("/v2.0.0/algorithms/grooming/all", response_model=List[GroomingInformation], status_code=200)
+@grooming_router.get("/v2.0.0/algorithms/grooming/all", response_model=List[GroomingDBOut], status_code=200)
 def get_all(project_id: str, user: User = Depends(get_current_user),
             db: Session = Depends(get_db)):
     """
