@@ -71,6 +71,7 @@ class AdvGroomingHandle(GroomingBaseHandle):
                 form=register.form,
                 manager_id=register.manager_id,
                 is_finished=True,
+                with_clustering=register.with_clustering,
                 start_date=register.start_date,
                 connections=retval['connections'],
                 lambda_link=retval['lambda_link'],

@@ -72,6 +72,7 @@ class AdvGroomingModel(base):
     form = Column("form", JSON, nullable=False)
     manager_id = Column(String, ForeignKey("User.id"))
     manager = relationship("UserModel", back_populates="grooming_algorithms")
+    with_clustering = Column("with_clustering", Boolean, nullable=False)
     start_date = Column(DateTime, default=datetime.utcnow)
     end_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
