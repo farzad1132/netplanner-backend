@@ -49,6 +49,7 @@ class AdvGroomingResult(BaseModel):
     connections: List[GroomingConnection]
     lambda_link: int
     average_lambda_capacity_usage: float
+    lightpaths: Dict[str, gschema.GroomingLightPath]
 
 class Network:
     class PhysicalTopology:
@@ -706,7 +707,8 @@ class Network:
             return AdvGroomingResult(**{
                 'connections': list(map(lambda x: x.export_result(), self.connections.values())),
                 'average_lambda_capacity_usage': 0,
-                'lambda_link': 0
+                'lambda_link': 0,
+                'lightpaths': {}
             }).dict()
 
 

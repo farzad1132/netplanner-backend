@@ -306,10 +306,9 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     # create advanced grooming result
     return network.export_result(line_rate, original_network)
 
-@validate_arguments
 def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB,
     tm: TrafficMatrixDB, multiplex_threshold: MultiplexThreshold, line_rate: LineRate) \
-        -> Tuple[Dict[str, GroomingLightPath], AdvGroomingResult]:
+        -> AdvGroomingResult:
     """
         This function executes 2 phase of advanced grooming functions and returns a set of\n
         lightpaths and set of connections.
@@ -326,4 +325,5 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB,
                                 line_rate=line_rate,
                                 original_network=network)
     
-    return lightpaths, result
+    result['lightpaths'] = lightpaths
+    return result
