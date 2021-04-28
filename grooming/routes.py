@@ -132,12 +132,27 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
     traffic_matrix = project_db["traffic_matrix"]
     physical_topology = project_db["physical_topology"]
 
+    # starting algorithm
     task = adv_grooming_worker.delay(
         pt=physical_topology,
         tm=traffic_matrix,
         multiplex_threshold=grooming_form.multiplex_threshold,
         line_rate=grooming_form.line_rate
     )
+
+    # registering algorithm
+    grooming_register = GroomingRegisterModel(  id=task.id,
+                                                project_id=project_id,
+                                                pt_id=project_db["physical_topology"]["id"],
+                                                tm_id=project_db["traffic_matrix"]["id"],
+                                                pt_version=project_db["physical_topology"]["version"],
+                                                tm_version=project_db["traffic_matrix"]["version"],
+                                                form=grooming_form.dict(),
+                                                manager_id=user.id,
+                                                with_clustering=False,
+                                                clusters={})
+    db.add(grooming_register)
+    db.commit()
 
     return {"grooming_id": task.id}
 
