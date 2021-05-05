@@ -132,3 +132,25 @@ class RWAInformation(BaseModel):
 
 class FailedRWAInfo(RWAInformation):
     exception: str
+
+class RWABareLink(BaseModel):
+    source: str
+    destination: str
+    
+class RWALinkState(RWABareLink):
+    wavelengths: List[int]
+
+class RWANodeState(BaseModel):
+    node: str
+    wavelengths: List[int]
+
+class WavelengthState(BaseModel):
+    wavelength: str
+    links: List[RWABareLink]
+    signal_nodes: List[str]
+    pass_nodes: List[str]
+
+class RWAGeneralInfo(BaseModel):
+    link_state: Dict[str, RWALinkState]
+    node_state: Dict[str, RWANodeState]
+    wavelength_state: Dict[int, WavelengthState]
