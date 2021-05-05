@@ -19,6 +19,9 @@ class MP1HThreshold(int, Enum):
     t90 = 90
     t100 = 100
 
+class GroomingAlgorithm(str, Enum):
+    advanced = "Advanced"
+    end_to_end = "End to end"
 
 class GroomingForm(BaseModel):
     mp1h_threshold: MP1HThreshold = MP1HThreshold.t70
@@ -40,6 +43,7 @@ class GroomingInformation(BaseModel):
     start_date: datetime
     end_date: datetime
     with_clustering: bool
+    algorithm: GroomingAlgorithm
 
     class Config:
         orm_mode = True
