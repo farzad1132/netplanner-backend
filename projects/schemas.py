@@ -37,7 +37,6 @@ class ProjectPUT(BaseModel):
         change project physical topology and traffic matrix but only their versions.\n
         **This allows backend to be able to pre calculate traffic matrix and physical topology compatibilities**
     """
-    name: str
     current_pt_version: Optional[int] = 1
     current_tm_version: Optional[int] = 1
     
