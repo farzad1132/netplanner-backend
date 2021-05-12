@@ -29,6 +29,7 @@ class LineRate(str, Enum):
     t200 = "200"
 
 class AdvGroomingForm(BaseModel):
+    clusters_id: List[str] = []
     multiplex_threshold: MultiplexThreshold = MultiplexThreshold.t70
     line_rate: LineRate = LineRate.t100
     comment: str
@@ -181,7 +182,13 @@ class Network:
                     if not self.graph.has_edge(src, dst):
                         self.graph.add_edge(src, dst, weight=weight)
         
-        def get_shortest_path(self, src: str, dst: str) -> List[str]:
+        def get_shortest_path(self, src: str, dst: str, cluster: Optional[List[str]] = None) -> List[str]:
+            if cluster is not None:
+                graph = deepcopy(self.graph)
+                for node in list(graph.nodes.keys()):
+                    if not node in cluster:
+                        graph.remove_node(node)
+                return nx.shortest_path(graph, source=src, target=dst, weight='weight')
             return nx.shortest_path(self.graph, source=src, target=dst, weight='weight')
         
         def BFS(self, start: str, visited: Dict[str, int], processed: Dict[str, int],

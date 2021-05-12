@@ -131,6 +131,34 @@ if __name__ == "__main__":
     #tm_kerman_record.owner_id = 1
     user.traffic_matrices.append(tm_kerman_record)
 
+    # creating adv grooming test network
+    if not os.path.exists('./tests/test_grooming/adv_grooming_test_1_pt.xlsx'):
+        raise Exception("adv grooming test 1 pt not found")
+    with open('./tests/test_grooming/adv_grooming_test_1_pt.xlsx', 'rb') as file:
+        flag, adv_grooming_test_1_pt = excel_to_pt(file.read())
+        if not flag:
+            raise Exception("error in parsing adv grooming test 1 pt excel")
+    adv_grooming_test_1_pt_record = PhysicalTopologyModel(name="adv_grooming_test_1", data=adv_grooming_test_1_pt,
+                        version=1, id='adv_groom_1', comment='first test for adv grooming')
+    user.physical_topologies.append(adv_grooming_test_1_pt_record)
+
+    if not os.path.exists('./tests/test_grooming/adv_grooming_test_1_tm.xlsx'):
+        raise Exception("adv grooming test 1 tm not found")
+    with open('./tests/test_grooming/adv_grooming_test_1_tm.xlsx', 'rb') as file:
+        flag, adv_grooming_test_1_tm = excel_to_tm(file.read())
+        if not flag:
+            raise Exception("error in parsing adv grooming test 1 tm excel")
+    adv_grooming_test_1_tm_record = TrafficMatrixModel(name="adv_grooming_test_1", data=adv_grooming_test_1_tm,
+                        version=1, id='adv_groom_1', comment='first test for adv grooming')
+    user.traffic_matrices.append(adv_grooming_test_1_tm_record)
+    
+    adv_grooming_test_1_project = ProjectModel(name="adv grooming test 1", id="adv_groom_1")
+    adv_grooming_test_1_project.owner_id = users[1].id
+    adv_grooming_test_1_project.current_pt_version = 1
+    adv_grooming_test_1_project.current_tm_version = 1
+    adv_grooming_test_1_project.physical_topology = adv_grooming_test_1_pt_record
+    adv_grooming_test_1_project.traffic_matrix = adv_grooming_test_1_tm_record
+
     # creating kerman project
     kerman_project = ProjectModel(name="kerman", id='kerman')
     kerman_project.owner_id = users[1].id
@@ -180,9 +208,21 @@ if __name__ == "__main__":
     #cluster.project_id = project.id
     project.clusters.append(cluster)
 
+    adv_groom_cluster = ClusterModel(name="adv groom test cluster", data={"gateways": ["F"],"subnodes":["A", "C", "D", "B"],
+            "color": "green", "type": "100GE"})
+    adv_groom_cluster.id = "adv_groom_cluster"
+    adv_groom_cluster.pt_version = 1
+    adv_groom_cluster.pt_id = adv_grooming_test_1_pt_record.id
+    adv_grooming_test_1_project.clusters.append(adv_groom_cluster)
+
     db.add(tm_kerman_record)
     db.add(pt_kerman_record)
     db.add(kerman_project)
+
+    db.add(adv_grooming_test_1_tm_record)
+    db.add(adv_grooming_test_1_pt_record)
+    db.add(adv_grooming_test_1_project)
+    db.add(adv_groom_cluster)
 
     traffic_matrix_2.projects.append(project)
     physical_topology.projects.append(project)
