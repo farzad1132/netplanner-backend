@@ -487,7 +487,7 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                         LPId=addlightpath(source=TM["demands"][i]["source"],
                         destination=TM["demands"][i]["destination"],
                         capacity=100,
-                        service_id_list=k,
+                        service_id_list=[k],
                         groomout10_id_list="None",
                         demand_id=TM["demands"][i]["id"],
                         Routing_type=RoutingType.GE100,
