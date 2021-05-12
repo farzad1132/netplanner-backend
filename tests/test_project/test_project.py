@@ -54,7 +54,6 @@ def test_post_put_delete_project_v2_0_0():
 
     # put section
     test_double_put = {
-        "name": "test updated by pytest",
         "current_pt_version": 2,
         "current_tm_version": 1
 }
@@ -63,7 +62,6 @@ def test_post_put_delete_project_v2_0_0():
     response = client.get(PREFIX + "/v2.0.0/projects", headers=HEADER, params={"id": id})
     assert response.status_code == 200
     project = response.json()
-    assert project["name"] == test_double_put["name"]
     assert project["current_pt_version"] == test_double_put["current_pt_version"]
 
     # delete section
