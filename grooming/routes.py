@@ -156,7 +156,7 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
         check_one_gateway_clusters(cluster_dict)
     else:
         with_clustering = False
-        cluster_dict = ClusterDict.dict()
+        cluster_dict = {"clusters": {}}
 
     # starting algorithm
     task = adv_grooming_worker.delay(
