@@ -142,26 +142,28 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
     physical_topology = project_db["physical_topology"]
 
     # fetching clusters
-    clusters = db.query(ClusterModel).filter_by(project_id=project_id,
-                                pt_version=project_db["current_pt_version"], 
-                                pt_id=project_db["physical_topology"]["id"],
-                                is_deleted=False).all()
-    
-    # converting cluster_list to cluster_dict
-    cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters)
+    if len(grooming_form.clusters_id) != 0:
+        clusters = db.query(ClusterModel).filter_by(project_id=project_id,
+                                    pt_version=project_db["current_pt_version"], 
+                                    pt_id=project_db["physical_topology"]["id"],
+                                    is_deleted=False)\
+                        .filter(ClusterModel.id.in_(grooming_form.clusters_id)).all()
+        
+        # converting cluster_list to cluster_dict
+        cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters).dict()
 
-    if len(cluster_dict.clusters) == 0:
-        with_clustering = False
-    else:
         with_clustering = True
         check_one_gateway_clusters(cluster_dict)
+    else:
+        with_clustering = False
+        cluster_dict = ClusterDict.dict()
 
     # starting algorithm
     task = adv_grooming_worker.delay(
         pt=physical_topology,
         tm=traffic_matrix,
         multiplex_threshold=grooming_form.multiplex_threshold,
-        clusters=cluster_dict.dict(),
+        clusters=cluster_dict,
         line_rate=grooming_form.line_rate
     )
 
@@ -175,7 +177,7 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
                                                 with_clustering=with_clustering,
-                                                clusters=cluster_dict.dict(),
+                                                clusters=cluster_dict,
                                                 algorithm=GroomingAlgorithm.advanced)
     db.add(grooming_register)
     db.commit()

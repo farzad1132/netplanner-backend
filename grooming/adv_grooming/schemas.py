@@ -29,6 +29,7 @@ class LineRate(str, Enum):
     t200 = "200"
 
 class AdvGroomingForm(BaseModel):
+    clusters_id: List[str] = []
     multiplex_threshold: MultiplexThreshold = MultiplexThreshold.t70
     line_rate: LineRate = LineRate.t100
     comment: str
