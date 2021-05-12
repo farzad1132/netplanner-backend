@@ -1,6 +1,7 @@
 import math
 def Nodestructureservices(device_dict, Physical_topology, state, percentage):  
     nodess={}
+    device_st={}
     for k in range(0,len(Physical_topology['data']['nodes'])):
         per = math.ceil(percentage[0] + (k/len(Physical_topology['data']['nodes'])) * (percentage[1] - percentage[0]))
         state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
@@ -51,18 +52,21 @@ def Nodestructureservices(device_dict, Physical_topology, state, percentage):
                                         slotn=0
                                 #x = (str (slotn), str (slotn+1))
                                 if j == 'MP1H':
-                                    slots.update({str (slotn): device_dict[cln][i][j][k]})
-                                    slots.update({str (slotn+1): device_dict[cln][i][j][k]})
+                                    device_st.update({device_dict[cln][i][j][k]["id"]:device_dict[cln][i][j][k]})
+                                    slots.update({str (slotn): device_dict[cln][i][j][k]["id"]})
+                                    slots.update({str (slotn+1): device_dict[cln][i][j][k]["id"]})
                                 elif j == 'TP1H':
-                                    slots.update({str (slotn): device_dict[cln][i][j][k]})
-                                    slots.update({str (slotn+1): device_dict[cln][i][j][k]})
+                                    device_st.update({device_dict[cln][i][j][k]["id"]:device_dict[cln][i][j][k]})
+                                    slots.update({str (slotn): device_dict[cln][i][j][k]["id"]})
+                                    slots.update({str (slotn+1): device_dict[cln][i][j][k]["id"]})
                                 elif j == 'MP2X':
-                                    slots.update({str (slotn): device_dict[cln][i][j][k]})
-                                    slots.update({str (slotn+1): device_dict[cln][i][j][k]})
+                                    device_st.update({device_dict[cln][i][j][k]["id"]:device_dict[cln][i][j][k]})
+                                    slots.update({str (slotn): device_dict[cln][i][j][k]["id"]})
+                                    slots.update({str (slotn+1): device_dict[cln][i][j][k]["id"]})
                                 slotn=slotn+2
                     if slots:
                         shelvs.update({str (shelfn) : {'slots':slots}})
                         racks.update({str (rackn): {'shelves':shelvs}})
         nodess.update({nodename:{'racks':racks}})
     NodeStructure={'nodes':nodess}
-    return NodeStructure
+    return NodeStructure, device_st
