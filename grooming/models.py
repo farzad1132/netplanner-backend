@@ -83,6 +83,7 @@ class AdvGroomingModel(base):
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
     algorithm = Column("algorithm", Enum(GroomingAlgorithm), nullable=False)
+    clusters = Column("clusters", JSON)
 
     # actual result
     connections = Column("connections", JSON, nullable=False)

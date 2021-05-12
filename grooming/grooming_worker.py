@@ -79,6 +79,7 @@ class AdvGroomingHandle(GroomingBaseHandle):
                 with_clustering=register.with_clustering,
                 start_date=register.start_date,
                 algorithm=register.algorithm,
+                clusters=register.clusters,
                 connections=retval['connections'],
                 lambda_link=retval['lambda_link'],
                 average_lambda_capacity_usage=retval['average_lambda_capacity_usage'],
@@ -172,10 +173,12 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
 def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                             tm: TrafficMatrixDB,
                             multiplex_threshold: MP1HThreshold,
+                            clusters: ClusterDict,
                             line_rate: LineRate):
 
     return adv_grooming(end_to_end_fun=grooming_task,
                         pt=pt,
                         tm=tm,
                         multiplex_threshold=multiplex_threshold,
+                        clusters=clusters,
                         line_rate=line_rate)

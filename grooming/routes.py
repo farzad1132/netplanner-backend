@@ -1,4 +1,5 @@
 from enum import Flag
+from grooming.utils import check_one_gateway_clusters
 from grooming.adv_grooming.schemas import AdvGroomingDBOut, AdvGroomingForm
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Optional, List, Union
@@ -140,11 +141,27 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
     traffic_matrix = project_db["traffic_matrix"]
     physical_topology = project_db["physical_topology"]
 
+    # fetching clusters
+    clusters = db.query(ClusterModel).filter_by(project_id=project_id,
+                                pt_version=project_db["current_pt_version"], 
+                                pt_id=project_db["physical_topology"]["id"],
+                                is_deleted=False).all()
+    
+    # converting cluster_list to cluster_dict
+    cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters)
+
+    if len(cluster_dict.clusters) == 0:
+        with_clustering = False
+    else:
+        with_clustering = True
+        check_one_gateway_clusters(cluster_dict)
+
     # starting algorithm
     task = adv_grooming_worker.delay(
         pt=physical_topology,
         tm=traffic_matrix,
         multiplex_threshold=grooming_form.multiplex_threshold,
+        clusters=cluster_dict.dict(),
         line_rate=grooming_form.line_rate
     )
 
@@ -157,8 +174,8 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
                                                 tm_version=project_db["traffic_matrix"]["version"],
                                                 form=grooming_form.dict(),
                                                 manager_id=user.id,
-                                                with_clustering=False,
-                                                clusters={},
+                                                with_clustering=with_clustering,
+                                                clusters=cluster_dict.dict(),
                                                 algorithm=GroomingAlgorithm.advanced)
     db.add(grooming_register)
     db.commit()
