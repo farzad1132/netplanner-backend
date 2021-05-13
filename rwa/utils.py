@@ -1,29 +1,41 @@
 from physical_topology.schemas import PhysicalTopologySchema
 from rwa.schemas import RWAResult, RWAGeneralInfo
+import json
 
 def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_result:RWAResult)-> RWAGeneralInfo:
+    # for working path
     node_state = {}
     link_state = {}
     wavelength_state = {}
+    lightpath_state = {}
+    total_lambda_link = 0
+    average_lambda_capacity_usage = 0
 
     for node in physical_topology["nodes"]:
-        node_state[node] = {
-            "node": node,
+        node_state[node["name"]] = {
+            "node": node["name"],
             "wavelengths": []
         }
     for link in physical_topology["links"]:
-        link = link["source"]+ "-" + link["destination"]
-        link_state[link] = {
+        link_text = link["source"]+ "-" + link["destination"]
+        link_state[link_text] = {
             "source": link["source"],
             "destination": link["destination"],
             "wavelengths": []
         }
-
-    for lightpath in rwa_result[lightpaths].values():
+    
+    for lightpath in rwa_result["lightpaths"].values():
         working_info = lightpath["routing_info"]["working"]
+        lightpath_links = len(working_info["path"])
+        lightpath_state[lightpath["id"]]= {
+            'lambda_link': lightpath_links
+        }
+        total_lambda_link += lightpath_links
+        average_lambda_capacity_usage += lightpath_links * lightpath["capacity"]/100
+        
         working_segment = 0
 
-        for working_node, node_id in enumerate(working_info["path"]):
+        for node_id, working_node in enumerate(working_info["path"]):
             wavelength = working_info["wavelength"][working_segment]
             if wavelength not in wavelength_state: 
                 wavelength_state[wavelength] = {
@@ -53,11 +65,18 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_res
                     }
                 link_state[link]["wavelengths"].append(wavelength)
                 wavelength_state[wavelength]["links"].append(link_info)
-    general_info_dict = {
+
+    average_lambda_capacity_usage = average_lambda_capacity_usage/ total_lambda_link   
+    general_info_dict = {}
+    general_info_dict['working'] = {
         'link_state': link_state,
         'node_state': node_state,
         'wavelength_state': wavelength_state,
+        'lightpath_state': lightpath_state,
+        'total_lambda_link': total_lambda_link,
+        'average_lambda_capacity_usage': average_lambda_capacity_usage
     }
     general_info = RWAGeneralInfo(**general_info_dict)
     return general_info
                 
+    

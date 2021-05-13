@@ -150,7 +150,18 @@ class WavelengthState(BaseModel):
     signal_nodes: List[str]
     pass_nodes: List[str]
 
-class RWAGeneralInfo(BaseModel):
+class LightpathState(BaseModel):
+    lambda_link: int
+
+class RWAGeneralInfoBase(BaseModel):
     link_state: Dict[str, RWALinkState]
     node_state: Dict[str, RWANodeState]
     wavelength_state: Dict[int, WavelengthState]
+    lightpath_state: Dict[str, LightpathState]
+    total_lambda_link: int
+    average_lambda_capacity_usage: float
+
+class RWAGeneralInfo(BaseModel):
+    working: RWAGeneralInfoBase
+    protection: Optional[RWAGeneralInfoBase]
+    restoration: Optional[RWAGeneralInfoBase]
