@@ -16,7 +16,9 @@ This documentation aims to introduce NetPlanners backend-related details to read
 
    overview
    installation
-   Architecture
+   architecture
+   modules
+   features
    
 
 
