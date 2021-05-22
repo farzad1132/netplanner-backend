@@ -17,9 +17,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'NetPlanner-BackEnd'
-copyright = '2020, Farzad Mohammadi'
+project = 'NetPlanner'
+copyright = '2021, Farzad Mohammadi'
 author = 'Farzad Mohammadi'
+
+# The full version, including alpha/beta/rc tags
+release = '1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -36,7 +39,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 
 # -- Options for HTML output -------------------------------------------------
