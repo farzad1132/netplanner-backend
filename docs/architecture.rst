@@ -1,5 +1,5 @@
-Architecture
-============
+Architecture and Technologies
+=============================
 
 In this Section we are going to explain architectural decisions for NetPlanner
 
@@ -40,6 +40,12 @@ Proxy Server
 The specifications said backend must be high performance and fast, so without any thinking
 **Nginx** came into mind and there is no need for listing it's features.
 
+We are using Nginx for:
+
+#. Sever front end files
+#. Load balancing
+#. SSL handling (future versions)
+
 
 Database
 --------
@@ -57,4 +63,37 @@ After some research turned out **Postgres** is best for such actions.
 ORM
 ---
 
-As developers we didn't want to keep our heads busy with SQL commands in the entire backend
+As developers we didn't want to keep our heads busy with SQL commands in the entire backend,
+so we decided to use and ORM and the best ORM for python is **SQLAlchemy** which Supports
+Postgres database.
+
+.. important:: SQLAlchemy supports json which we used it to store complicated and big data in Postgres
+
+
+Background task manager and a message broker
+--------------------------------------------
+
+Simplified procedure of running algorithms in NetPlanner is:
+
+#. Getting required information from front end to start algorithm (using **Rest API**)
+#. Start running requested algorithm in the background (this happens immediately)
+#. Return an **Id** in response (this happens immediately)
+
+As you noticed in the second part we need a background task manager that has at least
+these specifications:
+
+#. First of all be reliable
+#. At any time we can check status of algorithm running
+#. Be scalable
+#. Can respond to events
+
+After some research **Celery** was the best option
+
+This task manager requirers a message broker for keeping states and transmitting them and we chose 
+**RabbitMQ** for this purpose.
+
+Deployment
+----------
+
+Last item but not least is deployment.
+We are using **Docker** to containerizing our backend components (See Installation section for more details)
