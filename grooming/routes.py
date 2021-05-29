@@ -236,7 +236,7 @@ def result_automatic_v2_0_1(   grooming_id: str, db: Session = Depends(get_db),
     return grooming_result
 
 @grooming_router.get("/v2.0.0/algorithms/grooming/all", status_code=200,
-                    response_model=List[GroomingDBOut])
+                    response_model=List[GroomingInformation])
 def get_all(project_id: str, user: User = Depends(get_current_user),
             db: Session = Depends(get_db)):
     """
