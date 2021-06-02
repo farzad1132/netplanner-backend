@@ -39,6 +39,7 @@ class GroomingInformation(BaseModel):
     tm_id: str
     pt_version: int
     tm_version: int
+    project_id: str
     form: GroomingForm
     start_date: datetime
     end_date: datetime
@@ -244,3 +245,14 @@ class GroomingDBOut(GroomingInformation):
 
     class Config:
         orm_mode = True
+
+class ManualGroomingForm(BaseModel):
+    comment: str
+    
+class ManualGroomingDB(BaseModel):
+    """
+        keys of **traffic** are **sub_tm_id**
+    """
+    traffic: Dict[str, GroomingOutput]
+    service_devices: NodeStructure
+    form: ManualGroomingForm
