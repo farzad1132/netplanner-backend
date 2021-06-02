@@ -22,18 +22,7 @@ def generate_service_to_type_mapping(traffic_matrix: dict) -> Dict[str, str]:
 
 def check_manual_grooming_result(manual_grooming: ManualGroomingDB,
     traffic_matrix: dict) -> None:
-    groomout_allowed_service_types = [ServiceType.E1, ServiceType.stm1_o,
-        ServiceType.stm1_e, ServiceType.stm4, ServiceType.stm16]
 
-    traffic = manual_grooming.traffic.dict()
-    ser_to_type = generate_service_to_type_mapping(traffic_matrix)
-    
-    # checking groomouts
-    for demand_id, value in traffic['main']['demands'].values():
-        for groomout_id, groomout in value.items():
-            for service_id in groomout['service_id_list']:
-                if not ser_to_type[ser_to_type] in groomout_allowed_service_types:
-                    raise HTTPException(status_code=400, 
-                        detail= f"invalid service type for groomout service, id={service_id}"
-                                f", groomout_id={groomout_id}, type={ser_to_type[ser_to_type]}")
-
+    # TODO: This function must check manual grooming result and if there is a problem
+    #       in data raise an HTTPException with appropriate detail
+    pass
