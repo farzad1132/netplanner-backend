@@ -245,3 +245,14 @@ class GroomingDBOut(GroomingInformation):
 
     class Config:
         orm_mode = True
+
+class ManualGroomingForm(BaseModel):
+    comment: str
+    
+class ManualGroomingDB(BaseModel):
+    """
+        keys of **traffic** are **sub_tm_id**
+    """
+    traffic: Dict[str, GroomingOutput]
+    service_devices: NodeStructure
+    form: ManualGroomingForm
