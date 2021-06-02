@@ -17,8 +17,8 @@ This documentation aims to introduce NetPlanners backend-related details to read
    overview
    installation
    architecture
-   modules
    features
+   code_api
    
 
 
