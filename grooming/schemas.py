@@ -39,6 +39,7 @@ class GroomingInformation(BaseModel):
     tm_id: str
     pt_version: int
     tm_version: int
+    project_id: str
     form: GroomingForm
     start_date: datetime
     end_date: datetime
