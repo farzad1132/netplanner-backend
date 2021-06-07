@@ -145,8 +145,8 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
                 devicee.update({i:dev})
                 finalres["traffic"].update({i:res})
         self.update_state(state='PROGRESS', meta={'current': 80, 'total': 100, 'status': 'Grooming Finished'})
-        device_final = Nodestructureservices(devicee, Physical_topology, state = self, percentage =[80,90])
-        
+        (node_structure, device_final) = Nodestructureservices(devicee, Physical_topology, state = self, percentage =[80,90])
+        finalres.update({"node_structure":node_structure})
         finalres.update({"service_devices":device_final})
         self.update_state(state='PROGRESS', meta={'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
         result3= {"grooming_result": finalres, "serviceMapping":service_mapping, "clustered_tms":clusteerdtm}
@@ -155,10 +155,11 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
         res, dev=grooming_fun(TM = traffic_matrix['data'], MP1H_Threshold = mp1h_threshold_grooming, tmId = traffic_matrix['id'], state = self, percentage = [0,60], uuid = uuid )
         devicee={traffic_matrix['id']:dev}
         self.update_state(state='PROGRESS', meta={'current': 60, 'total': 100, 'status': 'Grooming Finished'})
-        device_final = Nodestructureservices(devicee, Physical_topology, state = self, percentage = [60,90])
+        (node_structure, device_final) = Nodestructureservices(devicee, Physical_topology, state = self, percentage = [60,90])
         self.update_state(state='PROGRESS', meta={'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
         res.update({'cluster_id':traffic_matrix['id']})
         finalres={"traffic":{traffic_matrix['id']:res},"service_devices":device_final}
+        finalres.update({"node_structure":node_structure})
         result= {"grooming_result":GroomingResult(**finalres).dict(), "serviceMapping":None, "clustered_tms":None}
     print("\n Data received on the server for Grooming!")
 
