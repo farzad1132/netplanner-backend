@@ -6,3 +6,4 @@ Code API
     :caption: Modules:
  
     projects/init
+    traffic_matrices/init
