@@ -142,6 +142,8 @@ def start_manual_grooming(project_id: str, manual_grooming: ManualGroomingDB,
     traffic_matrix = project_db["traffic_matrix"]
     physical_topology = project_db["physical_topology"]
 
+    # TODO: check manual grooming correctness
+
     id = uuid4().hex
     grooming_result = GroomingModel(
         id=id,
@@ -157,7 +159,8 @@ def start_manual_grooming(project_id: str, manual_grooming: ManualGroomingDB,
         is_finished=True,
         algorithm=GroomingAlgorithm.end_to_end,
         traffic=manual_grooming.traffic.dict(),
-        service_devices=manual_grooming.service_devices.dict()
+        service_devices=manual_grooming.service_devices.dict(),
+        node_structure=manual_grooming.node_structure.dict()
     )
 
     db.add(grooming_result)
