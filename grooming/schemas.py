@@ -242,7 +242,8 @@ class GroomingDBOut(GroomingInformation):
         keys of **traffic** are **sub_tm_id**
     """
     traffic: Dict[str, GroomingOutput]
-    service_devices: NodeStructure
+    service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
+    node_structure: NodeStructure
     clustered_tms: ClusteredTMs
     service_mapping: ServiceMapping
     clusters: ClusterDict
