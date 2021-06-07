@@ -123,6 +123,7 @@ class MP1H(BaseModel):
     panel = "MP1H"
     sub_tm_id: str
     lightpath_id: str
+    id: str
 
 class TP1H(BaseModel):
     """
@@ -131,6 +132,7 @@ class TP1H(BaseModel):
     panel = "TP1H"
     sub_tm_id: str
     lightpath_id: str
+    id: str
 
 class MP2XLine(BaseModel):
     groomout_id: str
@@ -141,12 +143,13 @@ class MP2X(BaseModel):
     sub_tm_id: str
     line1: MP2XLine
     line2: Optional[MP2XLine]
+    id: str
 
 class SlotStructure(BaseModel):
     """
-        keys are slot_id
+        keys are slot_id, values are device_id
     """
-    slots: Dict[str, Union[MP2X, MP1H, TP1H]]
+    slots: Dict[str, str]
 
 class ShelfStructure(BaseModel):
     """
@@ -186,8 +189,10 @@ class GroomingOutput(BaseModel):
 class GroomingResult(BaseModel):
     """
         keys of **traffic** are sub_tm_id
+        keys of **service_devices** are device_id
     """
-    service_devices: Optional[NodeStructure]
+    service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
+    node_structure: NodeStructure
     traffic: Dict[str, GroomingOutput]
 
 class SubTM(BaseModel):
@@ -237,7 +242,8 @@ class GroomingDBOut(GroomingInformation):
         keys of **traffic** are **sub_tm_id**
     """
     traffic: Dict[str, GroomingOutput]
-    service_devices: NodeStructure
+    service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
+    node_structure: NodeStructure
     clustered_tms: ClusteredTMs
     service_mapping: ServiceMapping
     clusters: ClusterDict
@@ -254,5 +260,6 @@ class ManualGroomingDB(BaseModel):
         keys of **traffic** are **sub_tm_id**
     """
     traffic: Dict[str, GroomingOutput]
-    service_devices: NodeStructure
+    service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
+    node_structure: NodeStructure
     form: ManualGroomingForm

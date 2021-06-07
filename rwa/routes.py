@@ -39,8 +39,11 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
     # starting rwa algorithm
     task = rwa_task.delay(  physical_topology= physical_topology,
                             cluster_info= grooming_result.clusters,
-                            grooming_result=GroomingResult(**{"traffic":grooming_result.traffic,
-                                    "service_devices":grooming_result.service_devices}).dict(),
+                            grooming_result=GroomingResult(**{
+                                "traffic":grooming_result.traffic,
+                                "service_devices":grooming_result.service_devices,
+                                "node_structure": grooming_result.node_structure
+                            }).dict(),
                             rwa_form= rwa_form.dict())
     
     register_record = RWARegisterModel( id=task.id,
