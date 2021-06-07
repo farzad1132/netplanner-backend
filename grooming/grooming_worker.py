@@ -54,6 +54,7 @@ class GroomingHandle(GroomingBaseHandle):
                 algorithm=register.algorithm,
                 traffic=retval["grooming_result"]["traffic"],
                 service_devices=retval["grooming_result"]["service_devices"],
+                node_structure=retval['grooming_result']['node_structure'],
                 clustered_tms=retval["clustered_tms"],
                 service_mapping=retval["serviceMapping"]
             )

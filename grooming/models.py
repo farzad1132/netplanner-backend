@@ -56,6 +56,7 @@ class GroomingModel(base):
     # actual result
     traffic = Column("traffic", JSON, nullable=False)
     service_devices = Column("service_devices", JSON, nullable=False)
+    node_structure = Column("node_structure", JSON, nullable=False)
     clustered_tms = Column("clustered_tms", JSON)
     service_mapping = Column("service_mapping", JSON)
 
