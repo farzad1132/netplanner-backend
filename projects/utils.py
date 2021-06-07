@@ -37,6 +37,8 @@ class GetProject:
         With implementing `__call__` objects of this class can be called to access project data
 
         :param id: project id
+        :param user: user object
+        :param db: database session object
         """
         user_id = user.id
 
