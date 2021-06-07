@@ -1,3 +1,7 @@
+"""
+    This module represents traffic matrix related utilities
+"""
+
 from models import TrafficMatrixModel, TrafficMatrixUsersModel
 from typing import Optional, List, Tuple
 from dependencies import auth_user, get_current_user, get_db
@@ -9,12 +13,33 @@ from physical_topology.schemas import methods
 from pandas import ExcelFile, read_excel
 
 class GetTM:
+    """
+        Traffic Matrix dependency injection
+
+        .. note:: `__call__` method is implemented for this class, so objects of this class can be called
+                to access project data
+    """
     def __init__(self, mode: methods = methods.get):
+        """
+            Initializer
+            :param mode: access mode of traffic matrix
+        """
+
         self.mode = mode
 
     def __call__(self, id: str, version: Optional[int] = None,
                 user: User = Depends(get_current_user),
                  db: Session = Depends(get_db)) -> List[TrafficMatrixDB]:
+        """
+            With implementing `__call__` objects of this class can be called to access project data
+
+            :param id: traffic matrix id
+            :param version: version of traffic matrix (optional)
+            :param user: user object
+            :param db: database session object
+            :returns: list traffic matrices (if version is None returns all versions)
+        """
+
         user_id = user.id
         if version is None:
             tm_list = db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=False).all()
@@ -33,14 +58,32 @@ class GetTM:
         else:
             return tm_list
 
-def check_tm_name_conflict(user_id: str, name: str, db: Session):
+def check_tm_name_conflict(user_id: str, name: str, db: Session) -> None:
+    """
+        This function checks name conflict if traffic matrix
+
+        :param user_id: user id
+        :param name: name of traffic matrix
+        :param db: database session object
+
+        .. note:: This function raises `HTTPException` with code 409 if it finds any conflict 
+    """
+
     id_list = get_user_tms_id(user_id, db)
     if db.query(TrafficMatrixModel).filter_by(name=name, owner_id=user_id, version=1, is_deleted=False)\
         .filter(TrafficMatrixModel.id.in_(id_list)).one_or_none() is not None:
-        raise HTTPException(status_code=409, detail=f"name of the traffic matrix '{name}' has conflict with another record")
+        raise HTTPException(status_code=409, 
+                detail=f"name of the traffic matrix '{name}' has conflict with another record")
 
-def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
- -> List[str]:
+def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True) -> List[str]:
+    """
+        This function finds all of traffic matrices ids that a user owns
+
+        :param user_id: user id
+        :param db: database session object
+        :param all: if this flag is `True` this function includes shared traffic matrices
+    """
+
     id_list = []
     if all is True:
         owned_tms = db.query(TrafficMatrixModel)\
@@ -57,12 +100,27 @@ def get_user_tms_id(user_id: str, db: Session, all: Optional[bool]= True)\
     return id_list
 
 def get_tm_last_version(id: str, db: Session) -> TrafficMatrixDB:
+    """
+        This functions finds last version of a given traffic matrix id
+
+        :param id: traffic matrix id
+        :param db: database session object
+    """
+
     tm = db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=False)\
             .distinct(TrafficMatrixModel.version)\
             .order_by(TrafficMatrixModel.version.desc()).first()
     return tm
 
 def excel_to_tm(tm_binary: bytes) -> Tuple[bool, TrafficMatrixSchema]:
+    """
+        This function converts excel file to dictionary object
+
+        .. note::   if at any place a cell data didn't pass validations a item with name
+                    `Property` + `_error` will be added to dictionary
+        .. note::   this function might raise `HTTPException` with code 400 for situations that this function couldn't handle
+    """
+
     GENERAL_COLUMNS = ['ID', 'Source', 'Destination','Restoration_Type',"Protection_Type"]
     SERVICE_HEADERS = ['Quantity_E1', 'Quantity_STM1 Electrical', 'Quantity_STM1 Optical', 'Quantity_STM4', 'Quantity_STM16', 
                         'Quantity_STM64', 'Quantity_FE', 'Quantity_GE', 'Quantity_10GE', 'Quantity_100GE']
