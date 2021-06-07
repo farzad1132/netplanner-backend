@@ -1,9 +1,18 @@
+"""
+    This module contains Physical Topology related schemas
+"""
+
 from pydantic import BaseModel, Field, validator
 from typing import List, Dict, Optional
 from enum import Enum
 from datetime import datetime
 
 class methods(str, Enum):
+    """
+        `Enum`
+        This schema represents access method to files
+    """
+
     get = "GET"
     post = "POST"
     put = "PUT"
@@ -11,10 +20,19 @@ class methods(str, Enum):
     share = "SHARE"
 
 class ROADMType(str, Enum):
+    """
+        `Enum`
+        This schema represents ROADM type
+    """
+
     cdc = "CDC"
     directionless = "Directionless"
 
 class Node(BaseModel):
+    """
+        This schema represents nodes on Physical Topology
+    """
+
     name: str
     lat: float
     lng: float
@@ -24,12 +42,21 @@ class Node(BaseModel):
         orm_mode = True
 
 class Link(BaseModel):
+    """
+        This schema represents links in Physical Topology
+    """
+
     source: str
     destination: str
     length: float = Field(..., ge=0)
     fiber_type: str
 
 class PhysicalTopologySchema(BaseModel):
+    """
+        This schema represents Physical Topology that contains collection
+        of nodes and links
+    """
+
     nodes: List[Node]
     links: List[Link]
 
@@ -47,6 +74,10 @@ class PhysicalTopologySchema(BaseModel):
         return v
 
 class PhysicalTopologyDB(BaseModel):
+    """
+        This schema represents Physical Toplogy objects in database
+    """
+
     data: PhysicalTopologySchema
     id: str
     version: int
@@ -58,16 +89,31 @@ class PhysicalTopologyDB(BaseModel):
         orm_mode = True
 
 class PhysicalTopologyIn(BaseModel):
+    """
+        This schema is the base schema for physical topology that are received from frontend
+    """
+
     data: PhysicalTopologySchema
     comment: str
     
 class PhysicalTopologyPOST(PhysicalTopologyIn):
+    """
+        This schema is used for creating physical topology in POST method of traffic matrix endpoint
+    """
+
     name: str
 
 class PhysicalTopologyPUT(PhysicalTopologyIn):
+    """
+        This schema is used for updating physical topology in POST method of traffic matrix endpoint
+    """
     id: str
 
 class PhysicalTopologyOut(BaseModel):
+    """
+        This schema is used for returning all stored physical topologies information
+    """
+
     id: str
     version: int
     name: str
@@ -78,6 +124,10 @@ class PhysicalTopologyOut(BaseModel):
         orm_mode = True
 
 class PTId(BaseModel):
+    """
+        physical topology id
+    """
+
     id: str
 
     class Config:
