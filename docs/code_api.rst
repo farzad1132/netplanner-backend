@@ -8,3 +8,4 @@ Code API
     projects/init
     traffic_matrices/init
     physical_topology/init
+    user/init
