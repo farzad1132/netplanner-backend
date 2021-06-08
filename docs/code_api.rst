@@ -10,3 +10,4 @@ Code API
     physical_topology/init
     user/init
     sharing/init
+    rwa/init
