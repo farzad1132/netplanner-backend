@@ -1,3 +1,7 @@
+"""
+    This module contains RWA workers and their handlers
+"""
+
 from celery_app import celeryapp
 from celery.app.task import Task
 from physical_topology.schemas import PhysicalTopologySchema
@@ -8,7 +12,19 @@ from database import session
 from rwa.models import RWAModel, RWARegisterModel
 
 class RWAHandle(Task):
+    """
+        This class implements RWA handler
+    """
+
     def on_success(self, retval, task_id, *args, **kwargs):
+        """
+            If RWA worker runs successfully after finishing worker celery runs this function.
+            
+            Responsibility if this function is to store results of RWA into database
+
+            :param retval: return value of worker
+            :param task_id: task id of instance
+        """
         db = session()
         if (register:=db.query(RWARegisterModel)\
             .filter_by(id=task_id, is_deleted=False).one_or_none()):
@@ -28,6 +44,15 @@ class RWAHandle(Task):
             db.close()
 
     def on_failure(self, exc, task_id, *args, **kwargs):
+        """
+            If RWA worker runs fails celery runs this function.
+            
+            Responsibility if this function is to store exception into database
+
+            :param exc: raised exception
+            :param task_id: task id of instance
+        """
+
         db = session()
         if (register:=db.query(RWARegisterModel)\
             .filter_by(id=task_id).one_or_none()) is not None:
