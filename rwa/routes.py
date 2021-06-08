@@ -1,3 +1,7 @@
+"""
+    This module contains RWA related endpoints
+"""
+
 from fastapi import APIRouter, Depends, HTTPException
 from .schemas import RWAForm, RWAIdList, RWAId, RWACheck, RWADBOut, RWAInformation, FailedRWAInfo
 from sqlalchemy.orm import Session
@@ -26,7 +30,21 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
                 db: Session = Depends(get_db)):
     """
         starting rwa algorithm
+
+        end point request handling procedure:
+         - authentication and authorization
+         - getting grooming results from database
+         - running rwa in background
+         - storing RWARegisterModel into database
+         - returning rwa id
+
+        :param project_id: project id
+        :param grooming_id: grooming id
+        :param rwa_form: rwa form (payload)
+        :param user: user object (dependency injection)
+        :param db: database session object (dependency injection)
     """
+    
     # checking authorization to access project and fetching project
     project_db = ProjectSchema.from_orm(get_project_mode_share(id=project_id, user=user, db=db)).dict()
     physical_topology = project_db["physical_topology"]["data"]
