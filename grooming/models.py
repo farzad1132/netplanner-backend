@@ -1,3 +1,7 @@
+"""
+    This module contains grooming related models
+"""
+
 from datetime import datetime
 
 from database import base
@@ -8,7 +12,14 @@ from sqlalchemy.orm import relationship
 
 from grooming.schemas import GroomingAlgorithm
 
+
 class GroomingRegisterModel(base):
+    """
+        Grooming Registration model
+
+        After a user attempts to start rwa algorithm this models is used to store initial information of
+        algorithm into database (used before running algorithm)
+    """
     __tablename__ = "GroomingRegister"
     __table_args__ = {'extend_existing': True}
 
@@ -32,6 +43,11 @@ class GroomingRegisterModel(base):
     algorithm = Column("algorithm", Enum(GroomingAlgorithm), nullable=False)
 
 class GroomingModel(base):
+    """
+        grooming result model
+
+        This models is used after grooming result has been calculated and stores result into database
+    """
     __tablename__ = "Grooming"
     __table_args__ = {'extend_existing': True}
 
@@ -64,6 +80,11 @@ class GroomingModel(base):
                 f" pt_version={self.pt_version}, tm_version={self.tm_version}, manager_id={self.manager_id})"
 
 class AdvGroomingModel(base):
+    """
+        advanced grooming result model
+
+        This models is used after advanced grooming result has been calculated and stores result into database
+    """
     __tablename__ = "AdvGrooming"
     __table_args__ = {'extend_existing': True}
 
