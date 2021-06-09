@@ -1,3 +1,7 @@
+"""
+    This module contains grooming related schemas
+"""
+
 from pydantic import BaseModel
 from typing import Dict, List, Optional, Union
 from enum import Enum
@@ -7,6 +11,21 @@ from datetime import datetime
 from clusters.schemas import ClusterDict
 
 class MP1HThreshold(int, Enum):
+    """
+     MP1H threshold `Enum`
+
+      - 0
+      - 10
+      - 20
+      - 30
+      - 40
+      - 50
+      - 60
+      - 70
+      - 80
+      - 90
+      - 100
+    """
     t0 = 0
     t10 = 10
     t20 = 20
@@ -20,10 +39,19 @@ class MP1HThreshold(int, Enum):
     t100 = 100
 
 class GroomingAlgorithm(str, Enum):
+    """
+        Grooming Algorithm `Enum`
+
+         - Advanced (this algorithm performas mid-grooming clustering and end to end multiplexing together)
+         - End to end
+    """
     advanced = "Advanced"
     end_to_end = "End to end"
 
 class GroomingForm(BaseModel):
+    """
+        Grooming Form schema
+    """
     mp1h_threshold: MP1HThreshold = MP1HThreshold.t70
     comment: str
 
@@ -34,6 +62,10 @@ class GroomingIdList(BaseModel):
     grooming_id_list: List[str]
 
 class GroomingInformation(BaseModel):
+    """
+        This schema represent summary of grooming run instance in database (if rwa was successful)
+    """
+
     id: str
     pt_id: str
     tm_id: str
@@ -49,6 +81,10 @@ class GroomingInformation(BaseModel):
         orm_mode = True
 
 class FailedGroomingInfo(BaseModel):
+    """
+        This schema represent summary of rwa run instance in database (if rwa was failed)
+    """
+
     id: str
     pt_id: str
     tm_id: str
@@ -63,6 +99,10 @@ class FailedGroomingInfo(BaseModel):
         orm_mode = True
 
 class GroomingCheck(BaseModel):
+    """
+        Grooming status check schema
+    """
+
     id: str
     state: str
     current: int
@@ -70,18 +110,38 @@ class GroomingCheck(BaseModel):
     status: str
 
 class GroomingServiceType(str, Enum):
+    """
+        Grooming Services `Enum`
+
+         - groomout (MP2X or PS6X outputs)
+         - normal (services stated by Traffic Matrix)
+    """
     groomout = "groomout"
     normal = "normal"
 
 class GroomingService(BaseModel):
+    """
+        Grooming algorithm service schema 
+
+        Note that this schema and Traffic Matrix service schema are different 
+    """
     id: str
     type: GroomingServiceType = GroomingServiceType.normal
 
 class GroomOutType(str, Enum):
+    """
+        This `Enum` states that groomout service produced by which panel
+
+         - PS6X
+         - MP2X
+    """
     ps6x = "PS6X"
     mp2x = "MP2X"
 
 class GroomOut(BaseModel):
+    """
+        This schema represents a groomout structure in Grooming Result
+    """
     quantity: int
     service_id_list: List[str]
     id: str
@@ -91,6 +151,11 @@ class GroomOut(BaseModel):
 
 class GroomingLowRateDemand(BaseDemand):
     """
+        This schema represents lower rate demands result in grooming
+
+        Lower Rate means we had to user PS6X or MP2X to create a groomout for these demands and we couldn't use
+        any other panel
+
         keys of **groomouts** are groomout_id
     """
     groomouts: Dict[str, GroomOut]
@@ -98,7 +163,10 @@ class GroomingLowRateDemand(BaseDemand):
 class GroomingLightPath(BaseModel):
     """
         this schema describes lightpathes generated in grooming algorithm
+
+        Note that this schema and RWA lightpath schema are different
     """
+
     id: str
     source: str
     destination: str
@@ -117,6 +185,8 @@ class LowRateGrooming(BaseModel):
 
 class MP1H(BaseModel):
     """
+        This schema represents MP1H panel data
+
         frontend will need sub_tm_id in order to find lightpath
     """
     panel = "MP1H"
@@ -125,6 +195,8 @@ class MP1H(BaseModel):
 
 class TP1H(BaseModel):
     """
+        This schema represents TP1H panel data
+
         frontend will need sub_tm_id in order to find lightpath
     """
     panel = "TP1H"
@@ -132,10 +204,18 @@ class TP1H(BaseModel):
     lightpath_id: str
 
 class MP2XLine(BaseModel):
+    """
+        This schema represents one of MP2X lines (outputs) data
+    """
+
     groomout_id: str
     demand_id: str
 
 class MP2X(BaseModel):
+    """
+        This schema represents MP2X panel data
+    """
+
     panel = "MP2X"
     sub_tm_id: str
     line1: MP2XLine
@@ -143,36 +223,48 @@ class MP2X(BaseModel):
 
 class SlotStructure(BaseModel):
     """
+        This schema represents A single slot in shelf
+
         keys are slot_id
     """
     slots: Dict[str, Union[MP2X, MP1H, TP1H]]
 
 class ShelfStructure(BaseModel):
     """
+        This schema represents a single shelf in rack
+
         keys are shelf_id
     """
     shelves: Dict[str, SlotStructure]
 
 class Rackstructure(BaseModel):
     """
+        This schema represents a single Rack in node
+
         keys are rack_id
     """
     racks: Dict[str, ShelfStructure]
 
 class NodeStructure(BaseModel):
     """
+        This schema represents a single Node in network
+
         keys are node name
     """
     nodes: Dict[str, Rackstructure]
 
 class RemaningServices(BaseModel):
     """
+        This schema represents services that grooming algorithms couldn't bundle them so user has to decide what to do
+
         keys are demand_id and values are remaning services id
     """
     demands: Dict[str, List[str]]
 
 class GroomingOutput(BaseModel):
     """
+        This schema represents grooming algorithm result (traffic related) 
+
         keys in lightpaths attribute is lightpath_id
     """
     lightpaths: Dict[str, GroomingLightPath]
@@ -180,10 +272,10 @@ class GroomingOutput(BaseModel):
     low_rate_grooming_result: LowRateGrooming
     remaining_services: RemaningServices
     
-    
-
 class GroomingResult(BaseModel):
     """
+        This schema represents grooming algorithm result (structure related)
+
         keys of **traffic** are sub_tm_id
     """
     service_devices: Optional[NodeStructure]
@@ -195,7 +287,9 @@ class SubTM(BaseModel):
 
 class ClusteredTMs(BaseModel):
     """
-        keys are sub_tm_id\n
+        This schema represents traffic matrices that are produced by clustering algorithm in grooming process
+
+        keys are sub_tm_id
         one of these sub_tm_ids is 'main' and its traffic matrix of gateways and un clustered nodes
     """
     sub_tms: Dict[str, SubTM]
@@ -227,12 +321,16 @@ class ServiceMappingDemands(BaseModel):
 
 class ServiceMapping(BaseModel):
     """
+        This schema represents a mapping between input ids to output ids
+
         keys are tm_id (input 1)
     """
     traffic_matrices: Dict[str, ServiceMappingDemands]
 
 class GroomingDBOut(GroomingInformation):
     """
+        This schema represents grooming algorithm result in database
+        
         keys of **traffic** are **sub_tm_id**
     """
     traffic: Dict[str, GroomingOutput]
