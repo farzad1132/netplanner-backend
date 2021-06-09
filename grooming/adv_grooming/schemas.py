@@ -1,3 +1,7 @@
+"""
+    This module contains advanced grooming related schemas and `Network` class
+"""
+
 import math
 from copy import deepcopy
 from datetime import datetime
@@ -11,7 +15,23 @@ from physical_topology import schemas as pschema
 from pydantic import BaseModel
 from traffic_matrix import schemas as tschema
 
+
 class MultiplexThreshold(str, Enum):
+    """
+     MP1H threshold `Enum`
+
+      - 0
+      - 10
+      - 20
+      - 30
+      - 40
+      - 50
+      - 60
+      - 70
+      - 80
+      - 90
+    """
+
     t0 = "0"
     t10 = "10"
     t20 = "20"
@@ -24,17 +44,32 @@ class MultiplexThreshold(str, Enum):
     t90 = "90"
 
 class LineRate(str, Enum):
+    """
+        Line Rate `Enum`
+
+         - 40
+         - 100
+         - 200
+    """
+
     t40 = "40"
     t100 = "100"
     t200 = "200"
 
 class AdvGroomingForm(BaseModel):
+    """
+        Advanced Grooming Form
+    """
     clusters_id: List[str] = []
     multiplex_threshold: MultiplexThreshold = MultiplexThreshold.t70
     line_rate: LineRate = LineRate.t100
     comment: str
 
 class GroomingConnection(BaseModel):
+    """
+        Connection schema (used in advanced grooming result)
+    """
+
     source: str
     destination: str
     id: str
@@ -45,12 +80,20 @@ class GroomingConnection(BaseModel):
     demands_id_list: List[str]
 
 class AdvGroomingResult(BaseModel):
+    """
+        Advanced grooming result schema
+    """
+
     connections: List[GroomingConnection]
     lambda_link: int
     average_lambda_capacity_usage: float
     lightpaths: Dict[str, gschema.GroomingLightPath]
 
 class AdvGroomingDBOut(gschema.GroomingInformation):
+    """
+        Advanced Grooming result in database schema
+    """
+    
     connections: List[GroomingConnection]
     lambda_link: int
     average_lambda_capacity_usage: float
