@@ -1,3 +1,7 @@
+"""
+    This module contains grooming algorithm workers
+"""
+
 import math
 
 from celery.app.task import Task
@@ -22,7 +26,20 @@ from models import UserModel
 
 
 class GroomingBaseHandle(Task):
+    """
+        This class implements Base Grooming handler (does not implement `on_success`)
+    """
+
     def on_failure(self, exc, task_id, *args, **kwargs):
+        """
+            If Grooming worker runs fails celery runs this function.
+            
+            Responsibility if this function is to store exception into database
+
+            :param exc: raised exception
+            :param task_id: task id of instance
+        """
+
         db = session()
         if (register:=db.query(GroomingRegisterModel)\
             .filter_by(id=task_id).one_or_none()) is not None:
@@ -34,7 +51,20 @@ class GroomingBaseHandle(Task):
             db.close()
 
 class GroomingHandle(GroomingBaseHandle):
+    """
+        Grooming Handler
+    """
+
     def on_success(self, retval, task_id, *args, **kwargs):
+        """
+            If Grooming worker runs successfully after finishing worker celery runs this function.
+            
+            Responsibility if this function is to store results of Grooming into database
+
+            :param retval: return value of worker
+            :param task_id: task id of instance
+        """
+
         db = session()
         if (register:=db.query(GroomingRegisterModel)\
             .filter_by(id=task_id).one_or_none()) is not None:                            
@@ -62,7 +92,20 @@ class GroomingHandle(GroomingBaseHandle):
             db.close()
 
 class AdvGroomingHandle(GroomingBaseHandle):
+    """
+        Advanced grooming handler
+    """
+
     def on_success(self, retval, task_id, *args, **kwargs):
+        """
+            If Advanced grooming worker runs successfully after finishing worker celery runs this function.
+            
+            Responsibility if this function is to store results of Advanced grooming into database
+
+            :param retval: return value of worker
+            :param task_id: task id of instance
+        """
+
         db = session()
         if (register:=db.query(GroomingRegisterModel)\
             .filter_by(id=task_id).one_or_none()) is not None:                            
@@ -175,6 +218,15 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                             multiplex_threshold: MP1HThreshold,
                             clusters: ClusterDict,
                             line_rate: LineRate):
+    """
+        Advanced Grooming worker
+
+        :param pt: physical topology object
+        :param tm: traffic matrix object
+        :param multiplex_threshold: MP1H multiplexing threshold
+        :param clusters: user defined clusters
+        :param line_rate: line rate of network 
+    """
 
     return adv_grooming(end_to_end_fun=grooming_task,
                         pt=pt,
