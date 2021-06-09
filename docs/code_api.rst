@@ -11,3 +11,4 @@ Code API
     user/init
     sharing/init
     rwa/init
+    grooming/init
