@@ -1,3 +1,7 @@
+"""
+    This module contains non specific models
+"""
+
 from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
 import uuid
@@ -8,6 +12,9 @@ from grooming.models import GroomingModel, GroomingRegisterModel, AdvGroomingMod
 from rwa.models import RWAModel, RWARegisterModel
 
 class PhysicalTopologyModel(base):
+    """
+        This model represents Physical Topology in database
+    """
     __tablename__ = "PhysicalTopology"
     __table_args__ = {'extend_existing': True}
     
@@ -30,6 +37,9 @@ class PhysicalTopologyModel(base):
         return f"PT(id= {self.id}, version= {self.version}, name= {self.name})"
 
 class TrafficMatrixModel(base):
+    """
+        This model represents Traffic Matrix in database
+    """
     __tablename__ = "TrafficMatrix"
     __table_args__ = {'extend_existing': True}
     
@@ -51,6 +61,9 @@ class TrafficMatrixModel(base):
         return f"TM(id= {self.id}, version= {self.version} name= {self.name})"
 
 class UserModel(base):
+    """
+        This model represents Users in database 
+    """
     __tablename__ = "User"
     __table_args__ = {'extend_existing': True}
     
@@ -78,6 +91,9 @@ class UserModel(base):
         return f"USER(name= {self.username})"
 
 class ProjectModel(base):
+    """
+        This model represents Projects in database 
+    """
     __tablename__ = "Project"
     __table_args__ = {'extend_existing': True}
     
@@ -101,7 +117,10 @@ class ProjectModel(base):
         return f"PROJECT(name= {self.name}, username= {self.owner.name}, PT name={self.physical_topology.name}, TM name={self.traffic_matrix.name})"
 
 class ProjectUsersModel(base):
-    # this model is used to give other users access to project
+    """
+        This model is used to give other users access to project
+    """
+
     __tablename__ = "ProjectUsers"
     __table_args__ = {'extend_existing': True}
     
@@ -118,9 +137,13 @@ class ProjectUsersModel(base):
         return f"user_id= {self.user_id}, project_id= {self.project_id}"
 
 class PhysicalTopologyUsersModel(base):
-    # this model is used to give other users access to physical topology
-    # NOTE: for pt_id we didn't use foreignkey because 'id' in physical topology is not unique (multiple
-    #       versions have same id)
+    """
+        this model is used to give other users access to physical topology
+
+        .. note:: for `pt_id` we didn't use foreignkey because `id` in physical topology is not unique (multiple
+                    versions have same id)
+    """
+
     __tablename__ = "PhysicalTopologyUsers"
     __table_args__ = {'extend_existing': True}
     
@@ -136,9 +159,13 @@ class PhysicalTopologyUsersModel(base):
         return f"user_id= {self.user_id}, pt_id= {self.pt_id}"
 
 class TrafficMatrixUsersModel(base):
-    # this model is used to give other users access to traffic matrix
-    # NOTE: for tm_id we didn't use foreignkey because 'id' in traffic matrix is not unique (multiple
-    #       versions have same id)
+    """
+        This model is used to give other users access to traffic matrix
+
+        .. note:: for tm_id we didn't use foreignkey because 'id' in traffic matrix is not unique (multiple
+                    versions have same id)
+    """
+
     __tablename__ = "TrafficMatrixUsers"
     __table_args__ = {'extend_existing': True}
     
@@ -154,6 +181,9 @@ class TrafficMatrixUsersModel(base):
         return f"user_id= {self.user_id}, tm_id= {self.tm_id}"
 
 class ClusterModel(base):
+    """
+        This model represents clusters in database
+    """
     __tablename__ = "Cluster"
     __table_args__ = {'extend_existing': True}
     
