@@ -1,5 +1,10 @@
-from celery import Celery
+"""
+    This modules contains background task manager configs
+"""
+
 import os
+
+from celery import Celery
 
 BROKER_DEFAULT_USER = os.environ.get("BROKER_DEFAULT_USER")
 BROKER_DEFAULT_PASSWORD = os.environ.get("BROKER_DEFAULT_PASSWORD")
