@@ -12,3 +12,4 @@ Code API
     sharing/init
     rwa/init
     grooming/init
+    dependencies
