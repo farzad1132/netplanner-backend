@@ -12,6 +12,28 @@ from grooming.schemas import ServiceMapping, GroomingResult, ClusteredTMs
 
 
 def MP2X(Services_lower10):
+    """
+        This function packs the MP2X input services to 10G service.
+
+        **Advantages**:
+            - Optimum packing by means of ILP
+        **** Parameters ***
+            :param <Services_lower10>: <input>
+            :type <list>: <each memeber of list is a tuple included service id and the capacity of service>
+
+            :param <prob>: <LP problem>
+            :type <class>: <ILP is solved by means of this class>
+            
+            :param <max_number_device>: <maximum number of device>
+            :type <integer>: <>
+
+            :param <NO_service_lower10>: <number of services in input parameter>
+            :type <integer>: <length of Services_lower10>
+
+            :param <Output>: <maximum number of device>
+            :type <list>: <list of list which is included  tuples with  service id and the capacity of service>
+
+    """
     prob = LpProblem("grooming", LpMinimize )
     B=10                    #u
     max_port=16
@@ -138,6 +160,61 @@ Groomout10={"id":1,"demands":{}}
 
 
 def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, uuid, MP2X_Threshold=None):
+    """
+            This function breaks the remaining services based on the clusters.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+                :param <service_lower10_SDH>: <list of SDH services>
+                :type <list>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service>
+
+                :param <service_lower10_E>: <list of Ethernet services>
+                :type <list>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service>
+
+                :param <service_lower100>: <list of services that capacity of them is lower than 100>
+                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
+                
+                :param <remain_lower100_2>: <list of services that capacity of them is lower than 100>
+                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
+                
+                :param <remaining_service_lower10>: <list of remaining services that capacity of them is lower than 10>
+                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
+
+                :param <remaining_service_lower10_dict>: <list of remaining services that capacity of them is lower than 10>
+                :type <dictionary>: <keys are the demands id and values are list of tuples included service ids and capacity of them>
+                
+                :param <groom_out10_list>: <list of grooming of services that capacity of them is lower than 10>
+                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included groomout10 (output of MP2X) id and the capacity of that >
+
+                :param <Groomout10>: <list of grooming of services that capacity of them is lower than 10>
+                :type <dictionary>: <keys are the id of demands and values are the demand Specifications and the list of groomouts>
+                
+                :param <id_in_cluster>: <list of nodes which are in clusters>
+                :type <List>: <list of subnodes and gateways of all clusters>
+
+                :param <percentage>: <input>
+                :type <integer>: < initiate value of progress percentage>
+
+                :param <state>: <input>
+                :type <object>: <working object >
+
+                :param <TMi>: <input>
+                :type <dictionary>: <traffic matrix >
+                
+                :param <uuid>: <input>
+                :type <function>: <generate a unique id>
+                
+                :param <MP1H_Threshold>: <input>
+                :type <integer>: <capacity threshold of generating lightpath>
+
+                :param <clusteredTM>: <output>
+                :type <dictionary>: <keys are the id of clusters and values are traffic matrix of that cluster>
+                
+                :param <service_maping2>: <output>
+                :type <dictionary>: <keys are the id of clusters and values are the relation between broken services >
+
+    """
     TM=TMi['data']
     service_lower10_SDH=[]
     service_lower10_E=[]
@@ -253,6 +330,21 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
     
     remain_lower100_2_newV=[] 
     def add_service_to_exist_demand(did,typee):
+        """
+            This function adds service to a existing demand.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <did>: <input>
+            :type <string>: <id of the existing demand>
+
+            :param <type>: <input>
+            :type <string>: <type of the service>
+
+            :param <idd>: <dedicated unique id for the new service>
+            :type <string>: <id is generate by the uuid() function>
+        """
         idd = uuid()
         flag=0
         for j in range(0,len(TM['demands'][did]['services'])):
@@ -265,6 +357,37 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
         return idd
     
     def add_service_to_new_demand(source, destination, typee, protection_type,restoration_type, stype):
+        """
+            This function creates a new demand and add service to it.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <source>: <input>
+            :type <string>: <source of new demand>
+
+            :param <destination>: <input>
+            :type <string>: <destination of new demand>
+
+            :param <stype>: <input>
+            :type <string>: <type of the service>
+
+            :param <typee>: <input>
+            :type <string>: <type of the demand>
+
+            :param <protection_type>: <input>
+            :type <string>: <type of protecting demand>
+
+            :param <restoration_type>: <input>
+            :type <string>: <type of restoration of demand>
+
+            :param <did>: <dedicated unique id for the new demand>
+            :type <string>: <id is generate by the uuid() function>
+
+            :param <idd>: <dedicated unique id for the new service>
+            :type <string>: <id is generate by the uuid() function>
+
+        """
         did = uuid()
         idd = uuid()
         TM['demands'].update({did:{'id':did, 
@@ -278,8 +401,21 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
 
 
     def changing_both_inC(Demandid,servId): 
-        
-            #            for k in range(1,len(n.PhysicalTopology.ClusterDict)+1):
+        """
+            This function breaks the service to three services based on the clusters of source and destination.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <Demandid>: <input>
+            :type <string>: <id of the existing demand >
+
+            :param <servId>: <input>
+            :type <string>: <id of services which must break>
+
+            
+            
+        """
         for i in CL['clusters'].keys():
             GW = CL['clusters'][i]['data']["gateways"]
             SB = CL['clusters'][i]['data']["subnodes"]
@@ -430,7 +566,20 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
                 
         
     def changing_onlysrc_inC(Demandid,servId):
+        """
+            This function breaks the service to two services based on the clusters of source.
 
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <Demandid>: <input>
+            :type <string>: <id of the existing demand >
+
+            :param <servId>: <input>
+            :type <string>: <id of services which must break>
+
+                        
+        """
 
         for i in CL['clusters'].keys():
             GW = CL['clusters'][i]['data']["gateways"]
@@ -484,6 +633,19 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
         
         
     def changing_onlydes_inC(Demandid,servId):
+        """
+            This function breaks the service to two services based on the clusters of destination.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <Demandid>: <input>
+            :type <string>: <id of the existing demand >
+
+            :param <servId>: <input>
+            :type <string>: <id of services which must break>
+   
+        """
         for i in CL['clusters'].keys():
             GW = CL['clusters'][i]['data']["gateways"]
             SB =CL['clusters'][i]['data']["subnodes"]
@@ -540,6 +702,20 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
 
 
     def changing_both_inC_groom10(Demandid,servId): 
+        """
+            This function breaks the services of groomout to three services based on the clusters of source and destination.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <Demandid>: <input>
+            :type <string>: <id of the existing demand >
+
+            :param <servId>: <input>
+            :type <string>: <id of services which must break>
+
+            
+        """
         for j in Groomout10["demands"][Demandid]["services"][servId]['service_id_list']:
             changing_both_inC(Demandid,j)
 
@@ -551,13 +727,40 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
 
 
     def changing_onlysrc_inC_groom10(Demandid,servId): 
+        """
+            This function breaks the services of groomout to two services based on the clusters of source.
+
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <Demandid>: <input>
+            :type <string>: <id of the existing demand >
+
+            :param <servId>: <input>
+            :type <string>: <id of services which must break>
+
+            
+        """
         for j in Groomout10["demands"][Demandid]["services"][servId]['service_id_list']:
             changing_onlysrc_inC(Demandid,j)
 
 
 
     def changing_onlydes_inC_groom10(Demandid,servId): 
+        """
+            This function breaks the services of groomout to two services based on the clusters of destination.
 
+            **Advantages**:
+                - 
+            **** Parameters ***
+            :param <Demandid>: <input>
+            :type <string>: <id of the existing demand >
+
+            :param <servId>: <input>
+            :type <string>: <id of services which must break>
+
+            
+        """
         for j in Groomout10["demands"][Demandid]["services"][servId]['service_id_list']:
             changing_onlydes_inC(Demandid,j)
         return
