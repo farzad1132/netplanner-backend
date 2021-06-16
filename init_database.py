@@ -1,10 +1,16 @@
+"""
+    This module is database initializer
+"""
+
 import os
-from dependencies import get_password_hash, get_db
-from models import (PhysicalTopologyModel, TrafficMatrixModel, UserModel, ProjectModel, ClusterModel,
-                    PhysicalTopologyUsersModel, TrafficMatrixUsersModel, ProjectUsersModel)
+
+from dependencies import get_db, get_password_hash
+from models import (ClusterModel, PhysicalTopologyModel,
+                    PhysicalTopologyUsersModel, ProjectModel,
+                    ProjectUsersModel, TrafficMatrixModel,
+                    TrafficMatrixUsersModel, UserModel)
 from physical_topology.utils import excel_to_pt
 from traffic_matrix.utils import excel_to_tm
-
 
 PHYSICALTOPOLOGY = {
     "nodes":[

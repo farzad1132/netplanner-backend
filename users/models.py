@@ -1,9 +1,17 @@
+"""
+    This module contains some of user related models
+"""
+
 from database import base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 
 class UserRegisterModel(base):
+    """
+        This model used at user registration process
+    """
+    
     __tablename__ = "UserRegister"
     __table_args__ = {'extend_existing': True}
 
