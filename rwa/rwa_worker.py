@@ -8,13 +8,15 @@ from database import session
 from rwa.models import RWAModel, RWARegisterModel
 from task_manager.schemas import ChainTaskID
 from celery.utils import uuid
-from celery import group, chain, chord
-import time, random
+from celery import group, chain
+from celery.result import AsyncResult
 import pickle
 import codecs
 import warnings
 
 class RWAHandleFailure(Task):
+    """Handles the failure of all RWA workers.
+    """
     def on_failure(self, exc, task_id, *args, **kwargs):
         db = session()
         if (register:=db.query(RWARegisterModel)\
@@ -26,6 +28,8 @@ class RWAHandleFailure(Task):
             db.commit()
             db.close()
 class RWAHandle(RWAHandleFailure):
+    """Handles the success of finile phase of RWA multiprocess worker.
+    """
     def on_success(self, retval, task_id, *args, **kwargs):
         db = session()
         if (register:=db.query(RWARegisterModel)\
@@ -48,16 +52,20 @@ class RWAHandle(RWAHandleFailure):
 def run_rwa(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
             grooming_result: GroomingResult, rwa_form: RWAForm) -> ChainTaskID:
 # def run_rwa():
+    """ Background task that runs RWA algorithm with progress reports.
+
+    :param physical_topology: The physical topology of the network
+    :param cluster_info: The network cluster information
+    :param grooming_result: The output of grooming algorithm
+    :param rwa_form: Parameters required by RWA algorithm
+    :type physical_topology: PhysicalTopologySchema
+    :type cluster_info: ClusterDict
+    :type grooming_result: GroomingResult
+    :type rwa_form: RWAForm
+    :return: returns the task IDs that can be used for progress report
+    :rtype: ChainTaskID
     """
-    Background task that runs RWA algorithm with progress reports.
-    Inputs:
-        rwa_form: RWAForm
-        rwa_input: RWAResult (without routing info!)
-        physical_topology: PhysicalTopology
-    output:
-        ChainTaskID
-    """
-    chain_of_all_tasks, chain_task_id_info = create_rwa_task_chain( physical_topology=physical_topology, 
+    chain_of_all_tasks, chain_task_id_info, _ = create_rwa_task_chain( physical_topology=physical_topology, 
                                                                     cluster_info=cluster_info,
                                                                     grooming_result=grooming_result,
                                                                     rwa_form=rwa_form)
@@ -66,7 +74,18 @@ def run_rwa(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict
 
 def create_rwa_task_chain(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
                           grooming_result: GroomingResult, rwa_form: RWAForm):
-    # Assign an id to the entire rwa tasks submitted to the frontend 
+    """Assign an id to the entire rwa tasks submitted to the frontend.
+    
+    :param physical_topology: The physical topology of the network
+    :param cluster_info: The network cluster information
+    :param grooming_result: The output of grooming algorithm
+    :param rwa_form: Parameters required by RWA algorithm
+    :type physical_topology: PhysicalTopologySchema
+    :type cluster_info: ClusterDict
+    :type grooming_result: GroomingResult
+    :type rwa_form: RWAForm
+    :return: returns the required information to create ChainTaskID
+    """
     demand_num = 0
     for sub_tm_id, grooming_output in grooming_result['traffic'].items():
         for demand in grooming_output['lightpaths'].values():
@@ -80,23 +99,50 @@ def create_rwa_task_chain(physical_topology: PhysicalTopologySchema, cluster_inf
                                         options = ({'task_id': preprocess_task_id}))|
                                rwa_group_planner.signature(args=(rwa_form, group_planner_id_list, finilize_task_id))
                                )
-    return chain_of_all_tasks, chain_task_id_info
+    return chain_of_all_tasks, chain_task_id_info, finilize_task_id
 
 def run_rwa_test(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
                 grooming_result: GroomingResult, rwa_form: RWAForm):
+    """This function is similar to run_rwa but returns the result instead of ids
+
+    :param physical_topology: The physical topology of the network
+    :param cluster_info: The network cluster information
+    :param grooming_result: The output of grooming algorithm
+    :param rwa_form: Parameters required by RWA algorithm
+    :type physical_topology: PhysicalTopologySchema
+    :type cluster_info: ClusterDict
+    :type grooming_result: GroomingResult
+    :type rwa_form: RWAForm
+    :return:
     """
-    This function is similar to run_rwa but returns the result instead of ids
-    """
-    chain_of_all_tasks, chain_task_id_info = create_rwa_task_chain( physical_topology=physical_topology, 
+    chain_of_all_tasks, chain_task_id_info, finilize_task_id = create_rwa_task_chain( physical_topology=physical_topology, 
                                                                     cluster_info=cluster_info,
                                                                     grooming_result=grooming_result,
                                                                     rwa_form=rwa_form)
-    rwa_result = chain_of_all_tasks().collect()
-    print(list(rwa_result))
-    return rwa_result['result']
+    rwa_result = chain_of_all_tasks()
+    task_result = AsyncResult(finilize_task_id)
+    # rwa_result = task_result.get()
+    print(task_result.get())
+    return 
 
 
 def generate_rwa_task_info(demand_number, num_iterations, algorithm):
+    """Generates uuid for all RWA subtasks.
+
+    In order to be able to track the progress of parallel and sequential tasks
+    this function creates the uuid for all tasks before creation of the tasks
+    in the chain. This function also estimates the total progress required by
+    the RWA algorithm.
+
+    :param demand_number: the total number of demands
+    :param num_iterations: number of iterations for RWA algorithm
+    :param algorithm: RWA algorithm type
+    :type demand_number: int
+    :type num_iterations: int
+    :type algorithm: string
+    :returns: chain_task_id_info, preprocess_task_id, group_planner_id_list, finilize_task_id
+    :rtype: dict
+    """
     chain_task_id_info = {
         'chain_id': uuid()
     }
@@ -135,6 +181,34 @@ def generate_rwa_task_info(demand_number, num_iterations, algorithm):
 @celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
                   grooming_result: GroomingResult, rwa_form: RWAForm, demand_num):
+    """This function performs the pre-process of the RWA algorithm.
+
+    The preprocess includes the following steps:
+
+        - The data is copied from the input schemas to internal network class of RWA algorithms.
+        - Network graph is created using networkx.
+        - Noise parametrs are estimated.
+        - Candidate routing paths and regeneration options are calculated.
+
+    :param physical_topology: The physical topology of the network
+    :param cluster_info: The network cluster information
+    :param grooming_result: The output of grooming algorithm
+    :param rwa_form: Parameters required by RWA algorithm
+    :param demand_num: Number of demands
+    :type physical_topology: PhysicalTopologySchema
+    :type cluster_info: ClusterDict
+    :type grooming_result: GroomingResult
+    :type rwa_form: RWAForm
+    :type demand_num: int
+    :return: {'result': pickled, 'current': total_steps, 'total': total_steps}
+
+    .. note:: This function is a serial task in the celery chain.
+
+    .. note:: Transferring data between the tasks should be serializable. 
+        Hence, the internal object of the rwa algorithm can't be used directly. 
+        To tackle this problem, the output is encoded as a base64 string. 
+        This string can be transferred between the tasks. 
+    """
     from rwa.algorithm.components import Node, Link, Demand, RegenOption
     from rwa.algorithm.oldnetwork import OldNetwork, NetModule
     # from rwa.algorithm.planner import plan_network
@@ -282,6 +356,15 @@ def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info
 
 @celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_greedy_iteration(self, net_module_bytes, rwa_form):
+    """One iteration of the Greedy RWA algorithm.
+
+    :param net_module_bytes: pickled inner RWA object generated by preprocessing. 
+    :param rwa_form: RWA parameters
+    :type net_module_bytes: base64
+    :type rwa_form: RWAForm
+    :returns: a pickled version of the inner class net_module (result_net)
+    :rtype: dict
+    """
     from rwa.algorithm.oldnetwork import random_shuffle_solver
     num_second_restoration_random_samples = 10
     net_module = pickle.loads(codecs.decode(net_module_bytes.encode(), "base64"))
@@ -301,7 +384,16 @@ def rwa_greedy_iteration(self, net_module_bytes, rwa_form):
     return {'result': pickled, 'current': total_steps, 'total': total_steps}
 
 @celeryapp.task(bind=True, base=RWAHandleFailure)
-def rwa_gilp_iteration(self):
+def rwa_gilp_iteration(self, net_module_bytes, rwa_form):
+    """One iteration of the Group ILP RWA algorithm.
+
+    :param net_module_bytes: pickled inner RWA object generated by preprocessing. 
+    :param rwa_form: RWA parameters
+    :type net_module_bytes: base64
+    :type rwa_form: RWAForm
+    :returns: a pickled version of the inner class net_module (result_net)
+    :rtype: dict
+    """
     from rwa.algorithm.oldnetwork import random_shuffle_solver
     num_second_restoration_random_samples = 10
     net_module = pickle.loads(codecs.decode(net_module_bytes.encode(), "base64"))
@@ -323,7 +415,16 @@ def rwa_gilp_iteration(self):
     return {'result': pickled, 'current': total_steps, 'total': total_steps}
 
 @celeryapp.task(bind=True, base=RWAHandleFailure)
-def rwa_ilp(self):
+def rwa_ilp(self, net_module_bytes, rwa_form):
+    """Runs the ILP based RWA algorithm.
+
+    :param net_module_bytes: pickled inner RWA object generated by preprocessing. 
+    :param rwa_form: RWA parameters
+    :type net_module_bytes: base64
+    :type rwa_form: RWAForm
+    :returns: a pickled version of the inner class net_module (result_net)
+    :rtype: dict
+    """
     from rwa.algorithm.oldnetwork import random_shuffle_solver
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': 1, 'current_stage_info': 'Starting RWA GILP algorithm.'})
     num_second_restoration_random_samples = 10
@@ -342,18 +443,19 @@ def rwa_ilp(self):
     pickled = codecs.encode(pickle.dumps(result_net), "base64").decode() 
     return {'result': pickled, 'current': 1, 'total': 1}
 
-# @celeryapp.task(bind=True)
-# def rwa_group_result_collector(self, x_dict_list):
-#     output_list = []
-#     print('I am a level 2 task!')
-#     x_list = []
-#     for x_dict in x_dict_list:
-#         x_list.append(x_dict['result'])
-#     # Nothing here!
-#     return {'result': x_list, 'current': 2, 'total': 2}
-
 @celeryapp.task(bind=True, base=RWAHandleFailure)
 def rwa_group_planner(self, preprocess_output, rwa_form, group_planner_id_list, finilize_task_id):
+    """Main function that runs the desired RWA algorithm described in rwa_form.
+
+    :param preprocess_output: a dict containing the pickled inner RWA object generated by preprocessing. 
+    :param rwa_form: RWA parameters
+    :param group_planner_id_list: RWA parameters
+    :param finilize_task_id: the id of the last task (finilize) in the task chain
+    :type net_module_bytes: base64
+    :type rwa_form: RWAForm
+    :type group_planner_id_list: list
+    :type finilize_task_id: string
+    """
     net_module_bytes = preprocess_output['result']
     algorithm = rwa_form["algorithm"]
     iterations = rwa_form["iterations"]
@@ -370,7 +472,7 @@ def rwa_group_planner(self, preprocess_output, rwa_form, group_planner_id_list, 
                 rwa_finilize_results.signature( options = ({'task_id': finilize_task_id})))()
     elif algorithm=="ILP":
         iterations = 1
-        return (group([rwa_ilp_iteration.signature(args=(net_module_bytes, rwa_form),
+        return (group([rwa_ilp.signature(args=(net_module_bytes, rwa_form),
                                          options = ({'task_id': group_planner_id_list[i]})) 
                                 for i in range(iterations)])  | 
                 rwa_finilize_results.signature( options = ({'task_id': finilize_task_id})))() 
@@ -379,6 +481,13 @@ def rwa_group_planner(self, preprocess_output, rwa_form, group_planner_id_list, 
 
 @celeryapp.task(bind=True, base=RWAHandle)
 def rwa_finilize_results(self, result_dict_list): #group_collected_results
+    """Collects the results of all tasks and generates the output.
+
+    :param result_dict_list: a dict containing the pickled inner RWA object generated by preprocessing. 
+    :type result_dict_list: list
+    :returns: the output of the RWA algorithm
+    :rtype: dict containg RWAResult
+    """
     from rwa.algorithm.Analysis import detect_wavelength_collisions
     from rwa.schemas import RWAResult, Lightpath, RoutingType
     total_steps = 4
