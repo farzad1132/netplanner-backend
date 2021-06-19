@@ -255,18 +255,18 @@ class OldNetwork(object):
     wavelengths.
 
     Methods:
-    add_node: Adds a node to the network
-    add_link: Adds two links (in 2 directions) between existing nodes
-    add_demand: Adds a demand from one node to the other
-    gen_graph: Generates and stores the network connectivity graph
-    gen_random_demands: Generates random demands between random nodes in the Network
-    print_demand_list: prints a lsit of demands
-    print_results: If called after running the algorithm, prints the path and 
-                                wavelength assigned to each demand\
-    show_routed_demand: Displays the routed path for a demand on the network graph
-    gen_protected_lightpaths: Generates valid lightpaths with protection for all demands
-    solve_two_way_protected_greedy_heuristic_no_diversity: A greedy algorithm that solves the routing problem for two way demands
-    find_objective: The objective is to minimize the total number of used wavelengths
+        - add_node: Adds a node to the network
+        - add_link: Adds two links (in 2 directions) between existing nodes
+        - add_demand: Adds a demand from one node to the other
+        - gen_graph: Generates and stores the network connectivity graph
+        - gen_random_demands: Generates random demands between random nodes in the Network
+        - print_demand_list: prints a lsit of demands
+        - print_results: If called after running the algorithm, prints the path and 
+                                    wavelength assigned to each demand\
+        - show_routed_demand: Displays the routed path for a demand on the network graph
+        - gen_protected_lightpaths: Generates valid lightpaths with protection for all demands
+        - solve_two_way_protected_greedy_heuristic_no_diversity: A greedy algorithm that solves the routing problem for two way demands
+        - find_objective: The objective is to minimize the total number of used wavelengths
     """
     def __init__(self, wavelength_num, reach_options, snr_t, config, measure = 'distance', alpha = 0.5, margin = 2):
         self.node_list = []
