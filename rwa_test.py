@@ -1,5 +1,5 @@
 import unittest
-from rwa.rwa_worker import rwa_task
+from rwa.rwa_worker import run_rwa_test
 import json
 
 class TestRWA(unittest.TestCase):
@@ -133,7 +133,8 @@ class TestRWA(unittest.TestCase):
         #     for demand in grooming_output['lightpaths']:
         #         print(demand)
         #         print('------')
-        obtained_result = rwa_task(physical_topology.dict(), cluster_info.dict(), grooming_result.dict(), rwa_form.dict())
+        obtained_result = run_rwa_test(physical_topology=physical_topology.dict(), cluster_info=cluster_info.dict(),
+                                       grooming_result=grooming_result.dict(), rwa_form=rwa_form.dict())
         # print(json.dumps(obtained_result, indent=4))
         # obtained_result_ligthpath_list = sorted(obtained_result['lightpaths'], key = lambda i: i['id'])
         # expected_output_ligthpath_list = sorted(expected_output.dict()['lightpaths'], key = lambda i: i['id'])
@@ -251,7 +252,7 @@ class TestRWA(unittest.TestCase):
                     "demand_id": None,
                     "routing_type": "100GE",
                     "protection_type": "NoProtection",
-                    "restoration_type": "None",
+                    "restoration_type": "JointSame",
                     "routing_info": {
                         "working": {
                             "path": [
@@ -331,7 +332,8 @@ class TestRWA(unittest.TestCase):
         grooming_result = GroomingResult(**grooming_result_dict)
         cluster_info = ClusterDict(**cluster_dict)
         # expected_output = RWAResult(**rwa_result_dict)
-        obtained_result = rwa_task(physical_topology.dict(), cluster_info.dict(), grooming_result.dict(), rwa_form.dict())
+        obtained_result = run_rwa_test(physical_topology=physical_topology.dict(), cluster_info=cluster_info.dict(),
+                                       grooming_result=grooming_result.dict(), rwa_form=rwa_form.dict())
         # print(json.dumps(obtained_result, indent=4))
         # obtained_result_ligthpath_list = sorted(obtained_result['lightpaths'], key = lambda i: i['id'])
         # expected_output_ligthpath_list = sorted(expected_output.dict()['lightpaths'], key = lambda i: i['id'])
