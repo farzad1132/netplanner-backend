@@ -205,6 +205,9 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
                 :param <uuid>: <input>
                 :type <function>: <generate a unique id>
                 
+                :param <CL>: <input>
+                :type <dictionary>: <keys are cluster number and values are the detail of clusters>
+                
                 :param <MP1H_Threshold>: <input>
                 :type <integer>: <capacity threshold of generating lightpath>
 
