@@ -8,7 +8,7 @@ choosing used technologies and after this, we have listed the main backend featu
 of all modules
 
 .. important:: REST API documentation isn't included in this documentation because it has it's own ``Interactive`` documentation
-                on sina's server in http://localhost:5020/docs and http://localhost:5020/redoc
+                on sina's server in http://192.168.7.22:5020/docs and http://192.168.7.22:5020/redoc
 
 In REST API document you can insert your data as payload or parameters and send real request to backend and receive result in
 beautiful Structured manner, also you can download responses as ``JSON`` file

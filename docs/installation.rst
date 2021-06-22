@@ -31,7 +31,7 @@ Installation process using docker:
     .. note:: this command runs NetPlanner backend in detach mode, if you want to see the 
               logs in live mode you can delete ``-d`` in command above
 
-#. go to http://localhost:5020/docs to see the API documentation
+#. go to http://192.168.7.22:5020/docs to see the API documentation
 
 #.  At this point you have NetPlanner backend fully functional but if you want some initial date
     in database to work with you can run commands bellow (in order):
