@@ -2,7 +2,7 @@
     This module contains RWA related endpoints
 """
 
-from task_manager.schemas import ChainProgressReport
+from task_manager.schemas import ChainProgressReport, ChainTaskID
 from fastapi import APIRouter, Depends, HTTPException
 from .schemas import RWAForm, RWAIdList, RWAId, RWACheck, RWADBOut, RWAInformation, FailedRWAInfo
 from sqlalchemy.orm import Session
@@ -14,7 +14,7 @@ from projects.utils import GetProject
 from rwa.rwa_worker import run_rwa
 from grooming.schemas import GroomingResult
 from grooming.models import GroomingModel
-from rwa.models import RWAChainIdModel, RWAModel, RWARegisterModel
+from rwa.models import RWAModel, RWARegisterModel
 from task_manager.utils import status_check
 
 rwa_router = APIRouter(
@@ -75,11 +75,11 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
                                         tm_version=project_db["traffic_matrix"]["version"],
                                         manager_id=user.id,
                                         form=rwa_form.dict(),
-                                        chain_info=task_id_info.chain_info)
+                                        chain_info=task_id_info.dict()['chain_info'])
     db.add(register_record)
     db.commit()
 
-    return {"rwa_id": task_id_info['chain_id']}
+    return {"rwa_id": task_id_info.chain_id}
 
 @rwa_router.post("/v2.0.0/algorithms/rwa/check", status_code=200, response_model=ChainProgressReport)
 def rwa_check(rwa_id: RWAId, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -89,14 +89,17 @@ def rwa_check(rwa_id: RWAId, user: User = Depends(get_current_user), db: Session
 
     # fetching register record
     if (register:=db.query(RWARegisterModel)\
-        .filter_by(id=rwa_id, is_deleted=False).one_or_none()) is None:
+        .filter_by(id=rwa_id.rwa_id, is_deleted=False).one_or_none()) is None:
         raise HTTPException(status_code=404, detail="rwa result not found")
 
     # checking authorization (for project)
     _ = get_project_mode_get(id=register.project_id, user=user, db=db)
 
     # getting progress
-    rwa_chain = RWAChainIdModel(**register).dict()
+    rwa_chain = ChainTaskID(**{
+        'chain_id': register.id,
+        'chain_info': register.chain_info
+    })
 
     return status_check(rwa_chain)
 
