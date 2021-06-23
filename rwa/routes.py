@@ -83,13 +83,24 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
 
     return {"rwa_id": task_id_info['chain_id']}
 
-@rwa_router.post("/v2.0.0/algorithms/rwa/check", status_code=200, response_model=List[RWACheck])
-def rwa_check(rwa_id_list: RWAIdList, user: User = Depends(get_current_user)):
+@rwa_router.post("/v2.0.0/algorithms/rwa/check", status_code=200, response_model=ChainProgressReport)
+def rwa_check(rwa_id: RWAId, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
         checking running rwa algorithms
     """
-    rwa_id_list = rwa_id_list.dict()
-    return status_check(rwa_id_list["rwa_id_list"], rwa_task)
+
+    # fetching register record
+    if (register:=db.query(RWARegisterModel)\
+        .filter_by(id=rwa_id, is_deleted=False).one_or_none()) is None:
+        raise HTTPException(status_code=404, detail="rwa result not found")
+
+    # checking authorization (for project)
+    _ = get_project_mode_get(id=register.project_id, user=user, db=db)
+
+    # getting progress
+    rwa_chain = RWAChainIdModel(**register).dict()
+    
+    return status_check(rwa_chain)
 
 @rwa_router.get("/v2.0.0/algorithms/rwa/result", response_model=RWADBOut, status_code=200)
 def rwa_result(rwa_id: str, user: User = Depends(get_current_user),
