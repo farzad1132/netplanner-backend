@@ -2,21 +2,24 @@
     This module contains RWA workers and their handlers
 """
 
-from celery_app import celeryapp
-from celery.app.task import Task
-from physical_topology.schemas import PhysicalTopologySchema
-from clusters.schemas import ClusterDict
-from grooming.schemas import GroomingResult
-from rwa.schemas import RWAForm, RWAResult
-from database import session
-from rwa.models import RWAModel, RWARegisterModel
-from task_manager.schemas import ChainTaskID
-from celery.utils import uuid
-from celery import group, chain
-from celery.result import AsyncResult
-import pickle
 import codecs
+import pickle
 import warnings
+
+from celery import chain, group
+from celery.app.task import Task
+from celery.result import AsyncResult
+from celery.utils import uuid
+from celery_app import celeryapp
+from clusters.schemas import ClusterDict
+from database import session
+from grooming.schemas import GroomingResult
+from physical_topology.schemas import PhysicalTopologySchema
+from task_manager.schemas import ChainTaskID
+
+from rwa.models import RWAModel, RWARegisterModel
+from rwa.schemas import RWAForm, RWAResult
+
 
 class RWAHandleFailure(Task):
     """
@@ -238,11 +241,12 @@ def rwa_preprocess(self, physical_topology: PhysicalTopologySchema, cluster_info
             To tackle this problem, the output is encoded as a base64 string. 
             This string can be transferred between the tasks. 
     """
-    from rwa.algorithm.components import Node, Link, Demand, RegenOption
-    from rwa.algorithm.oldnetwork import OldNetwork, NetModule
+    from grooming.schemas import ClusteredTMs, GroomingResult
+
+    from rwa.algorithm.components import Demand, Link, Node, RegenOption
+    from rwa.algorithm.oldnetwork import NetModule, OldNetwork
     # from rwa.algorithm.planner import plan_network
-    from rwa.schemas import RWAResult, Lightpath, RoutingType
-    from grooming.schemas import GroomingResult, ClusteredTMs
+    from rwa.schemas import Lightpath, RoutingType, RWAResult
     
     print("\n Data received on the server for RWA!")
     total_steps = demand_num + 7
@@ -539,7 +543,7 @@ def rwa_finilize_results(self, result_dict_list): #group_collected_results
     :rtype: dict containg RWAResult
     """
     from rwa.algorithm.Analysis import detect_wavelength_collisions
-    from rwa.schemas import RWAResult, Lightpath, RoutingType
+    from rwa.schemas import Lightpath, RoutingType, RWAResult
     total_steps = 4
     self.update_state(state='PROGRESS', meta={'current': 0, 'total': total_steps,
         'current_stage_info': 'Finalizing RWA results.'})
