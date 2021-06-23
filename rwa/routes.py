@@ -57,8 +57,6 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
 
     # starting rwa algorithm
     # task_id_info is an instance of ChainTaskID from task_manager
-    # TODO: I suggest storing task_id_info in the database and only sending back 
-    # the chain_id to the user
     task_id_info = run_rwa( physical_topology= physical_topology,
                             cluster_info= grooming_result.clusters,
                             grooming_result=GroomingResult(**{
@@ -99,7 +97,7 @@ def rwa_check(rwa_id: RWAId, user: User = Depends(get_current_user), db: Session
 
     # getting progress
     rwa_chain = RWAChainIdModel(**register).dict()
-    
+
     return status_check(rwa_chain)
 
 @rwa_router.get("/v2.0.0/algorithms/rwa/result", response_model=RWADBOut, status_code=200)
