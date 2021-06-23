@@ -282,7 +282,8 @@ def ILP_2way_protected_solver_subroutine(network, available_wavelengths, demands
   # print(L.value.reshape(edge_num, wavelength_num))
   # print(X.value.reshape(demand_num, path_num, -1))
 
-def solve_two_way_protected_windowed_ILP(network, history_wavelength_num = 4, demand_group_num = 6, max_new_wavelength_num = 6):
+def solve_two_way_protected_windowed_ILP(network, history_wavelength_num = 4, demand_group_num = 6, max_new_wavelength_num = 6,
+                                        celeryapp_instance=None):
     indicator = 0
     start_wavelength = 0
     L_total = None # Shows which wavelength is occupied on which link
@@ -295,7 +296,12 @@ def solve_two_way_protected_windowed_ILP(network, history_wavelength_num = 4, de
     demand_number = len(network.demand_list)
     edge_num = len(network.graph.to_undirected().edges)
     node_num = len(network.graph.nodes)
+    total_steps = len(network.demand_list)
+    current_step = 0 
     for indicator in range(math.ceil(demand_number/max_new_wavelength_num)):
+      if celeryapp_instance is not None:
+            celeryapp_instance.update_state(state='PROGRESS', meta={'current': current_step, 'total': total_steps, 'current_stage_info': 'RWA GILP algorithm is processing demands.'})  
+            current_step += max_new_wavelength_num
       end_wavelength = start_wavelength+max_new_wavelength_num
       start_demand = indicator*demand_group_num
       end_demand = (indicator+1)*demand_group_num

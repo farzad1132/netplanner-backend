@@ -10,7 +10,7 @@ from projects.schemas import ProjectSchema
 from typing import List, Optional
 from users.schemas import User
 from projects.utils import GetProject
-from rwa.rwa_worker import rwa_task
+from rwa.rwa_worker import run_rwa
 from grooming.schemas import GroomingResult
 from grooming.models import GroomingModel
 from rwa.models import RWAModel, RWARegisterModel
@@ -55,7 +55,10 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
         raise HTTPException(status_code=404, detail="grooming result not found")
 
     # starting rwa algorithm
-    task = rwa_task.delay(  physical_topology= physical_topology,
+    # task_id_info is an instance of ChainTaskID from task_manager
+    # TODO: I suggest storing task_id_info in the database and only sending back 
+    # the chain_id to the user
+    task_id_info = run_rwa( physical_topology= physical_topology,
                             cluster_info= grooming_result.clusters,
                             grooming_result=GroomingResult(**{
                                 "traffic":grooming_result.traffic,
@@ -76,7 +79,7 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
     db.add(register_record)
     db.commit()
 
-    return {"rwa_id": task.id}
+    return {"rwa_id": task_id_info['chain_id']}
 
 @rwa_router.post("/v2.0.0/algorithms/rwa/check", status_code=200, response_model=List[RWACheck])
 def rwa_check(rwa_id_list: RWAIdList, user: User = Depends(get_current_user)):
