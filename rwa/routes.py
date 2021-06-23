@@ -2,6 +2,7 @@
     This module contains RWA related endpoints
 """
 
+from task_manager.schemas import ChainProgressReport
 from fastapi import APIRouter, Depends, HTTPException
 from .schemas import RWAForm, RWAIdList, RWAId, RWACheck, RWADBOut, RWAInformation, FailedRWAInfo
 from sqlalchemy.orm import Session
@@ -13,8 +14,8 @@ from projects.utils import GetProject
 from rwa.rwa_worker import run_rwa
 from grooming.schemas import GroomingResult
 from grooming.models import GroomingModel
-from rwa.models import RWAModel, RWARegisterModel
-from algorithms.utils import status_check
+from rwa.models import RWAChainIdModel, RWAModel, RWARegisterModel
+from task_manager.utils import status_check
 
 rwa_router = APIRouter(
     tags=["Algorithms", "RWA"]
@@ -67,7 +68,7 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
                             }).dict(),
                             rwa_form= rwa_form.dict())
     
-    register_record = RWARegisterModel( id=task.id,
+    register_record = RWARegisterModel( id=task_id_info.chain_id,
                                         grooming_id=grooming_id,
                                         project_id=project_id,
                                         pt_id=project_db["physical_topology"]["id"],
@@ -75,7 +76,8 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
                                         pt_version=project_db["physical_topology"]["version"],
                                         tm_version=project_db["traffic_matrix"]["version"],
                                         manager_id=user.id,
-                                        form=rwa_form.dict())
+                                        form=rwa_form.dict(),
+                                        chain_info=task_id_info.chain_info)
     db.add(register_record)
     db.commit()
 
