@@ -7,9 +7,11 @@ services:
     environment: 
       - DB_HOST=db
       - BROKER_HOST=rabbitmq
+      - BACKEND_HOST=redis
     links: 
       - db
       - rabbitmq
+      - redis
     depends_on: 
       - db
     ports: 
@@ -41,12 +43,15 @@ services:
     environment: 
       - BROKER_HOST=rabbitmq
       - DB_HOST=db
+      - BACKEND_HOST=redis
     links: 
       - rabbitmq
       - db
+      - redis
     depends_on: 
       - rabbitmq
       - db
+      - redis
     volumes: 
       - .:/app/
     command: ['celery', '-A', 'celery_app', 'worker', '-l', 'DEBUG']
