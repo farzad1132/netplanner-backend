@@ -34,6 +34,7 @@ class RWARegisterModel(base):
     exception = Column("exception", String)
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
+    chain_info = Column("chain_info", JSON, nullable=False)
 
 class RWAModel(base):
     """
