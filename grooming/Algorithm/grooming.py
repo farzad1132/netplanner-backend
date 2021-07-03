@@ -11,23 +11,23 @@ def MP2X(Services_lower10):
     """
         This function packs the MP2X input services to 10G service.
 
-        **Advantages**:
+        Advantages:
             - Optimum packing by means of ILP
-        **** Parameters ***
-            :param <Services_lower10>: <input>
-            :type <list>: <each memeber of list is a tuple included service id and the capacity of service>
 
-            :param <prob>: <LP problem>
-            :type <class>: <ILP is solved by means of this class>
-            
-            :param <max_number_device>: <maximum number of device>
-            :type <integer>: <>
+        :param <Services_lower10>: <input>
+        :type <list>: <each memeber of list is a tuple included service id and the capacity of service>
 
-            :param <NO_service_lower10>: <number of services in input parameter>
-            :type <integer>: <length of Services_lower10>
+        :param <prob>: <LP problem>
+        :type <class>: <ILP is solved by means of this class>
+        
+        :param <max_number_device>: <maximum number of device>
+        :type <integer>: <>
 
-            :param <Output>: <maximum number of device>
-            :type <list>: <list of list which is included  tuples with  service id and the capacity of service>
+        :param <NO_service_lower10>: <number of services in input parameter>
+        :type <integer>: <length of Services_lower10>
+
+        :param <Output>: <maximum number of device>
+        :type <list>: <list of list which is included  tuples with  service id and the capacity of service>
 
     """
     prob = LpProblem("grooming", LpMinimize )
@@ -156,23 +156,23 @@ def PS6X(Services_lower10_i):
     """
         This function packs the PS6X input services to 10G service.
 
-        **Advantages**:
+        Advantages:
             - Optimum packing by means of ILP
-        **** Parameters ***
-            :param <Services_lower10>: <input>
-            :type <list>: <each memeber of list is a tuple included service id and the capacity of service>
 
-            :param <prob>: <LP problem>
-            :type <class>: <ILP is solved by means of this class>
-            
-            :param <max_number_device>: <maximum number of device>
-            :type <integer>: <>
+        :param <Services_lower10>: <input>
+        :type <list>: <each memeber of list is a tuple included service id and the capacity of service>
 
-            :param <NO_service_lower10>: <number of services in input parameter>
-            :type <integer>: <length of Services_lower10>
-            
-            :param <Output>: <maximum number of device>
-            :type <list>: <list of list which is included  tuples with  service id and the capacity of service>
+        :param <prob>: <LP problem>
+        :type <class>: <ILP is solved by means of this class>
+        
+        :param <max_number_device>: <maximum number of device>
+        :type <integer>: <>
+
+        :param <NO_service_lower10>: <number of services in input parameter>
+        :type <integer>: <length of Services_lower10>
+        
+        :param <Output>: <maximum number of device>
+        :type <list>: <list of list which is included  tuples with  service id and the capacity of service>
 
 
 
@@ -463,59 +463,56 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
         """
             This function grooms the services and produces lightpaths, groomouts, devices and remaining services.
 
-            **Advantages**:
-                - 
-            **** Parameters ***
-                :param <service_lower10_SDH>: <list of SDH services>
-                :type <list>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service>
+            :param <service_lower10_SDH>: <list of SDH services>
+            :type <list>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service>
 
-                :param <service_lower10_E>: <list of Ethernet services>
-                :type <list>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service>
+            :param <service_lower10_E>: <list of Ethernet services>
+            :type <list>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service>
 
-                :param <service_lower100>: <list of services that capacity of them is lower than 100>
-                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
-                
-                :param <remaining_service_lower10>: <list of remaining services that capacity of them is lower than 10>
-                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
+            :param <service_lower100>: <list of services that capacity of them is lower than 100>
+            :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
+            
+            :param <remaining_service_lower10>: <list of remaining services that capacity of them is lower than 10>
+            :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included service id and the capacity of service >
 
-                :param <device_dict>: <list of devices>
-                :type <dictionary>: <keys are the nodes names and values are dictionary which keys of them are device name and values are the list of dedicated devices>
-                
-                :param <remaining_service_lower10_dict>: <list of remaining services that capacity of them is lower than 10>
-                :type <dictionary>: <keys are the demands id and values are list of tuples included service ids and capacity of them>
-                
-                :param <groom_out10_list>: <list of grooming of services that capacity of them is lower than 10>
-                :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included groomout10 (output of MP2X) id and the capacity of that >
+            :param <device_dict>: <list of devices>
+            :type <dictionary>: <keys are the nodes names and values are dictionary which keys of them are device name and values are the list of dedicated devices>
+            
+            :param <remaining_service_lower10_dict>: <list of remaining services that capacity of them is lower than 10>
+            :type <dictionary>: <keys are the demands id and values are list of tuples included service ids and capacity of them>
+            
+            :param <groom_out10_list>: <list of grooming of services that capacity of them is lower than 10>
+            :type <List>: <each memeber of list is a tuple included demand is and a list of tuples included groomout10 (output of MP2X) id and the capacity of that >
 
-                :param <Groomout10>: <list of grooming of services that capacity of them is lower than 10>
-                :type <dictionary>: <keys are the id of demands and values are the demand Specifications and the list of groomouts>
+            :param <Groomout10>: <list of grooming of services that capacity of them is lower than 10>
+            :type <dictionary>: <keys are the id of demands and values are the demand Specifications and the list of groomouts>
 
-                :param <FinalLightPath>: <list of 100G Lightpaths>
-                :type <dictionary>: <keys are lightpath id and values are the lightpaths>
-                
-                :param <groomingresult>: <output>
-                :type <dictionary>: <keys are lightpath, low_rate_grooming_result, and remaining_services and values are the dictionary of that corresponding keys that mentioned previously>
+            :param <FinalLightPath>: <list of 100G Lightpaths>
+            :type <dictionary>: <keys are lightpath id and values are the lightpaths>
+            
+            :param <groomingresult>: <output>
+            :type <dictionary>: <keys are lightpath, low_rate_grooming_result, and remaining_services and values are the dictionary of that corresponding keys that mentioned previously>
 
-                :param <percentage>: <input>
-                :type <integer>: < initiate value of progress percentage>
+            :param <percentage>: <input>
+            :type <integer>: < initiate value of progress percentage>
 
-                :param <state>: <input>
-                :type <object>: <working object >
+            :param <state>: <input>
+            :type <object>: <working object >
 
-                :param <TM>: <input>
-                :type <dictionary>: <traffic matrix >
-                
-                :param <tmId>: <input>
-                :type <string>: <traffic matrix id>
+            :param <TM>: <input>
+            :type <dictionary>: <traffic matrix >
+            
+            :param <tmId>: <input>
+            :type <string>: <traffic matrix id>
 
-                :param <uuid>: <input>
-                :type <function>: <generate a unique id>
-                
-                :param <MP1H_Threshold>: <input>
-                :type <integer>: <capacity threshold of generating lightpath>
+            :param <uuid>: <input>
+            :type <function>: <generate a unique id>
+            
+            :param <MP1H_Threshold>: <input>
+            :type <integer>: <capacity threshold of generating lightpath>
 
-                :param <MP2X_Threshold>: <input>
-                :type <integer>: <capacity threshold of generating groom out>
+            :param <MP2X_Threshold>: <input>
+            :type <integer>: <capacity threshold of generating groom out>
                 
 
         """
@@ -542,14 +539,11 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
             """
             This function create a lightpath and add it to FinalLightPath dictionary .
 
-            **Advantages**:
-                - 
-            **** Parameters ***
-                :param <lst>: <list of services and type of them>
-                :type <list>: <for groomout 10 value of type is "groomout" and for 10G services the value of type is "normal">
-                
-                :param <lightpathId>: <dedicated unique id for each lightpath>
-                :type <string>: <id is generate by the uuid() function>
+            :param <lst>: <list of services and type of them>
+            :type <list>: <for groomout 10 value of type is "groomout" and for 10G services the value of type is "normal">
+            
+            :param <lightpathId>: <dedicated unique id for each lightpath>
+            :type <string>: <id is generate by the uuid() function>
             """
             
             lst=[]

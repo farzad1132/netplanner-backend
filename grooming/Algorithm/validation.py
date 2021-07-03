@@ -2,35 +2,31 @@
 
 def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
     """
-            This function identifies grooming and clustering faults and raises an error.
+        This function identifies grooming and clustering faults and raises an error.
 
-            **Advantages**:
-                - 
-            **** Parameters ***
+        :param <Trafficmatrix>: <input>
+        :type <dictionary>: <traffic matrix >
 
-                :param <Trafficmatrix>: <input>
-                :type <dictionary>: <traffic matrix >
+        :param <groomingresult>: <input>
+        :type <dictionary>: <keys are lightpath, low_rate_grooming_result, and remaining_services and values are the dictionary of that corresponding keys that mentioned previously>
+        
+        :param <cluster>: <input>
+        :type <dictionary>: <keys are cluster number and values are the detail of clusters>
 
-                :param <groomingresult>: <input>
-                :type <dictionary>: <keys are lightpath, low_rate_grooming_result, and remaining_services and values are the dictionary of that corresponding keys that mentioned previously>
-                
-                :param <cluster>: <input>
-                :type <dictionary>: <keys are cluster number and values are the detail of clusters>
+        :param <PS6Xservices>: <list of services type>
+        :type <list>: <services which supported by PS6X>
+        
+        :param <MP2Xservices>: <list of services type>
+        :type <list>: <services which supported by MP2X>
 
-                :param <PS6Xservices>: <list of services type>
-                :type <list>: <services which supported by PS6X>
-                
-                :param <MP2Xservices>: <list of services type>
-                :type <list>: <services which supported by MP2X>
+        :param <servicelist>: <list of services>
+        :type <list>: <list of services which assigned to a Groomouts>
+        
+        :param <servicelistlp>: <list of services>
+        :type <list>: <list of services which assigned to a lightpaths>
 
-                :param <servicelist>: <list of services>
-                :type <list>: <list of services which assigned to a Groomouts>
-                
-                :param <servicelistlp>: <list of services>
-                :type <list>: <list of services which assigned to a lightpaths>
-
-                :param <groomlist>: <list of groomings>
-                :type <dictionary>: <keys are groom out ids and values are the number of devices in source and destination>
+        :param <groomlist>: <list of groomings>
+        :type <dictionary>: <keys are groom out ids and values are the number of devices in source and destination>
                   
     """
 

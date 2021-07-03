@@ -12,14 +12,11 @@ def id_gen( test, ArashId ):
         """
             This function generates the id based oh the type of test.
 
-            **Advantages**:
-                - 
-            **** Parameters ***
-                :param <test>: <input>
-                :type <string>: <test specified the type of id>
+            :param <test>: <input>
+            :type <string>: <test specified the type of id>
 
-                :param <ArashId>: <input>
-                :type <class>: <generates an incremental deterministic id for tests>
+            :param <ArashId>: <input>
+            :type <class>: <generates an incremental deterministic id for tests>
 
         """
         if test == True :
