@@ -1,5 +1,52 @@
 import math
 def Nodestructureservices(device_dict, Physical_topology, state, percentage):  
+    """
+            This function places the devices that produced in grooming function in the slots of shelves and racks in each node.
+                
+            :param <Physical_topology>: <input>
+            :type <dictionary>: <detail of topology including nodes and links>
+
+            :param <device_dict>: <input>
+            :type <dictionary>: <keys are the nodes names and values are dictionary which keys of them are device name and values are the list of dedicated devices>
+            
+            :param <percentage>: <input>
+            :type <integer>: < initiate value of progress percentage>
+            
+            :param <state>: <input>
+            :type <object>: <working object >
+
+            :param <rackn>: <rack number>
+            :type <integer>: <define current rack number>
+
+            :param <shelfn>: <shelf number>
+            :type <integer>: <define current shelf number>
+
+            :param <slotn>: <slot number>
+            :type <integer>: <define current slot number>
+
+            :param <racks>: <list of racks for each node>
+            :type <dictionary>: <keys are the rack number and values are the shelves>
+
+            :param <shelvs>: <list of shelf for each rack>
+            :type <dictionary>: <keys are the shelf number and values are the slots>
+
+            :param <slots>: <list of shelf for each slots>
+            :type <dictionary>: <keys are the slot number and values are the device ids>
+
+            :param <nodename>: <node name>
+            :type <string>: <name of nodes in physical topology>
+            
+            :param <nodess>: <node structure>
+            :type <dictionary>: <key is the rack and vales are racks parameter>
+            
+            :param <NodeStructure>: <output>
+            :type <dictionary>: <keys are the node name and values are nodess pharameter >
+
+            :param <device_st>: <output>
+            :type <dicionary>: <keys are the device id and vales are the class of id>
+
+    """
+
     nodess={}
     device_st={}
     for k in range(0,len(Physical_topology['data']['nodes'])):
