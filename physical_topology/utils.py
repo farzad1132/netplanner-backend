@@ -1,3 +1,7 @@
+"""
+    This module contains physical topology utilities
+"""
+
 from models import PhysicalTopologyUsersModel, PhysicalTopologyModel
 from typing import Optional, List, Tuple
 from dependencies import auth_user, get_current_user, get_db
@@ -9,12 +13,36 @@ from pandas import ExcelFile, read_excel
 import math
 
 class GetPT:
+    """
+        Physical Topology dependency injection
+
+        .. note:: `__call__` method is implemented for this class, so objects of this class can be called
+                to access project data
+
+        .. note:: This function might raise `HTTPException` with code 404 and 401
+    """
+
     def __init__(self, mode: methods = methods.get):
+        """
+            Initializer
+            :param mode: access mode of physical topology
+        """
+
         self.mode = mode
 
     def __call__(self, id: str, version: Optional[int] = None,
                 user: User = Depends(get_current_user),
                  db: Session = Depends(get_db)) -> List[PhysicalTopologyDB]:
+        """
+            With implementing `__call__` objects of this class can be called to access project data
+
+            :param id: physical topology id
+            :param version: version of physical topology (optional)
+            :param user: user object
+            :param db: database session object
+            :returns: list physical topologies (if version is None returns all versions)
+        """
+        
         user_id = user.id
         if version is None:
             pt_list = db.query(PhysicalTopologyModel).filter_by(id=id, is_deleted=False).all()
@@ -33,14 +61,31 @@ class GetPT:
         else:
             return pt_list
 
-def check_pt_name_conflict(user_id: str, name: str, db: Session):
+def check_pt_name_conflict(user_id: str, name: str, db: Session) -> None:
+    """
+        This function checks name conflict if physical topology
+
+        :param user_id: user id
+        :param name: name of physical topology
+        :param db: database session object
+
+        .. note:: This function raises `HTTPException` with code 409 if it finds any conflict 
+    """
+    
     id_list = get_user_pts_id(user_id, db)
     if db.query(PhysicalTopologyModel).filter_by(name=name, owner_id=user_id, version=1, is_deleted=False)\
         .filter(PhysicalTopologyModel.id.in_(id_list)).one_or_none() is not None:
         raise HTTPException(status_code=409, detail=f"name of the physical topology '{name}' has conflict with another record")
     
-def get_user_pts_id(user_id: str, db: Session, all: Optional[bool]= True)\
- -> List[str]:
+def get_user_pts_id(user_id: str, db: Session, all: Optional[bool]= True) -> List[str]:
+    """
+        This function finds all of physical topologies ids that a user owns
+
+        :param user_id: user id
+        :param db: database session object
+        :param all: if this flag is `True` this function includes shared physical topologies
+    """
+
     id_list = []
     if all is True:
         owned_pts = db.query(PhysicalTopologyModel)\
@@ -57,12 +102,27 @@ def get_user_pts_id(user_id: str, db: Session, all: Optional[bool]= True)\
     return id_list
 
 def get_pt_last_version(id: str, db: Session) -> PhysicalTopologyDB:
+    """
+        This functions finds last version of a given physical topology id
+
+        :param id: physical topology id
+        :param db: database session object
+    """
+
     pt = db.query(PhysicalTopologyModel).filter_by(id=id, is_deleted=False)\
             .distinct(PhysicalTopologyModel.version)\
             .order_by(PhysicalTopologyModel.version.desc()).first()
     return pt
 
 def excel_to_pt(pt_binary: bytes) -> Tuple[bool, PhysicalTopologySchema]:
+    """
+        This function converts excel file to dictionary object
+
+        .. note::   if at any place a cell data didn't pass validations a item with name
+                    `Property` + `_error` will be added to dictionary
+        .. note::   this function might raise `HTTPException` with code 400 for situations that this function couldn't handle
+    """
+    
     flag = True # this flag is used later to check whether PT is correct of not
     pt = {}
     xls = ExcelFile(pt_binary)

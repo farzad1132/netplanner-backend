@@ -1,32 +1,80 @@
+"""
+    This module contains RWA schemas
+"""
+
 from pydantic import BaseModel, Field
 from enum import Enum
 from typing import Optional, Dict, List
 from datetime import datetime
 
 class Algorithm(str, Enum):
+    """
+        RWA algorithms `Enum`
+
+         - Greedy
+         - GroupILP
+         - ILP
+    """
     Greedy = "Greedy"
     GroupILP = "GroupILP"
     ILP = "ILP"
 
 class RoutingType(str, Enum):
+    """
+        RWA routing type `Enum`
+
+         - 100GE
+         - 200GE
+    """
     GE100 = "100GE"
     GE200 = "200GE"
 
 class ProtectionType(str, Enum):
+    """
+        Protection Type `Enum`
+
+         - 1+1_NodeDisjoint
+         - NoProtection
+    """
     node_dis = "1+1_NodeDisjoint"
     no_protection = "NoProtection"
 
 class RestorationType(str, Enum):
+    """
+        Restoration type `Enum`
+
+         - None
+         - JointSame
+         - AdvJointSame
+    """
     none = "None"
     jointsame = "JointSame"
     advjointsame = "AdvJointSame"
 
 class RestorationAlgorithm(str, Enum):
-        Basic = "Basic"
-        Advanced = "Advanced"
+    """
+        Restoration Algorithm `Enum`
+
+         - Basic
+         - Advanced
+    """
+
+    Basic = "Basic"
+    Advanced = "Advanced"
 
 class RWAForm(BaseModel):
+    """
+        RWA Form schema
+    """
     class ModulationType(str, Enum):
+        """
+            Modulation type `Enum`
+
+             - BPSK
+             - QPSK
+             - 8QAM
+             - 16QAM
+        """
         BPSK = "BPSK"
         QPSK = "QPSK"
         QAM8 = "8QAM"
@@ -45,6 +93,10 @@ class RWAForm(BaseModel):
     comment: Optional[str]
 
 class RWACheck(BaseModel):
+    """
+        RWA check status response schema
+    """
+
     id: str
     state: str
     current: int
@@ -52,21 +104,40 @@ class RWACheck(BaseModel):
     status: Optional[str]
 
 class RWACheckList(BaseModel):
+    """
+        List of RWA Check
+    """
     rwa_check_list: List[RWACheck]
 
 class Path(BaseModel):
+    """
+        Path Schema is RWA result
+    """
+
     wavelength: List[str]
     path: List[str]
     regenerators: List[str]
     snr: List[float]
 
 class Working(Path):
+    """
+        Working path schema (equal to Path)
+    """
+
     pass
 
 class Protection(Path):
+    """
+        Protection path schema (equal to Path)
+    """
+
     pass
 
 class Restoration(BaseModel):
+    """
+        Restoration section schema in rwa result
+    """
+
     first_failure: List[str] = Field(..., max_items=2, min_items=2)
     second_failure: Optional[List[str]]
     restoration_algorithm: RestorationAlgorithm = RestorationAlgorithm.Basic
@@ -74,11 +145,19 @@ class Restoration(BaseModel):
 
 
 class RoutingInfo(BaseModel):
+    """
+        Routing info section schema in rwa result
+    """
+
     working: Working
     protection: Optional[Protection]
     restoration: Optional[List[Restoration]]
 
 class Lightpath(BaseModel):
+    """
+        Lightpath schema in rwa result
+    """
+
     id: str
     source: str
     destination: str
@@ -98,11 +177,17 @@ class RWAId(BaseModel):
 
 class RWAResult(BaseModel):
     """
+        RWA result schema
+
         **lightpaths** keys are **lightpath_id**
     """
     lightpaths: Dict[str, Lightpath]
 
 class RWADBOut(BaseModel):
+    """
+        This schema represent a rwa result in database
+    """
+
     id: str
     project_id: str
     grooming_id: str
@@ -117,6 +202,10 @@ class RWADBOut(BaseModel):
         orm_mode = True
 
 class RWAInformation(BaseModel):
+    """
+        This schema represent summary of rwa run instance in database (if rwa was successful)
+    """
+
     id: str
     grooming_id: str
     form: RWAForm
@@ -131,4 +220,8 @@ class RWAInformation(BaseModel):
         orm_mode = True
 
 class FailedRWAInfo(RWAInformation):
+    """
+        This schema represent summary of rwa run instance in database (if rwa was failed)
+    """
+
     exception: str

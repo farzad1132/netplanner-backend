@@ -1,3 +1,7 @@
+"""
+    Backend Main module
+"""
+
 from fastapi import FastAPI, Depends
 import uvicorn
 from rwa.routes import rwa_router

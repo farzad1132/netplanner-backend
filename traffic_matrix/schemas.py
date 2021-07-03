@@ -1,3 +1,8 @@
+"""
+    This module includes Traffic Matrix related schemas
+    Some of important schemas in this module are `TrafficMatrixSchema` and `Service`
+"""
+
 from typing import Optional, List, Dict
 from pydantic import BaseModel, validator
 from enum import Enum
@@ -5,6 +10,10 @@ from rwa.schemas import ProtectionType, RestorationType
 from datetime import datetime
 
 class ServiceType(str, Enum):
+    """
+        `Enum`
+        This schema represents different type of services like `STM-4` or `10GE` 
+    """
     E1 = "E1"
     stm1_e = "STM1 Electrical"
     stm1_o = "STM1 Optical"
@@ -18,6 +27,9 @@ class ServiceType(str, Enum):
 
 
 class Service(BaseModel):
+    """
+        This schema represents services in a single demand that has same type
+    """
     quantity: int
     service_id_list: List[str] = []
     sla: Optional[str] = None
@@ -28,11 +40,20 @@ class Service(BaseModel):
 
     @validator('service_id_list')
     def validate_service_id_list(cls, v, values):
+        """
+            This function is a validator and it's automatically runs
+            It checks length of `service_id_list` be the same as `quantity` integer
+        """
+
         if len(v) != values['quantity']:
             raise ValueError('service_id_list size must be equal to quantity')
         return v
 
 class BaseDemand(BaseModel):
+    """
+        This schema is the base schema for demands and several schemas inherit from it
+    """
+
     id: str
     source: str
     destination: str
@@ -42,15 +63,24 @@ class BaseDemand(BaseModel):
     
 
 class NormalDemand(BaseDemand):
+    """
+        This is Traffic Matrix demand schema
+    """
+
     services: List[Service]
 
 class TrafficMatrixSchema(BaseModel):
     """
+        This is Traffic Matrix schema that contains a collection of demands
         dict keys in this model is demands id
     """
     demands: Dict[str, NormalDemand]
 
 class TrafficMatrixDB(BaseModel):
+    """
+        This schema represents a Traffic Matrix in database
+    """
+
     data: TrafficMatrixSchema
     id: str
     version: int
@@ -62,16 +92,32 @@ class TrafficMatrixDB(BaseModel):
         orm_mode = True
 
 class TrafficMatrixIn(BaseModel):
+    """
+        This schema is the base schema for traffic matrices that are received from frontend
+    """
+
     data: TrafficMatrixSchema
     comment: str
 
 class TrafficMatrixPOST(TrafficMatrixIn):
+    """
+        This schema is used for creating Traffic Matrices in POST method of traffic matrix endpoint
+    """
+
     name: str
 
 class TrafficMatrixPUT(TrafficMatrixIn):
+    """
+        This schema is used for updating Traffic Matrices in POST method of traffic matrix endpoint
+    """
+    
     id: str
 
 class TrafficMatrixOut(BaseModel):
+    """
+        This schema is used for returning all stored traffic matrices information
+    """
+
     id: str
     version: int
     name: str
@@ -82,6 +128,10 @@ class TrafficMatrixOut(BaseModel):
         orm_mode = True
 
 class TMId(BaseModel):
+    """
+        Traffic Matrix Id schema
+    """
+    
     id: str
 
     class Config:

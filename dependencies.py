@@ -1,13 +1,19 @@
-from database import session
-from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException
-from models import UserModel
-from typing import Optional
+"""
+    This module contains endpoint dependencies
+"""
+
 import os
-from passlib.context import CryptContext
-from fastapi.security import OAuth2PasswordBearer
-from jose import jwt, JWTError
 from datetime import datetime, timedelta
+from typing import Optional
+
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+
+from database import session
+from models import UserModel
 from users.schemas import TokenData
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -18,20 +24,38 @@ PREFIX = "/api"
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=PREFIX + "/v2.0.0" + '/users/login')
 
-def get_db():
+def get_db() -> Session:
+    """
+        This is database dependency handler
+    """
+
     db = session()
     try:
         yield db
     finally:
         db.close()
 
-def verify_password(plain_password: str, hashed_password: str):
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+        This function checks whether a given password matches given hash or not
+    """
+
     return pwd_context.verify(plain_password, hashed_password)
 
-def get_password_hash(password: str):
+def get_password_hash(password: str) -> str:
+    """
+        This function generates hash for passwords
+    """
+
     return pwd_context.hash(password)
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """
+        This function creates access token
+
+        .. important:: access tokens expire after 30 minutes
+    """
+
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -41,7 +65,13 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """
+        This function generates refresh token
+
+        .. important:: refresh tokens expire after 120 minutes
+    """
+
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -52,7 +82,13 @@ def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> UserModel:
+    """
+        This function checks authorization and if user has right to access returns its object
+
+        .. note:: this function might raise `HTTPException` with code `401`
+    """
+
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -71,6 +107,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 def decode_token(token: str) -> str:
+    """
+        This function decodes a given access token and retturns including username
+
+        .. note:: this function might raise `HTTPException` with code `401`
+    """
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         if (username:=payload.get('username')) is None:
@@ -79,7 +121,13 @@ def decode_token(token: str) -> str:
     except:
         raise HTTPException(status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
 
-def decode_refresh_token(token: str, db: Session):
+def decode_refresh_token(token: str, db: Session) -> str:
+    """
+        This function decodes a given refresh token and retturns including username
+
+        .. note:: this function might raise `HTTPException` with code `401`
+    """
+
     validation_exception = HTTPException(status_code=401,
                                 detail='could not validate refresh token',
                                 headers={"WWW-Authenticate": "Bearer"})
@@ -96,11 +144,21 @@ def decode_refresh_token(token: str, db: Session):
     except:
         raise validation_exception
 
-def get_user(username: str, db: Session):
+def get_user(username: str, db: Session) -> UserModel:
+    """
+        This function finds a user object in database with given username
+    """
+
     if (user:=db.query(UserModel).filter_by(username=username, is_deleted=False).one_or_none()):
         return user
 
-def auth_user(username: str, password: str, db: Session):
+def auth_user(username: str, password: str, db: Session) -> UserModel:
+    """
+        This function checks users login information
+
+        .. note:: this function might raise `HTTPException` with code `401` or `404`
+    """
+
     if (user:=get_user(username, db)) is None:
         raise HTTPException(status_code=404, detail='user not found')
     if not verify_password( plain_password=password,

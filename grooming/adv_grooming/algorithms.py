@@ -1,3 +1,7 @@
+"""
+    This module contains `Advanced Grooming` implementation
+"""
+
 from copy import copy, deepcopy
 from typing import Callable, Dict, List, Optional, Tuple
 
@@ -23,14 +27,17 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
     -> List[List[str]]:
     """
         This function finds corner loop with the help of DFS algorithm
+
+        :param topology: physical topology object from custom network object
+
         procedure:
-            1. Delete all non degree 2 nodes
-            2. Delete all degree 0 nodes in new graph
-            3. find all connected parts in new graph
-            4. check whether in each connected component, there is commen *deleted degree* between
-               degree 1 nodes. If there is then *deleted degree* and tree construct a corner graph
+         1. Delete all non degree 2 nodes
+         2. Delete all degree 0 nodes in new graph
+         3. find all connected parts in new graph
+         4. check whether in each connected component, there is commen *deleted degree* between
+            degree 1 nodes. If there is then *deleted degree* and tree construct a corner graph
             
-            NOTE: In output the first node is the gateway of loop 
+        .. note:: In output the first node is the gateway of loop 
     """
 
     def DFSUtil(tmp: List[str], node: str, visited: List[str],
@@ -38,6 +45,11 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
         """
             This function implement DFS like procedure in order to find connected
             components of a graph
+
+            :param tmp: temporary variable used by DFS
+            :param node: visiting node
+            :param visited: visited nodes list
+            :param pt: physical topology object
         """
 
         visited.append(node)
@@ -86,10 +98,14 @@ def find_corner_cycles(topology: Network.PhysicalTopology) \
 
 def corner_loop_operation(network: Network, nodes: List[str], gateway: str,
         cluster: Optional[List[str]] = None) -> Network:
-
     """
         This function does all degree 1 node operation on corner loop nodes except
         the gateway
+
+        :param network: network object
+        :param nodes: corner loop nodes list
+        :param gateway: gateway node
+        :param cluster: user defined clusters
     """
 
     direct_demands = []
@@ -129,10 +145,11 @@ def split_demands(network: Network, node: str, gateway: str,
     """
         This function job is to split demand which are described by parameters
         
-        Parameters:
-            node: source of target demands
-            gateway: breaking point of target demands
-            exclude: list of nodes that target demands can not be originated from
+        :param network: network object
+        :param node: source of target demands
+        :param gateway: breaking point of target demands
+        :param exclude: list of nodes that target demands can not be originated from
+        :param cluster: user defined clusters
     """
 
     # create a connection and add all demands between degree 1 node
@@ -177,17 +194,23 @@ def split_demands(network: Network, node: str, gateway: str,
 
 def degree_1_operation(network: Network, node: str) -> Network:
     """
-        In this function we are going to complete degree 1 operation in 2 steps:\n
-        Step 1. finding demands that their source is degree 1 node and their destination
-                aren't adjacent node\n
-        Step 2. breaking each demand found in step 1 into 2 sections:
-                section 1. from degree 1 node to adjacent node
-                section 2. from adjacent node to original destination\n
+        In this function we are going to complete degree 1 operation in 2 steps:
+
+         1. finding demands that their source is degree 1 node and their destination
+                aren't adjacent node
+
+         2. breaking each demand found in step 1 into 2 sections:
+
+          1. from degree 1 node to adjacent node
+          2. from adjacent node to original destination
 
         Also adding all section 1 demands to a connection with source of degree 1 node
-        and destination of adjacent node.\n
+        and destination of adjacent node.
 
         After all above we are deleteing degree 1 node from physical topology.
+
+        :param network: network object
+        :param node: degree one node name
     """
 
     # Step 1
@@ -211,13 +234,22 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
     pt: PhysicalTopologyDB, multiplex_threshold: int, clusters: ClusterDict) \
         -> Tuple[Dict[str, GroomingLightPath], Network]:
     """
-        In this phase we are performing hierarchial clustering and end-to-end multiplexing.\n
+        In this phase we are performing hierarchial clustering and end-to-end multiplexing.
+
         At the output we have potential series of lightpaths (generated in end-to-end multiplexing)
-        and pruned network object\n
-        priority in clustering:\n
-            1. degree 1 nodes\n
-            2. user-defined clusters\n
-            3. corner loop clusters
+        and pruned network object
+
+        priority in clustering:
+
+         1. degree 1 nodes
+         2. user-defined clusters
+         3. corner loop clusters
+
+        :param network: network object
+        :param end_to_end_fun: end to end multiplexing function
+        :param pt: physical topology object
+        :param multiplex_threshold: MP1H multiplexing threshold
+        :param clusters: user defined clusters
     """
 
     # we are making a copy of network because we don't want to modify original network object
@@ -280,6 +312,10 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     -> AdvGroomingResult:
     """
         This phase performs mid-grooming operation and calculates several connections.
+
+        :param network: network object
+        :param line_rate: line rate of network
+        :param original_network: input network object (not modified version)
     """
     
     # sort demands
@@ -340,6 +376,13 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
     """
         This function executes 2 phase of advanced grooming functions and returns a set of\n
         lightpaths and set of connections.
+
+        :param end_to_end_fun: end to end multiplexing function
+        :param pt: physical topology object
+        :param clusters: user defined clusters
+        :param tm: traffic matrix object
+        :param multiplex_threshold: MP1H multiplexing threshold
+        :param line_rate: line rate of network
     """
 
     network = Network(pt=pt, tm=tm)

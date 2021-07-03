@@ -1,3 +1,7 @@
+"""
+    This schema contains RWA related models
+"""
+
 from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -5,6 +9,12 @@ from database import base
 from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime
 
 class RWARegisterModel(base):
+    """
+        RWA Registration model
+
+        After a user attempts to start rwa algorithm this models is used to store initial information of
+        algorithm into database (used before running algorithm)
+    """
     __tablename__ = "RWARegister"
     __table_args__ = {'extend_existing': True}
 
@@ -26,6 +36,11 @@ class RWARegisterModel(base):
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
 
 class RWAModel(base):
+    """
+        RWA result model
+
+        This models is used after rwa result has been calculated and stores result into database
+    """
     __tablename__ = "RWA"
     __table_args__ = {'extend_existing': True}
 
