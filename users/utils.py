@@ -2,12 +2,19 @@
     This module contains user related utilities
 """
 
-import smtplib, ssl, os
-from fastapi import HTTPException
-from fastapi import Request
-from email.mime.text import MIMEText
+import datetime
+import os
+import smtplib
+import ssl
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+from celery_app import celeryapp
+from database import session
+from fastapi import HTTPException, Request
 from jinja2 import Environment, FileSystemLoader
+
+from users.models import UserRegisterModel
 
 PORT = 587
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
@@ -56,3 +63,18 @@ def create_message(token: str, request: Request) -> bytes:
     template = env.get_template("confirm_email.html")
     message = template.render(url=url)
     return message
+
+def clear_old_registers(mins: int = 1) -> None:
+    """
+        This task deletes unused UserRegister Models from database
+
+        :param minutes: records older than this amount of time will be deleted
+    """
+
+    db = session()
+    registers = db.query(UserRegisterModel).all()
+    for record in registers:
+        if record.create_date < datetime.datetime.utcnow() \
+            - datetime.timedelta(seconds=mins*60):
+            db.delete(record)
+    db.commit()
