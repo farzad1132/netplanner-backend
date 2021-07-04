@@ -1,15 +1,19 @@
-from fastapi import APIRouter, Depends, Request, Query, Body
-from users.schemas import RegisterForm, Token, UserSearch, User, RefreshToken
-from fastapi.security import OAuth2PasswordRequestForm
-from dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES, create_access_token, auth_user,
- get_password_hash, get_db, decode_token, get_current_user, create_refresh_token, decode_refresh_token)
 from datetime import timedelta
-from starlette.responses import RedirectResponse
-from users.utils import send_mail
-from users.models import UserRegisterModel
-from sqlalchemy.orm import Session
-from models import UserModel
 from typing import List
+
+from dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES, auth_user,
+                          create_access_token, create_refresh_token,
+                          decode_refresh_token, decode_token, get_current_user,
+                          get_db, get_password_hash)
+from fastapi import APIRouter, Body, Depends, Query, Request
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
+from starlette.responses import RedirectResponse
+
+from models import UserModel
+from users.models import UserRegisterModel
+from users.schemas import RefreshToken, RegisterForm, Token, User, UserSearch
+from users.utils import clear_old_registers, send_mail
 
 user_router = APIRouter(
     tags=['Users']
@@ -23,7 +27,7 @@ def register_user(register_form: RegisterForm, request: Request, db: Session = D
     db.add(record)
     db.commit()
     token = create_access_token(data={'username':register_form.username})
-    # TODO: delete old records in async mode
+    clear_old_registers()
     send_mail(token, register_form.email, request)
     return None
 
