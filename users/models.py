@@ -2,6 +2,8 @@
     This module contains some of user related models
 """
 
+import datetime
+from sqlalchemy.sql.sqltypes import DateTime
 from database import base
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
@@ -19,6 +21,7 @@ class UserRegisterModel(base):
     username = Column("username", String, nullable=False, unique=True)
     password = Column("password", String, nullable=False)
     email = Column("email", String, nullable=False, unique=True)
+    create_date = Column("create_date", DateTime, default=datetime.datetime.utcnow)
     
     def __repr__(self):
         return f"UserRegister(username= {self.username})"
