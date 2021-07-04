@@ -3,11 +3,13 @@
 """
 
 import datetime
+from models import UserModel
 import os
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from users.schemas import RegisterForm
 
 from celery_app import celeryapp
 from database import session
@@ -78,3 +80,20 @@ def clear_old_registers(mins: int = 1) -> None:
             - datetime.timedelta(seconds=mins*60):
             db.delete(record)
     db.commit()
+
+def validate_user_register_form(form: RegisterForm) -> None:
+    """
+        This util validates user register forms
+    """
+
+    db = session()
+    if db.query(UserRegisterModel).filter_by(username=form.username).one_or_none() is not None:
+        raise HTTPException(409, detail="this username has been taken")
+    
+    if form.password != form.confirm_password:
+        raise HTTPException(401, detail="confirm password does not match password")
+    
+    if db.query(UserRegisterModel).filter_by(email=form.email).one_or_none() is not None:
+        raise HTTPException(409, detail="this email has been taken")
+    db.close()
+

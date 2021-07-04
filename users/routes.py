@@ -13,7 +13,7 @@ from starlette.responses import RedirectResponse
 from models import UserModel
 from users.models import UserRegisterModel
 from users.schemas import RefreshToken, RegisterForm, Token, User, UserSearch
-from users.utils import clear_old_registers, send_mail
+from users.utils import clear_old_registers, send_mail, validate_user_register_form
 
 user_router = APIRouter(
     tags=['Users']
@@ -21,9 +21,12 @@ user_router = APIRouter(
 
 @user_router.post('/v2.0.0/users/register', status_code=200)
 def register_user(register_form: RegisterForm, request: Request, db: Session = Depends(get_db)):
+    validate_user_register_form(register_form)
+    
     record = UserRegisterModel( username=register_form.username,
                                 password=get_password_hash(register_form.password),
                                 email=register_form.email)
+
     db.add(record)
     db.commit()
     token = create_access_token(data={'username':register_form.username})
