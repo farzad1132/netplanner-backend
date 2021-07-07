@@ -174,8 +174,10 @@ def generate_rwa_task_info(demand_number, num_iterations, algorithm):
         :returns: chain_task_id_info, preprocess_task_id, group_planner_id_list, finilize_task_id
         :rtype: dict
     """
+    # Chain id is now thw id of the final task
+    finilize_task_id = uuid()
     chain_task_id_info = {
-        'chain_id': uuid()
+        'chain_id': finilize_task_id
     }
     chain_info = {}
 
@@ -197,8 +199,7 @@ def generate_rwa_task_info(demand_number, num_iterations, algorithm):
     if algorithm=="ILP":
         group_planner_task_info['task_number'] = 1
     chain_info[1] = group_planner_task_info
-
-    finilize_task_id = uuid()
+    
     finilize_task_info = {
         'task_level': 0,
         'task_number': 4,
