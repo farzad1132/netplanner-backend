@@ -43,6 +43,7 @@ class MultiplexThreshold(str, Enum):
     t80 = "80"
     t90 = "90"
 
+
 class LineRate(str, Enum):
     """
         Line Rate `Enum`
@@ -56,6 +57,7 @@ class LineRate(str, Enum):
     t100 = "100"
     t200 = "200"
 
+
 class AdvGroomingForm(BaseModel):
     """
         Advanced Grooming Form
@@ -64,6 +66,7 @@ class AdvGroomingForm(BaseModel):
     multiplex_threshold: MultiplexThreshold = MultiplexThreshold.t70
     line_rate: LineRate = LineRate.t100
     comment: str
+
 
 class GroomingConnection(BaseModel):
     """
@@ -79,6 +82,7 @@ class GroomingConnection(BaseModel):
     rate_by_line_rate: float
     demands_id_list: List[str]
 
+
 class AdvGroomingResult(BaseModel):
     """
         Advanced grooming result schema
@@ -89,11 +93,12 @@ class AdvGroomingResult(BaseModel):
     average_lambda_capacity_usage: float
     lightpaths: Dict[str, gschema.GroomingLightPath]
 
+
 class AdvGroomingDBOut(gschema.GroomingInformation):
     """
         Advanced Grooming result in database schema
     """
-    
+
     connections: List[GroomingConnection]
     lambda_link: int
     average_lambda_capacity_usage: float
@@ -102,6 +107,7 @@ class AdvGroomingDBOut(gschema.GroomingInformation):
 
     class Config:
         orm_mode = True
+
 
 class Network:
     class PhysicalTopology:
@@ -113,44 +119,44 @@ class Network:
                 self.roadm_type = node['roadm_type']
                 self.links = {}
                 self.demands = {}
-            
+
             def export(self) -> pschema.Node:
                 return pschema.Node(**{
-                    'name':self.name,
-                    'lat':self.lat,
-                    'lng':self.lng,
-                    'roadm_type':self.roadm_type
+                    'name': self.name,
+                    'lat': self.lat,
+                    'lng': self.lng,
+                    'roadm_type': self.roadm_type
                 }).dict()
-            
+
             def __repr__(self) -> str:
                 str = f"[({self.name}) "
                 for degree, link in self.links.items():
                     str += link.__repr__() + degree + " "
                 return str + "]"
-        
+
         class Queue:
             def __init__(self) -> None:
                 self.queue = []
-            
+
             def add(self, item: str) -> None:
                 self.queue.append(item)
-            
+
             def get(self) -> str:
                 return self.queue.pop(0)
-            
+
             def size(self) -> None:
                 return len(self.queue)
-            
+
         class Link:
             def __init__(self, link: pschema.Link) -> None:
                 self.length = link["length"]
                 self.fiber_type = link["fiber_type"]
                 self.capacity = 0
                 self.cost = self.length * 100
-            
+
             def __repr__(self) -> str:
                 return f"--{self.cost}-->"
-                
+
         def __init__(self, pt: pschema.PhysicalTopologyDB) -> None:
             self.nodes = {}
             self.id = pt['id']
@@ -159,7 +165,7 @@ class Network:
 
             for node in pt['data']['nodes']:
                 self.add_node(node)
-            
+
             for link in pt['data']['links']:
                 self.add_link(link)
 
@@ -170,29 +176,31 @@ class Network:
 
         def add_node(self, node: pschema.Node) -> None:
             self.nodes[node["name"]] = self.Node(node)
-        
+
         def remove_node(self, node: str) -> None:
             degrees = self.nodes[node].links.keys()
             self.graph.remove_node(node)
             self.nodes.pop(node)
             for degree in degrees:
                 self.nodes[degree].links.pop(node)
-        
+
         def add_link(self, link: pschema.Link) -> None:
-            self.nodes[link["source"]].links[link["destination"]] = self.Link(link)
-            self.nodes[link["destination"]].links[link["source"]] = self.Link(link)
-        
+            self.nodes[link["source"]
+                       ].links[link["destination"]] = self.Link(link)
+            self.nodes[link["destination"]
+                       ].links[link["source"]] = self.Link(link)
+
         def update_link(self, src: str, dst: str, traffic_rate: float,
                         line_rate: int) -> None:
 
             def update_capacity_cost(capacity: float, traffic_rate: float, line_rate: int,
-                    length: int) -> Tuple[float, int]:
+                                     length: int) -> Tuple[float, int]:
 
                 new_capacity = traffic_rate + capacity
 
                 if new_capacity >= line_rate:
                     new_capacity -= line_rate
-                
+
                 if new_capacity > 0.95*line_rate:
                     new_capacity = 0
                     cost = length * 100
@@ -200,15 +208,15 @@ class Network:
                     cost = length*100
                 else:
                     cost = length
-                
+
                 return new_capacity, cost
-            
+
             line_rate = int(line_rate)
-            
+
             capacity, cost = update_capacity_cost(capacity=self.nodes[src].links[dst].capacity,
-                                                traffic_rate=traffic_rate,
-                                                line_rate=line_rate,
-                                                length=self.nodes[src].links[dst].length)
+                                                  traffic_rate=traffic_rate,
+                                                  line_rate=line_rate,
+                                                  length=self.nodes[src].links[dst].length)
 
             self.nodes[src].links[dst].cost = cost
             self.nodes[src].links[dst].capacity = capacity
@@ -224,7 +232,7 @@ class Network:
                     weight = link.cost
                     if not self.graph.has_edge(src, dst):
                         self.graph.add_edge(src, dst, weight=weight)
-        
+
         def get_shortest_path(self, src: str, dst: str, cluster: Optional[List[str]] = None) -> List[str]:
             if cluster is not None:
                 graph = deepcopy(self.graph)
@@ -233,11 +241,10 @@ class Network:
                         graph.remove_node(node)
                 return nx.shortest_path(graph, source=src, target=dst, weight='weight')
             return nx.shortest_path(self.graph, source=src, target=dst, weight='weight')
-        
-        def BFS(self, start: str, visited: Dict[str, int], processed: Dict[str, int],
-            parent: Dict[str, Union[str, None]], components: Dict[str, int], new_component_id: int)\
-                -> None:
 
+        def BFS(self, start: str, visited: Dict[str, int], processed: Dict[str, int],
+                parent: Dict[str, Union[str, None]], components: Dict[str, int], new_component_id: int)\
+                -> None:
             """
                 This method is a BFS algorithm implementation.
                 notes:
@@ -264,12 +271,12 @@ class Network:
                     if not adj_node in processed:
                         # process link
                         pass
-                        
+
                     if not adj_node in visited:
                         visited[adj_node] = 1
                         queue.add(adj_node)
                         parent[adj_node] = node_name
-                
+
                 processed[node_name] = 1
 
         def export(self, nodes: List[str] = None) -> pschema.PhysicalTopologyDB:
@@ -285,35 +292,35 @@ class Network:
                     for destination, link in node.links.items():
                         if destination in nodes:
                             links.append(pschema.Link(**{
-                                'source':source,
-                                'destination':destination,
-                                'length':link.length,
-                                'fiber_type':link.fiber_type
+                                'source': source,
+                                'destination': destination,
+                                'length': link.length,
+                                'fiber_type': link.fiber_type
                             }).dict())
 
                 pt.remove_node(source)
             del(pt)
-            
+
             return pschema.PhysicalTopologyDB(**{
-                'data':pschema.PhysicalTopologySchema(**{'nodes':nodes, 'links':links}),
-                'id':self.id,
+                'data': pschema.PhysicalTopologySchema(**{'nodes': nodes, 'links': links}),
+                'id': self.id,
                 'version': -1,
                 'create_date': datetime.utcnow(),
-                'name':self.name
+                'name': self.name
             }).dict()
 
         def get_degree_n_nodes(self, n: int, include: bool = True,
-                nodes: Optional[List[str]] = None) -> List[str]:
+                               nodes: Optional[List[str]] = None) -> List[str]:
             if nodes is None:
                 target_nodes = self.nodes.keys()
             else:
                 target_nodes = nodes
-            
+
             if include:
                 return list(filter(lambda x: len(self.nodes[x].links) == n, target_nodes))
             else:
                 return list(filter(lambda x: len(self.nodes[x].links) != n, target_nodes))
-    
+
     class TrafficMatrix:
         class Demand:
             Line_Rates = {
@@ -328,40 +335,41 @@ class Network:
                 "10GE": 10,
                 "100GE": 100
             }
+
             class Service:
                 def __init__(self, type: tschema.ServiceType,
-                            id: str, source: str, destination: str) -> None:
+                             id: str, source: str, destination: str) -> None:
                     self._source = source
                     self._destination = destination
                     self.type = type
                     self._id = id
-                
+
                 @property
                 def source(self) -> str:
                     return self._source
-                
+
                 @property
                 def destination(self) -> str:
                     return self._destination
-                
+
                 @property
                 def id(self) -> str:
                     return self._id
-                
+
                 @source.setter
                 def source(self, new_source: str) -> None:
                     if isinstance(new_source, str):
                         self._source = new_source
                     else:
                         raise Exception("wrong value for service source")
-                
+
                 @destination.setter
                 def destination(self, new_destination: str) -> None:
                     if isinstance(new_destination, str):
                         self._destination = new_destination
                     else:
                         raise Exception("wrong value for service destination")
-                
+
                 def change_src_or_dst(self, old_val: str, new_val: str) -> None:
                     if self._source == old_val:
                         self._source = new_val
@@ -369,7 +377,7 @@ class Network:
                         self._destination = new_val
                     else:
                         raise Exception("wrong old_val")
-                
+
                 def __repr__(self) -> str:
                     return f"[Service id:{self._id} type:{self.type} " \
                         f"source:{self._source} destination:{self._destination}]"
@@ -384,7 +392,8 @@ class Network:
                     self.restoration_type = demand['restoration_type']
                     self.rate = 0
                     for service in demand["services"]:
-                        self.add_service(service, self.source, self.destination)
+                        self.add_service(service, self.source,
+                                         self.destination)
                 else:
                     self.source = None
                     self.destination = None
@@ -393,7 +402,7 @@ class Network:
                     self.protection_type = None
                     self.restoration_type = None
                     self.rate = 0
-            
+
             def export(self) -> tschema.NormalDemand:
                 services = []
                 service_dict = {}
@@ -407,17 +416,17 @@ class Network:
                 for type, service_id_list in service_dict.items():
                     services.append(tschema.Service(**{
                         'quantity': len(service_id_list),
-                        'service_id_list':service_id_list,
-                        'type':type
+                        'service_id_list': service_id_list,
+                        'type': type
                     }).dict())
-                
+
                 return tschema.NormalDemand(**{
-                    'id':self.id,
-                    'source':self.source,
-                    'destination':self.destination,
-                    'protection_type':self.protection_type,
-                    'restoration_type':self.restoration_type,
-                    'services':services
+                    'id': self.id,
+                    'source': self.source,
+                    'destination': self.destination,
+                    'protection_type': self.protection_type,
+                    'restoration_type': self.restoration_type,
+                    'services': services
                 }).dict()
 
             def add_service(self, service: tschema.Service, source: str,
@@ -425,13 +434,14 @@ class Network:
                 type = service["type"]
                 for id in service["service_id_list"]:
                     self.rate += self.Line_Rates[type]
-                    self.services[id] = self.Service(type, id, source, destination)
-            
+                    self.services[id] = self.Service(
+                        type, id, source, destination)
+
             def remove_service(self, service_id_list: List[str]) -> None:
                 for id in service_id_list:
                     self.rate -= self.Line_Rates[self.services[id].type]
                     self.services.pop(id)
-            
+
             def __repr__(self) -> str:
                 return f"(Demand id:{self.id} source:{self.source} " \
                     f"destination:{self.destination} service count:{len(self.services)} " \
@@ -444,69 +454,73 @@ class Network:
 
             for id, demand in tm['data']['demands'].items():
                 self.add_ext_demand(demand, id)
-            
+
             self.remove_empty_demands()
-            
+
         def __repr__(self) -> str:
             return f"TrafficMatrix demand count:{len(self.demands)}"
-        
+
         def remove_empty_demands(self) -> None:
             #map(lambda x: self.remove_empty_demand(x), self.demands.keys())
             for demand_id in list(self.demands.keys()):
                 self.remove_empty_demand(demand_id)
 
         def prune_traffic_matrix(self, lightpaths: Dict[str, gschema.GroomingLightPath])\
-            -> None:
+                -> None:
             for lightpath in lightpaths.values():
-                self.demands[lightpath['demand_id']].prune_demand(lightpath['service_id_list'])
-        
+                self.demands[lightpath['demand_id']].prune_demand(
+                    lightpath['service_id_list'])
+
         def export(self, demands: List[str] = None) -> tschema.TrafficMatrixDB:
             if demands is None:
                 data = tschema.TrafficMatrixSchema(**{'demands':
-                    {key: value.export() for key, value in self.demands.items()}
-                }).dict()
+                                                      {key: value.export(
+                                                      ) for key, value in self.demands.items()}
+                                                      }).dict()
             else:
                 target_demands = {}
                 for key, value in self.demands.items():
                     if key in demands:
                         target_demands[key] = value.export()
-                data = tschema.TrafficMatrixSchema(**{'demands': target_demands}).dict()
+                data = tschema.TrafficMatrixSchema(
+                    **{'demands': target_demands}).dict()
 
             return tschema.TrafficMatrixDB(**{
-                'data':data,
-                'id':self.id,
+                'data': data,
+                'id': self.id,
                 'version': -1,
-                'name':self.name,
-                'create_date':datetime.utcnow(),
+                'name': self.name,
+                'create_date': datetime.utcnow(),
                 'comment': 'generated by adv grooming'
             }).dict()
-        
+
         def get_demands(self, source: str, destinations: Optional[List[str]] = None,
-            include: bool = True) -> List[Demand]:
+                        include: bool = True) -> List[Demand]:
             if destinations is None:
                 return list(filter(lambda x: (x.source == source or x.destination == source),
                             self.demands.values()))
             else:
                 if include:
-                    return list(filter(lambda x:\
-                        (x.source == source and x.destination in destinations)\
-                        or (x.source in destinations and x.destination == source),
-                                self.demands.values()))
+                    return list(filter(lambda x:
+                                       (x.source ==
+                                        source and x.destination in destinations)
+                                       or (x.source in destinations and x.destination == source),
+                                       self.demands.values()))
                 else:
-                    return list(filter(lambda x:\
-                        (x.source == source and x.destination not in destinations)\
-                        or (x.source not in destinations and x.destination == source),
-                                self.demands.values()))
-        
+                    return list(filter(lambda x:
+                                       (x.source == source and x.destination not in destinations)
+                                       or (x.source not in destinations and x.destination == source),
+                                       self.demands.values()))
+
         def add_ext_demand(self, demand: tschema.NormalDemand, id: str) -> None:
             self.demands[id] = self.Demand(demand)
-        
+
         def add_demand(self, demand: Demand, id: str) -> None:
             self.demands[id] = demand
-        
+
         def add_demand_with_service(self, services: Dict[str, Demand.Service], id: str,
-            source: str, destination: str, restoration_type: tschema.RestorationType,
-            protection_type: tschema.ProtectionType, rate: LineRate) -> Demand:
+                                    source: str, destination: str, restoration_type: tschema.RestorationType,
+                                    protection_type: tschema.ProtectionType, rate: LineRate) -> Demand:
             demand = self.Demand()
             demand.id = id
             demand.services.update(services)
@@ -519,28 +533,29 @@ class Network:
             self.add_demand(demand, id)
 
             return demand
-        
+
         def remove_demand(self, demand_id: str) -> None:
             self.demands.pop(demand_id)
-        
+
         def remove_service(self, service_id_list: List[str], demand_id: str) -> None:
             self.demands[demand_id].remove_service(service_id_list)
             self.remove_empty_demand(demand_id)
-        
+
         def remove_empty_demand(self, demand_id: str) -> None:
             if len(self.demands[demand_id].services) == 0:
                 self.demands.pop(demand_id)
-    
-    class Grooming: 
+
+    class Grooming:
         ref_id = 1
+
         class Connection:
             class Node:
                 def __init__(self, forward: str, backward: str) -> None:
                     self.forward = forward
                     self.backward = backward
-            
+
             def __init__(self, source: str, destination: str, id: str,
-                route: List[str]) -> None:
+                         route: List[str]) -> None:
                 self.source = source
                 self.destination = destination
                 self.id = id
@@ -548,7 +563,7 @@ class Network:
                 self.route = route
                 self.route_dict_form = self.cal_route_dict_form(self.route)
                 self.rate = 0
-            
+
             def cal_route_dict_form(self, route: List[str]) -> Dict[str, Node]:
                 dict_form = {}
                 for i in range(len(route)):
@@ -558,24 +573,24 @@ class Network:
                         dict_form[route[i]] = self.Node(route[i+1], None)
                     else:
                         dict_form[route[i]] = self.Node(None, route[i-1])
-                
+
                 return dict_form
-            
+
             def find_common_nodes(self, demand_path: List[str]) -> List[str]:
                 com = []
                 for node in demand_path:
                     if node in self.route_dict_form:
                         com.append(node)
-                
+
                 return com
-            
+
             def find_intersection(self, demand_path: List[str]) -> List[List[str]]:
                 com_nodes = self.find_common_nodes(demand_path)
 
                 inters = []
                 i = 0
-                while i+1< len(com_nodes):
-                    node  = com_nodes[i]
+                while i+1 < len(com_nodes):
+                    node = com_nodes[i]
 
                     #next_node = com_nodes[i+1]
                     for t, d_node in enumerate(demand_path):
@@ -589,26 +604,26 @@ class Network:
                         i += 1
                         if i+1 >= len(com_nodes):
                             break
-                        node  = com_nodes[i]
+                        node = com_nodes[i]
                         next_node = com_nodes[i+1]
                         node_obj = self.route_dict_form[node]
-                    
+
                     i += 1
-                    
+
                     if len(tmp) >= 2:
                         inters.append(tmp)
-                
+
                 return inters
 
             def add_demand(self, demands: List[str]) -> None:
                 for demand in demands:
                     if not demand in self.demands:
                         self.demands.append(demand)
-                #self.demands.extend(demands)
-            
+                # self.demands.extend(demands)
+
             def __repr__(self) -> str:
                 return f"Connection route: {self.route} Demands:{self.demands}"
-            
+
             def export_result(self) -> GroomingConnection:
                 return GroomingConnection(**{
                     'id': self.id,
@@ -620,30 +635,30 @@ class Network:
                     'rate_by_line_rate': 0,
                     'demands_id_list': self.demands
                 }).dict()
-        
+
         def __init__(self) -> None:
             self.connections = {}
-        
+
         def __repr__(self) -> str:
             return f"Grooming connection count:{len(self.connections)}"
-        
+
         def add_connection(self, source: str, destination: str, route: List[str],
-                demands: Optional[List[str]] = None) -> str:
+                           demands: Optional[List[str]] = None) -> str:
 
             #id = uuid4().hex
             id = str(self.ref_id)
             self.ref_id += 1
             connection = self.Connection(source, destination, id,
-                route=route)
+                                         route=route)
             self.connections[id] = connection
 
             if demands is not None:
                 self.connections[id].demands = demands
 
             return id
-        
+
         def split_connection(self, com_sections: List[List[str]], non_com_sections: List[List[str]],
-                conn_id: str, demand_id: str) -> None:
+                             conn_id: str, demand_id: str) -> None:
 
             demands = self.connections[conn_id].demands
             extended_demands = deepcopy(demands)
@@ -666,14 +681,14 @@ class Network:
                                     demands=deepcopy(demands))
 
         def find_split_sections(self, intersections: List[List[str]], demand_path: List[str],
-                        demand_id: str) -> None:
+                                demand_id: str) -> None:
 
             def extract_path(path: List[str], start: int, end: int) -> List[str]:
                 part = []
                 while start <= end:
                     part.append(path[start])
                     start += 1
-                
+
                 return part
 
             end_points_d = []
@@ -681,7 +696,7 @@ class Network:
             for conn_id, inters in intersections.items():
                 conn_path = self.connections[conn_id].route
                 end_points_c = []
-                
+
                 com_sections = []
                 non_com_sections = []
                 for inter in inters:
@@ -693,7 +708,7 @@ class Network:
                         end_points_c.append((start, end))
                     else:
                         end_points_c.append((end, start))
-                    
+
                     # demand part
                     start = demand_path.index(inter[0])
                     end = demand_path.index(inter[-1])
@@ -703,39 +718,47 @@ class Network:
                     else:
                         end_points_d.append((end, start))
 
-                end_points_c.sort(key= lambda x: x[0])
-                end_points_d.sort(key= lambda x: x[0])
-                
+                end_points_c.sort(key=lambda x: x[0])
+                end_points_d.sort(key=lambda x: x[0])
+
                 # connection analysis
                 if len(end_points_c) != 0:
                     if end_points_c[0][0] != 0:
-                        non_com_sections.append(extract_path(conn_path, 0, end_points_c[0][0]))
-                    
-                    com_sections.append(extract_path(conn_path, end_points_c[0][0], end_points_c[0][1]))
-                    
+                        non_com_sections.append(extract_path(
+                            conn_path, 0, end_points_c[0][0]))
+
+                    com_sections.append(extract_path(
+                        conn_path, end_points_c[0][0], end_points_c[0][1]))
+
                     for i in range(1, len(end_points_c)):
-                        non_com_sections.append(extract_path(conn_path, end_points_c[i-1][1], end_points_c[i][0]))
-                        com_sections.append(extract_path(conn_path, end_points_c[i][0], end_points_c[i][1]))
-                    
+                        non_com_sections.append(extract_path(
+                            conn_path, end_points_c[i-1][1], end_points_c[i][0]))
+                        com_sections.append(extract_path(
+                            conn_path, end_points_c[i][0], end_points_c[i][1]))
+
                     if end_points_c[-1][1] != len(conn_path)-1:
-                        non_com_sections.append(extract_path(conn_path, end_points_c[-1][1], len(conn_path)-1))
-                    
+                        non_com_sections.append(extract_path(
+                            conn_path, end_points_c[-1][1], len(conn_path)-1))
+
                     self.split_connection(com_sections=com_sections,
-                                        non_com_sections=non_com_sections,
-                                        conn_id=conn_id,
-                                        demand_id=demand_id)
+                                          non_com_sections=non_com_sections,
+                                          conn_id=conn_id,
+                                          demand_id=demand_id)
 
             # demand analysis
             if len(end_points_d) != 0:
                 if end_points_d[0][0] != 0:
-                    rem_dem_secs.append(extract_path(demand_path, 0, end_points_d[0][0]))
-                
+                    rem_dem_secs.append(extract_path(
+                        demand_path, 0, end_points_d[0][0]))
+
                 for i in range(1, len(end_points_d)):
                     if end_points_d[i-1][1] != end_points_d[i][0]:
-                        rem_dem_secs.append(extract_path(demand_path, end_points_d[i-1][1], end_points_d[i][0]))
+                        rem_dem_secs.append(extract_path(
+                            demand_path, end_points_d[i-1][1], end_points_d[i][0]))
 
                 if end_points_d[-1][1] != len(demand_path)-1:
-                    rem_dem_secs.append(extract_path(demand_path, end_points_d[-1][1], len(demand_path)-1))
+                    rem_dem_secs.append(extract_path(
+                        demand_path, end_points_d[-1][1], len(demand_path)-1))
 
                 for sec in rem_dem_secs:
                     if len(sec) != 0:       # NOTE: with caution
@@ -748,19 +771,19 @@ class Network:
                                     destination=demand_path[-1],
                                     route=demand_path,
                                     demands=[demand_id])
-        
+
         def find_intersections(self, demand_path: List[str]) -> Dict[str, List[List[str]]]:
             result = {}
             for conn_id, conn in self.connections.items():
                 inter = conn.find_intersection(demand_path)
                 if len(inter) != 0:
                     result[conn_id] = inter
-            
+
             return result
 
         def add_demand_to_connection(self, conn_id: str, demands: List[str]) -> None:
             self.connections[conn_id].add_demand(demands)
-        
+
         def export_result(self) -> AdvGroomingResult:
             return AdvGroomingResult(**{
                 'connections': list(map(lambda x: x.export_result(), self.connections.values())),
@@ -769,57 +792,59 @@ class Network:
                 'lightpaths': {}
             }).dict()
 
-
     def __init__(self,  pt: pschema.PhysicalTopologyDB,
-                        tm: tschema.TrafficMatrixDB) -> None:
+                 tm: tschema.TrafficMatrixDB) -> None:
 
         self.physical_topology = self.PhysicalTopology(pt)
         self.traffic_matrix = self.TrafficMatrix(tm)
         self.grooming = self.Grooming()
         self.add_demands()
-    
+
     def add_connection(self, source: str, destination: str, line_rate: int,
-            traffic_rate: float, route: Optional[List[str]] = None) -> str:
+                       traffic_rate: float, route: Optional[List[str]] = None) -> str:
         if route is None:
-            path = self.physical_topology.get_shortest_path(src=source, dst=destination)
+            path = self.physical_topology.get_shortest_path(
+                src=source, dst=destination)
         else:
             path = route
 
         id = self.grooming.add_connection(source=source,
-                                    destination=destination,
-                                    route=path)
-        
+                                          destination=destination,
+                                          route=path)
+
         for i in range(len(path)-1):
             self.physical_topology.update_link(src=path[i],
-                                            dst=path[i+1],
-                                            traffic_rate=traffic_rate,
-                                            line_rate=line_rate)
-        
-        return id
-    
-    def update_connections(self, demand_id: str, demand_path: List[str],
-                line_rate: int, traffic_rate: float) -> None:
+                                               dst=path[i+1],
+                                               traffic_rate=traffic_rate,
+                                               line_rate=line_rate)
 
-        intersections = self.grooming.find_intersections(demand_path=demand_path)
-        self.grooming.find_split_sections(intersections=intersections, demand_path=demand_path, demand_id=demand_id)
+        return id
+
+    def update_connections(self, demand_id: str, demand_path: List[str],
+                           line_rate: int, traffic_rate: float) -> None:
+
+        intersections = self.grooming.find_intersections(
+            demand_path=demand_path)
+        self.grooming.find_split_sections(
+            intersections=intersections, demand_path=demand_path, demand_id=demand_id)
 
         for i in range(len(demand_path)-1):
             self.physical_topology.update_link(src=demand_path[i],
-                                            dst=demand_path[i+1],
-                                            traffic_rate=traffic_rate,
-                                            line_rate=line_rate)
- 
+                                               dst=demand_path[i+1],
+                                               traffic_rate=traffic_rate,
+                                               line_rate=line_rate)
+
     def get_demands_by_rate(self) -> List[TrafficMatrix.Demand]:
         demands = list(self.traffic_matrix.demands.values())
-        demands.sort(key= lambda x: x.rate, reverse=True)
+        demands.sort(key=lambda x: x.rate, reverse=True)
         return demands
 
     def remove_nodes(self, nodes: List[str]) -> None:
-            for node in nodes:
-                self.physical_topology.remove_node(node)
-    
+        for node in nodes:
+            self.physical_topology.remove_node(node)
+
     def change_services_src_or_dst(self, services: Dict[str, TrafficMatrix.Demand.Service],
-            old_val: str, new_val: str) -> None:
+                                   old_val: str, new_val: str) -> None:
         for service in services.values():
             service.change_src_or_dst(old_val, new_val)
 
@@ -829,9 +854,11 @@ class Network:
             source = demand.source
             destination = demand.destination
             self.traffic_matrix.remove_demand(demand_id)
-            self.physical_topology.nodes[source].demands[destination].remove(demand_id)
-            self.physical_topology.nodes[destination].demands[source].remove(demand_id)
-    
+            self.physical_topology.nodes[source].demands[destination].remove(
+                demand_id)
+            self.physical_topology.nodes[destination].demands[source].remove(
+                demand_id)
+
     def change_demand_src_or_dst(self, id: str, old_val: str, new_val: str) -> None:
         demand = self.traffic_matrix.demands[id]
         if demand.source == old_val:
@@ -854,7 +881,7 @@ class Network:
         self.add_demand_id_into_pt(src=new_val, dst=peer, id=id)
 
     def add_demands(self, demands: Optional[List[TrafficMatrix.Demand]] = None,
-                ids : Optional[List[str]] = None) -> None:
+                    ids: Optional[List[str]] = None) -> None:
         if not demands:
             for id, demand in self.traffic_matrix.demands.items():
                 source = demand.source
@@ -868,51 +895,51 @@ class Network:
 
                 self.traffic_matrix.add_demand(demand, id)
                 self.add_demand_id_into_pt(src=source, dst=destination, id=id)
-        
+
     def add_demand_id_into_pt(self, src: str, dst: str, id: str) -> None:
         if not dst in self.physical_topology.nodes[src].demands:
             self.physical_topology.nodes[src].demands[dst] = [id]
         else:
             self.physical_topology.nodes[src].demands[dst].append(id)
-        
-        if not src in  self.physical_topology.nodes[dst].demands:
+
+        if not src in self.physical_topology.nodes[dst].demands:
             self.physical_topology.nodes[dst].demands[src] = [id]
         else:
             self.physical_topology.nodes[dst].demands[src].append(id)
 
     def add_demand_with_service(self, services: Dict[str, TrafficMatrix.Demand.Service],
-        source: str, destination: str, restoration_type: tschema.RestorationType,
-            protection_type: tschema.ProtectionType, rate: LineRate) -> str:
+                                source: str, destination: str, restoration_type: tschema.RestorationType,
+                                protection_type: tschema.ProtectionType, rate: LineRate) -> str:
         id = uuid4().hex
         demand = self.traffic_matrix.add_demand_with_service(services=services,
-                                id=id,
-                                source=source,
-                                destination=destination,
-                                restoration_type=restoration_type,
-                                protection_type=protection_type,
-                                rate=rate)
+                                                             id=id,
+                                                             source=source,
+                                                             destination=destination,
+                                                             restoration_type=restoration_type,
+                                                             protection_type=protection_type,
+                                                             rate=rate)
         self.add_demands(demands=[demand], ids=[id])
         return id
-    
+
     def remove_groomout_services(self, demand_id: str, groomout: gschema.GroomOut)\
-        -> None:
+            -> None:
 
         self.traffic_matrix.remove_service(service_id_list=groomout['service_id_list'],
-                                            demand_id=demand_id)
-    
+                                           demand_id=demand_id)
+
     def remove_service(self, traffic: gschema.GroomingOutput) -> None:
         for lightpath in traffic['main']['lightpaths'].values():
             demand_id = lightpath['demand_id']
             for service in lightpath['service_id_list']:
                 id = service['id']
-                if (type:=service['type']) == "normal":
+                if (type := service['type']) == "normal":
                     self.traffic_matrix.remove_service(service_id_list=[id],
-                                                        demand_id=demand_id)
+                                                       demand_id=demand_id)
                 else:
                     self.remove_groomout_services(demand_id=demand_id,
-                        groomout=traffic['main']['low_rate_grooming_result'] \
-                            ['demands'][demand_id]['groomouts'][id])
-    
+                                                  groomout=traffic['main']['low_rate_grooming_result']
+                                                  ['demands'][demand_id]['groomouts'][id])
+
     def export_result(self, line_rate: str, original_network) -> AdvGroomingResult:
         result = self.grooming.export_result()
 
@@ -924,14 +951,17 @@ class Network:
                 rate += original_network.traffic_matrix.demands[demand_id].rate
 
             rate_by_line_rate = rate/(int(line_rate))
-            connection['lambda_link'] = math.ceil(rate_by_line_rate) * (len(connection['path'])-1)
-            connection['capacity_link'] = rate_by_line_rate * (len(connection['path'])-1)
+            connection['lambda_link'] = math.ceil(
+                rate_by_line_rate) * (len(connection['path'])-1)
+            connection['capacity_link'] = rate_by_line_rate * \
+                (len(connection['path'])-1)
             connection['rate_by_line_rate'] = rate_by_line_rate
 
             tot_lambda_link += connection['lambda_link']
             tot_capacity_link += connection['capacity_link']
-        
+
         result['lambda_link'] = tot_lambda_link
-        result['average_lambda_capacity_usage'] = tot_capacity_link / tot_lambda_link
-        
+        result['average_lambda_capacity_usage'] = tot_capacity_link / \
+            tot_lambda_link
+
         return result
