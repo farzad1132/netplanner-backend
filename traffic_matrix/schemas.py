@@ -3,11 +3,13 @@
     Some of important schemas in this module are `TrafficMatrixSchema` and `Service`
 """
 
-from typing import Optional, List, Dict
-from pydantic import BaseModel, validator
-from enum import Enum
-from rwa.schemas import ProtectionType, RestorationType
 from datetime import datetime
+from enum import Enum
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, validator
+from rwa.schemas import ProtectionType, RestorationType
+
 
 class ServiceType(str, Enum):
     """
@@ -49,6 +51,7 @@ class Service(BaseModel):
             raise ValueError('service_id_list size must be equal to quantity')
         return v
 
+
 class BaseDemand(BaseModel):
     """
         This schema is the base schema for demands and several schemas inherit from it
@@ -60,7 +63,7 @@ class BaseDemand(BaseModel):
     type: Optional[str] = None
     protection_type: ProtectionType = ProtectionType.node_dis
     restoration_type: RestorationType = RestorationType.none
-    
+
 
 class NormalDemand(BaseDemand):
     """
@@ -69,12 +72,14 @@ class NormalDemand(BaseDemand):
 
     services: List[Service]
 
+
 class TrafficMatrixSchema(BaseModel):
     """
         This is Traffic Matrix schema that contains a collection of demands
         dict keys in this model is demands id
     """
     demands: Dict[str, NormalDemand]
+
 
 class TrafficMatrixDB(BaseModel):
     """
@@ -91,6 +96,7 @@ class TrafficMatrixDB(BaseModel):
     class Config:
         orm_mode = True
 
+
 class TrafficMatrixIn(BaseModel):
     """
         This schema is the base schema for traffic matrices that are received from frontend
@@ -99,6 +105,7 @@ class TrafficMatrixIn(BaseModel):
     data: TrafficMatrixSchema
     comment: str
 
+
 class TrafficMatrixPOST(TrafficMatrixIn):
     """
         This schema is used for creating Traffic Matrices in POST method of traffic matrix endpoint
@@ -106,12 +113,14 @@ class TrafficMatrixPOST(TrafficMatrixIn):
 
     name: str
 
+
 class TrafficMatrixPUT(TrafficMatrixIn):
     """
         This schema is used for updating Traffic Matrices in POST method of traffic matrix endpoint
     """
-    
+
     id: str
+
 
 class TrafficMatrixOut(BaseModel):
     """
@@ -127,11 +136,12 @@ class TrafficMatrixOut(BaseModel):
     class Config:
         orm_mode = True
 
+
 class TMId(BaseModel):
     """
         Traffic Matrix Id schema
     """
-    
+
     id: str
 
     class Config:

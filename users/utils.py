@@ -3,20 +3,20 @@
 """
 
 import datetime
-from models import UserModel
 import os
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from users.schemas import RegisterForm
 
 from celery_app import celeryapp
 from database import session
 from fastapi import HTTPException, Request
 from jinja2 import Environment, FileSystemLoader
 
+from models import UserModel
 from users.models import UserRegisterModel
+from users.schemas import RegisterForm
 
 PORT = 587
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
@@ -26,6 +26,7 @@ SERVER = 'il2.persiantools.net'
 context = ssl.create_default_context()
 file_loader = FileSystemLoader('static')
 env = Environment(loader=file_loader)
+
 
 def send_mail(token: str, rcv_mail: str, request: Request) -> None:
     """
@@ -54,6 +55,7 @@ def send_mail(token: str, rcv_mail: str, request: Request) -> None:
     finally:
         server.quit()
 
+
 def create_message(token: str, request: Request) -> bytes:
     """
         This function generates email including HTML
@@ -61,10 +63,11 @@ def create_message(token: str, request: Request) -> bytes:
         :param token: token that gets included in confirmation link
         :param request: request object used by templating engine for creating HTML
     """
-    url = request.url_for('validate_email', **{"token":token})
+    url = request.url_for('validate_email', **{"token": token})
     template = env.get_template("confirm_email.html")
     message = template.render(url=url)
     return message
+
 
 def clear_old_registers(mins: int = 1) -> None:
     """
@@ -77,9 +80,10 @@ def clear_old_registers(mins: int = 1) -> None:
     registers = db.query(UserRegisterModel).all()
     for record in registers:
         if record.create_date < datetime.datetime.utcnow() \
-            - datetime.timedelta(seconds=mins*60):
+                - datetime.timedelta(seconds=mins*60):
             db.delete(record)
     db.commit()
+
 
 def validate_user_register_form(form: RegisterForm) -> None:
     """
@@ -89,11 +93,11 @@ def validate_user_register_form(form: RegisterForm) -> None:
     db = session()
     if db.query(UserRegisterModel).filter_by(username=form.username).one_or_none() is not None:
         raise HTTPException(409, detail="this username has been taken")
-    
+
     if form.password != form.confirm_password:
-        raise HTTPException(401, detail="confirm password does not match password")
-    
+        raise HTTPException(
+            401, detail="confirm password does not match password")
+
     if db.query(UserRegisterModel).filter_by(email=form.email).one_or_none() is not None:
         raise HTTPException(409, detail="this email has been taken")
     db.close()
-

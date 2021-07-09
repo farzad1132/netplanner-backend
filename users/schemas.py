@@ -2,10 +2,13 @@
     This module contains user related schemas
 """
 
-from pydantic import BaseModel, validator
-from typing import Optional, List
-from models import UserModel
+from typing import List, Optional
+
 from database import session
+from pydantic import BaseModel, validator
+
+from models import UserModel
+
 
 class Token(BaseModel):
     """
@@ -16,12 +19,14 @@ class Token(BaseModel):
     expire: int
     token_type: str
 
+
 class RefreshToken(BaseModel):
     """
         Refresh Token schema
     """
 
     refresh_token: str
+
 
 class TokenData(BaseModel):
     """
@@ -30,11 +35,12 @@ class TokenData(BaseModel):
 
     username: Optional[str] = None
 
+
 class RegisterForm(BaseModel):
     """
         User Registration Form schema
         contains three validations:
-        
+
          * username must be unique
          * confirm_password must be equal to password
          * email must be correct
@@ -44,6 +50,7 @@ class RegisterForm(BaseModel):
     password: str
     confirm_password: str
     email: str
+
 
 class User(BaseModel):
     """
@@ -56,6 +63,7 @@ class User(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class UserSearch(BaseModel):
     """

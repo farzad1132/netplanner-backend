@@ -2,10 +2,12 @@
     This module contains Physical Topology related schemas
 """
 
-from pydantic import BaseModel, Field, validator
-from typing import List, Dict, Optional
-from enum import Enum
 from datetime import datetime
+from enum import Enum
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field, validator
+
 
 class methods(str, Enum):
     """
@@ -19,6 +21,7 @@ class methods(str, Enum):
     delete = "DELETE"
     share = "SHARE"
 
+
 class ROADMType(str, Enum):
     """
         `Enum`
@@ -27,6 +30,7 @@ class ROADMType(str, Enum):
 
     cdc = "CDC"
     directionless = "Directionless"
+
 
 class Node(BaseModel):
     """
@@ -41,6 +45,7 @@ class Node(BaseModel):
     class Config:
         orm_mode = True
 
+
 class Link(BaseModel):
     """
         This schema represents links in Physical Topology
@@ -50,6 +55,7 @@ class Link(BaseModel):
     destination: str
     length: float = Field(..., ge=0)
     fiber_type: str
+
 
 class PhysicalTopologySchema(BaseModel):
     """
@@ -62,16 +68,19 @@ class PhysicalTopologySchema(BaseModel):
 
     @validator('links')
     def validate_links(cls, v, values):
-        if (nodes:=values.get('nodes')) is not None:
+        if (nodes := values.get('nodes')) is not None:
             names = []
             for node in nodes:
                 names.append(node.name)
             for link in v:
                 if not (link.source in names):
-                    raise ValueError(f"link source '{link.source}' must be one of the nodes")
+                    raise ValueError(
+                        f"link source '{link.source}' must be one of the nodes")
                 if not (link.destination in names):
-                    raise ValueError(f"link destination '{link.destination}' must be one of the nodes")
+                    raise ValueError(
+                        f"link destination '{link.destination}' must be one of the nodes")
         return v
+
 
 class PhysicalTopologyDB(BaseModel):
     """
@@ -88,6 +97,7 @@ class PhysicalTopologyDB(BaseModel):
     class Config:
         orm_mode = True
 
+
 class PhysicalTopologyIn(BaseModel):
     """
         This schema is the base schema for physical topology that are received from frontend
@@ -95,7 +105,8 @@ class PhysicalTopologyIn(BaseModel):
 
     data: PhysicalTopologySchema
     comment: str
-    
+
+
 class PhysicalTopologyPOST(PhysicalTopologyIn):
     """
         This schema is used for creating physical topology in POST method of traffic matrix endpoint
@@ -103,11 +114,13 @@ class PhysicalTopologyPOST(PhysicalTopologyIn):
 
     name: str
 
+
 class PhysicalTopologyPUT(PhysicalTopologyIn):
     """
         This schema is used for updating physical topology in POST method of traffic matrix endpoint
     """
     id: str
+
 
 class PhysicalTopologyOut(BaseModel):
     """
@@ -122,6 +135,7 @@ class PhysicalTopologyOut(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class PTId(BaseModel):
     """
