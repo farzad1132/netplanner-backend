@@ -80,7 +80,7 @@ def validate_email(token: str, db: Session = Depends(get_db)):
             db.delete(record)
             db.add(user)
             db.commit()
-            return RedirectResponse(url='http://192.168.7.22')
+            return RedirectResponse(url=FRONTEND_URL)
 
 
 @user_router.get('/v2.0.0/users/search_for_users', status_code=200, response_model=List[UserSearch])
