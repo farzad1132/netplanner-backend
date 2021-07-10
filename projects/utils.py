@@ -13,7 +13,7 @@ from physical_topology.schemas import (PhysicalTopologyDB,
 from physical_topology.utils import methods
 from sqlalchemy.orm import Session
 from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
-from users.schemas import User
+from users.schemas import User, UserRole
 
 
 class ProjectRepository:
@@ -50,7 +50,7 @@ class ProjectRepository:
         elif user_id == project.owner_id:
             return project
 
-        if self.mode in ("DELETE", "SHARE") and user.role != "manager":
+        if self.mode in ("DELETE", "SHARE") and user.role != UserRole.MANAGER.value:
             raise HTTPException(status_code=401, detail="Not Authorized")
         elif db.query(ProjectUsersModel).filter_by(project_id=id,
                                                    user_id=user_id, is_deleted=is_deleted).one_or_none() is None:

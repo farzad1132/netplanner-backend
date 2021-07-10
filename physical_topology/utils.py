@@ -36,7 +36,7 @@ class GetPT:
 
     def __call__(self, id: str, version: Optional[int] = None,
                  user: User = Depends(get_current_user),
-                 db: Session = Depends(get_db)) -> List[PhysicalTopologyDB]:
+                 db: Session = Depends(get_db)) -> List[PhysicalTopologyModel]:
         """
             With implementing `__call__` objects of this class can be called to access project data
 

@@ -7,7 +7,7 @@ from physical_topology.schemas import methods
 from physical_topology.utils import GetPT
 from sqlalchemy.orm import Session
 from traffic_matrix.utils import GetTM
-from users.schemas import User
+from users.schemas import User, UserRole
 
 from projects.schemas import (ProjectId, ProjectOut, ProjectPOST, ProjectPUT,
                               ProjectSchema)
@@ -40,7 +40,7 @@ def create_project(project: ProjectPOST, user: User = Depends(get_current_user),
                    db: Session = Depends(get_db)):
 
     # checking access rights
-    if user.role == "designer":
+    if user.role == UserRole.DESIGNER.value:
         raise HTTPException(
             status_code=401, detail="designers can not create project")
 

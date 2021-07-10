@@ -3,6 +3,7 @@
 """
 
 import os
+from users.schemas import UserRole
 
 from dependencies import get_db, get_password_hash
 from models import (ClusterModel, PhysicalTopologyModel,
@@ -109,7 +110,7 @@ if __name__ == "__main__":
     id = 3
     users = {}
     for USER in USERS:
-        user = UserModel(username=USER["username"], id=str(id), role="manager", email=USER['email'],
+        user = UserModel(username=USER["username"], id=str(id), role=UserRole.MANAGER.value, email=USER['email'],
                          password=get_password_hash(USER["password"]))
         users[id] = user
         id -= 1
