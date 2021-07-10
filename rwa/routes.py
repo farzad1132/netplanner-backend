@@ -9,8 +9,9 @@ from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
 from grooming.models import GroomingModel
 from grooming.schemas import GroomingResult
+from physical_topology.schemas import methods
 from projects.schemas import ProjectSchema
-from projects.utils import GetProject
+from projects.utils import ProjectRepository
 from sqlalchemy.orm import Session
 from users.schemas import User
 
@@ -24,9 +25,9 @@ rwa_router = APIRouter(
     tags=["Algorithms", "RWA"]
 )
 
-get_project_mode_get = GetProject()
+get_project_mode_get = ProjectRepository()
 # SHARE access is only for managers so we can use it for checking authorization in running algorithm mode
-get_project_mode_share = GetProject(mode="SHARE")
+get_project_mode_share = ProjectRepository(mode=methods.share)
 
 
 @rwa_router.post("/v2.0.0/algorithms/rwa/start", status_code=201, response_model=RWAId)

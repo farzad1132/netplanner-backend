@@ -8,9 +8,9 @@ from clusters.schemas import ClusterDict
 from clusters.utils import cluster_list_to_cluster_dict
 from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
-from physical_topology.schemas import PhysicalTopologyDB
+from physical_topology.schemas import PhysicalTopologyDB, methods
 from projects.schemas import ProjectSchema
-from projects.utils import GetProject
+from projects.utils import ProjectRepository
 from sqlalchemy.orm import Session
 from traffic_matrix.schemas import TrafficMatrixDB
 from users.schemas import User
@@ -30,10 +30,10 @@ grooming_router = APIRouter(
     tags=["Algorithms", "Grooming"]
 )
 
-get_project_mode_get = GetProject()
+get_project_mode_get = ProjectRepository()
 
 # SHARE access is only for managers so we can use it for checking authorization in running algorithm mode
-get_project_mode_share = GetProject(mode="SHARE")
+get_project_mode_share = ProjectRepository(mode=methods.share)
 
 
 @grooming_router.post("/v2.0.0/algorithms/grooming/start/automatic", status_code=201,

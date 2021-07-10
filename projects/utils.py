@@ -6,15 +6,17 @@ from typing import List, Optional
 
 from dependencies import auth_user, get_current_user, get_db
 from fastapi import Depends, HTTPException
-from models import ProjectModel, ProjectUsersModel
-from physical_topology.schemas import PhysicalTopologySchema
+from models import (PhysicalTopologyModel, ProjectModel, ProjectUsersModel,
+                    TrafficMatrixModel, UserModel)
+from physical_topology.schemas import (PhysicalTopologyDB,
+                                       PhysicalTopologySchema)
 from physical_topology.utils import methods
 from sqlalchemy.orm import Session
-from traffic_matrix.schemas import TrafficMatrixSchema
+from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
 from users.schemas import User
 
 
-class GetProject:
+class ProjectRepository:
     """
     This class performs project dependency injection
 
@@ -33,7 +35,7 @@ class GetProject:
         self.mode = mode
 
     def __call__(self, id: str, user: User = Depends(get_current_user),
-                 db: Session = Depends(get_db)) -> ProjectModel:
+                 db: Session = Depends(get_db), is_deleted: bool = False) -> ProjectModel:
         """
         With implementing `__call__` objects of this class can be called to access project data
 
@@ -43,7 +45,7 @@ class GetProject:
         """
         user_id = user.id
 
-        if (project := db.query(ProjectModel).filter_by(id=id, is_deleted=False).one_or_none()) is None:
+        if (project := db.query(ProjectModel).filter_by(id=id, is_deleted=is_deleted).one_or_none()) is None:
             raise HTTPException(status_code=404, detail="project not found")
         elif user_id == project.owner_id:
             return project
@@ -51,10 +53,71 @@ class GetProject:
         if self.mode in ("DELETE", "SHARE") and user.role != "manager":
             raise HTTPException(status_code=401, detail="Not Authorized")
         elif db.query(ProjectUsersModel).filter_by(project_id=id,
-                                                   user_id=user_id, is_deleted=False).one_or_none() is None:
+                                                   user_id=user_id, is_deleted=is_deleted).one_or_none() is None:
             raise HTTPException(status_code=401, detail="Not Authorized")
         else:
             return project
+
+    def find_by_id_list(self, id_list: List[str], db: Session, is_deleted: bool = False) \
+            -> List[ProjectModel]:
+        """
+            This method send a query to database fo fetch projects with given ids
+
+            :param id_list: list of project ids
+            :param db: database session object
+            :param is_deleted: if this flag is true this function will search into deleted records as well
+        """
+
+        if len(project_list := db.query(ProjectModel)
+                .filter_by(is_deleted=is_deleted)
+                .filter(ProjectModel.id.in_(id_list)).all()) == 0:
+            raise HTTPException(status_code=404, detail="no project found")
+        return project_list
+
+    def add_project(self, name: str, owner: UserModel, tm: TrafficMatrixModel,
+                    pt: PhysicalTopologyModel, tm_version: int, pt_version: int,
+                    db: Session) -> ProjectModel:
+        """
+            This method creates adds a project record into database
+
+            :param name: Name of project
+            :param owner: Creator of project
+            :param tm: Traffic Matrix object
+            :param pt: physical topology object
+            :param tm_version: traffic matrix version
+            :param pt_version: physical topology version
+            :param db: database session object
+        """
+
+        project_record = ProjectModel(name=name)
+        project_record.owner = owner
+        project_record.traffic_matrix = tm
+        project_record.physical_topology = pt
+        project_record.current_pt_version = pt_version
+        project_record.current_tm_version = tm_version
+
+        db.add(project_record)
+        db.commit()
+        return project_record
+
+    def update_project(self, old_record: ProjectModel, pt: PhysicalTopologyDB, tm: TrafficMatrixModel,
+                       tm_version: int, pt_version: int, db: Session) -> None:
+        """
+            This method updates existing project record
+
+            :param old_record: old project record object
+            :param tm: Traffic Matrix object
+            :param pt: physical topology object
+            :param tm_version: traffic matrix version
+            :param pt_version: physical topology version
+            :param db: database session object
+        """
+
+        old_record.physical_topology = pt
+        old_record.current_pt_version = pt_version
+        old_record.traffic_matrix = tm
+        old_record.current_tm_version = tm_version
+        db.commit()
 
 
 def get_user_projects_id(user_id: str, db: Session, all: Optional[bool] = True)\
@@ -104,7 +167,7 @@ def check_project_name_conflict(user_id: str, name: str, db: Session) -> None:
             status_code=409, detail="name of the project has conflict with another record")
 
 
-def pt_and_tm_compatibility(pt: PhysicalTopologySchema, tm: TrafficMatrixSchema) -> None:
+def pt_and_tm_compatibility(pt: dict, tm: dict) -> None:
     """
         This method checks whether given Traffic matrix and Physical Topology are
          compatible with each other or not
