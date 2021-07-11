@@ -77,6 +77,10 @@ class RWAHandle(RWAHandleFailure):
             db.commit()
             db.close()
 
+@celeryapp.task
+def sum_test(x, y):
+    return x + y
+
 def run_rwa(physical_topology: PhysicalTopologySchema, cluster_info: ClusterDict,
             grooming_result: GroomingResult, rwa_form: RWAForm) -> ChainTaskID:
 
