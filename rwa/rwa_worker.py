@@ -71,7 +71,8 @@ class RWAHandle(RWAHandleFailure):
                                 manager_id=register.manager_id,
                                 form=register.form,
                                 lightpaths=retval["result"]["lightpaths"],
-                                start_date=register.start_date)
+                                start_date=register.start_date,
+                                is_finished=True)
             db.add(rwa_res)
             db.commit()
             db.close()
