@@ -9,7 +9,7 @@ import networkx as nx
 from clusters.schemas import ClusterDict
 from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
                                            MultiplexThreshold, Network)
-from grooming.schemas import GroomingLightPath
+from grooming.schemas import GroomingLightPath, GroomingResult
 from physical_topology.schemas import PhysicalTopologyDB
 from pydantic import validate_arguments
 from traffic_matrix.schemas import TrafficMatrixDB
@@ -242,7 +242,7 @@ def degree_1_operation(network: Network, node: str) -> Network:
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                          pt: PhysicalTopologyDB, multiplex_threshold: int, clusters: ClusterDict) \
-        -> Tuple[Dict[str, GroomingLightPath], Network]:
+        -> Tuple[Dict[str, GroomingLightPath], Network, GroomingResult]:
     """
         In this phase we are performing hierarchial clustering and end-to-end multiplexing.
 
@@ -270,6 +270,7 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                                         network.traffic_matrix.demands.values()))
 
     lightpaths = {}
+    end_to_end_result = None
     if len(demands_for_multiplex) != 0:
         demands_for_multiplex = list(
             map(lambda x: x.id, demands_for_multiplex))
@@ -282,6 +283,8 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                                    mp1h_threshold_clustering=multiplex_threshold,
                                    mp1h_threshold_grooming=multiplex_threshold,
                                    clusters={"clusters": {}})
+
+        end_to_end_result = groom_res['grooming_result']
 
         # removing services that construct lightpaths
         res_network.remove_service(groom_res['grooming_result']['traffic'])
@@ -319,7 +322,7 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                                                     nodes=loop[1:],
                                                     gateway=loop[0])
 
-    return lightpaths, res_network
+    return lightpaths, res_network, end_to_end_result
 
 
 def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network: Network) \
@@ -388,7 +391,8 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
 
 def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: ClusterDict,
                  tm: TrafficMatrixDB, multiplex_threshold: MultiplexThreshold, line_rate: LineRate,
-                 return_network: bool = False) -> Union[Tuple[AdvGroomingResult, Network], AdvGroomingResult]:
+                 return_network: bool = True) \
+        -> Tuple[AdvGroomingResult, GroomingResult, Network]:
     """
         This function executes 2 phase of advanced grooming functions and returns a set of\n
         lightpaths and set of connections.
@@ -403,12 +407,14 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
 
     network = Network(pt=pt, tm=tm)
 
-    lightpaths, res_network = adv_grooming_phase_1(network=network,
-                                                   end_to_end_fun=end_to_end_fun,
-                                                   pt=pt,
-                                                   multiplex_threshold=int(
-                                                       multiplex_threshold),
-                                                   clusters=clusters)
+    lightpaths, res_network, end_to_end_result = adv_grooming_phase_1(
+        network=network,
+        end_to_end_fun=end_to_end_fun,
+        pt=pt,
+        multiplex_threshold=int(
+            multiplex_threshold),
+        clusters=clusters
+    )
 
     result = adv_grooming_phase_2(network=res_network,
                                   line_rate=line_rate,
@@ -417,6 +423,6 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
     result['lightpaths'] = lightpaths
 
     if return_network:
-        return result, res_network
+        return result, end_to_end_result, res_network
     else:
-        return result
+        return result, end_to_end_result, None
