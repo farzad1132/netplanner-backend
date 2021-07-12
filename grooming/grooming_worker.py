@@ -236,7 +236,8 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         tm: TrafficMatrixDB,
                         multiplex_threshold: MP1HThreshold,
                         clusters: ClusterDict,
-                        line_rate: LineRate):
+                        line_rate: LineRate,
+                        return_network: bool = False):
     """
         Advanced Grooming worker
 
@@ -247,9 +248,12 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         :param line_rate: line rate of network 
     """
 
+    # TODO: update handler
+
     return adv_grooming(end_to_end_fun=grooming_task,
                         pt=pt,
                         tm=tm,
                         multiplex_threshold=multiplex_threshold,
                         clusters=clusters,
-                        line_rate=line_rate)
+                        line_rate=line_rate,
+                        return_network=return_network)
