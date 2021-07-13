@@ -8,7 +8,7 @@ from physical_topology.schemas import methods
 from physical_topology.utils import GetPT, check_pt_name_conflict
 from projects.utils import ProjectRepository, check_project_name_conflict
 from sqlalchemy.orm import Session
-from traffic_matrix.utils import GetTM, check_tm_name_conflict
+from traffic_matrix.utils import TMRepository, check_tm_name_conflict
 from users.schemas import User
 from users.utils import UserRegistry
 
@@ -19,7 +19,7 @@ sharing_router = APIRouter(
 )
 
 get_pt_mode_share = GetPT(mode=methods.get)
-get_tm_mode_share = GetTM(mode=methods.share)
+get_tm_mode_share = TMRepository(mode=methods.share)
 get_project_mode_share = ProjectRepository(mode=methods.share)
 
 

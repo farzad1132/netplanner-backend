@@ -6,7 +6,7 @@ from models import ProjectModel
 from physical_topology.schemas import methods
 from physical_topology.utils import GetPT
 from sqlalchemy.orm import Session
-from traffic_matrix.utils import GetTM
+from traffic_matrix.utils import TMRepository
 from users.schemas import User, UserRole
 
 from projects.schemas import (ProjectId, ProjectOut, ProjectPOST, ProjectPUT,
@@ -21,7 +21,7 @@ project_router = APIRouter(
 get_project_mode_get = ProjectRepository(mode=methods.get)
 get_project_mode_delete = ProjectRepository(mode=methods.delete)
 get_pt_mode_get = GetPT()
-get_tm_mode_get = GetTM()
+get_tm_mode_get = TMRepository()
 
 
 @project_router.get('/v2.0.0/projects', status_code=200)
