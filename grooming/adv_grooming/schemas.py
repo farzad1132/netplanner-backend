@@ -178,11 +178,12 @@ class Network:
             self.nodes[node["name"]] = self.Node(node)
 
         def remove_node(self, node: str) -> None:
-            degrees = self.nodes[node].links.keys()
-            self.graph.remove_node(node)
-            self.nodes.pop(node)
-            for degree in degrees:
-                self.nodes[degree].links.pop(node)
+            if node in self.nodes:
+                degrees = self.nodes[node].links.keys()
+                self.graph.remove_node(node)
+                self.nodes.pop(node)
+                for degree in degrees:
+                    self.nodes[degree].links.pop(node)
 
         def add_link(self, link: pschema.Link) -> None:
             self.nodes[link["source"]
