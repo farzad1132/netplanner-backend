@@ -299,13 +299,16 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
         # performing degree 1 node operation
         while (d1_nodes := res_network.physical_topology.get_degree_n_nodes(1)):
             for d1_node in d1_nodes:
+                print(f"START: degree one operation, node = '{d1_node}'")
                 res_network = degree_1_operation(network=res_network,
                                                  node=d1_node)
+                print(f"END: degree one operation, node = '{d1_node}'")
 
         # user defined clusters
         if len(user_clusters) != 0:
             for id, cluster in list(user_clusters.items()):
                 # NOTE: corner loop operation function can handle any class with one gateway
+                print(f"START: user cluster operation, node = '{cluster}'")
                 res_network = corner_loop_operation(
                     network=res_network,
                     nodes=cluster['data']['subnodes'],
@@ -314,13 +317,16 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                              *cluster['data']['gateways']]
                 )
                 user_clusters.pop(id)
+                print(f"END: user cluster operation, node = '{cluster}'")
 
         # performing corner cycles operation
         while (loops := find_corner_cycles(res_network.physical_topology)):
             for loop in loops:
+                print(f"START: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
                 res_network = corner_loop_operation(network=res_network,
                                                     nodes=loop[1:],
                                                     gateway=loop[0])
+                print(f"END: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
 
     return lightpaths, res_network, end_to_end_result
 
