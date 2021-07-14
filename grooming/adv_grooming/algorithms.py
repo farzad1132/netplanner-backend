@@ -344,6 +344,10 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     # sort demands
     demands = network.get_demands_by_rate()
 
+    # check if any demand left for phase 2
+    if len(demands) == 0:
+        return network.export_result(line_rate, original_network)
+    
     # pick first
     visit_demand = demands.pop(0)
 
