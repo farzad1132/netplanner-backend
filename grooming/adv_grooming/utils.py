@@ -44,14 +44,15 @@ def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB, ne
         else:
             return demand_id
 
-    def get_service_from_demand(demand_id: str, network: Network) -> List[dict]:
+    def get_service_from_demand(demand_id: str, tm: TrafficMatrixDB) -> List[dict]:
 
         output = []
-        for service_id, service_object in network.traffic_matrix.demands[demand_id].services.items():
-            output.append({
-                "id": service_id,
-                "type": service_object.type
-            })
+        for service_object in tm["data"]["demands"][demand_id]["services"]:
+            for service_id in service_object["service_id_list"]:
+                output.append({
+                    "id": service_id,
+                    "type": service_object["type"]
+                })
         return output
 
     def update_mapping(mapping: dict, input_demand: str, output_demand: str,
@@ -153,14 +154,15 @@ def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB, ne
                                                tm=tm)
 
         for demand_id in connection["demands_id_list"]:
-            protection_type = network.traffic_matrix.demands[demand_id].protection_type
-            restoration_type = network.traffic_matrix.demands[demand_id].restoration_type
+
+            protection_type = tm["data"]["demands"][demand_id]["protection_type"]
+            restoration_type = tm["data"]["demands"][demand_id]["restoration_type"]
 
             old_service_list = []
 
             old_service_list.extend(get_service_from_demand(
                 demand_id=demand_id,
-                network=network
+                tm=tm
             ))
 
             new_service_id_list = update_mapping(mapping=mapping["traffic_matrices"],
