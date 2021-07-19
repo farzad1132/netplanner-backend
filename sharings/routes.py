@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 from models import (PhysicalTopologyUsersModel, ProjectUsersModel,
                     TrafficMatrixUsersModel, UserModel)
 from physical_topology.schemas import methods
-from physical_topology.utils import GetPT, check_pt_name_conflict
+from physical_topology.utils import PTRepository, check_pt_name_conflict
 from projects.utils import ProjectRepository, check_project_name_conflict
 from sqlalchemy.orm import Session
 from traffic_matrix.utils import TMRepository, check_tm_name_conflict
@@ -18,7 +18,7 @@ sharing_router = APIRouter(
     tags=['Sharing', 'Users']
 )
 
-get_pt_mode_share = GetPT(mode=methods.get)
+get_pt_mode_share = PTRepository(mode=methods.get)
 get_tm_mode_share = TMRepository(mode=methods.share)
 get_project_mode_share = ProjectRepository(mode=methods.share)
 

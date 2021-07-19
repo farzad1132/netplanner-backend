@@ -4,7 +4,7 @@ from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
 from models import ProjectModel
 from physical_topology.schemas import methods
-from physical_topology.utils import GetPT
+from physical_topology.utils import PTRepository
 from sqlalchemy.orm import Session
 from traffic_matrix.utils import TMRepository
 from users.schemas import User, UserRole
@@ -20,7 +20,7 @@ project_router = APIRouter(
 
 get_project_mode_get = ProjectRepository(mode=methods.get)
 get_project_mode_delete = ProjectRepository(mode=methods.delete)
-get_pt_mode_get = GetPT()
+get_pt_mode_get = PTRepository()
 get_tm_mode_get = TMRepository()
 
 

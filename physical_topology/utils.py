@@ -4,6 +4,7 @@
 
 import math
 from typing import List, Optional, Tuple
+from uuid import uuid4
 
 from dependencies import auth_user, get_current_user, get_db
 from fastapi import Depends, File, HTTPException
@@ -12,11 +13,11 @@ from pandas import ExcelFile, read_excel
 from sqlalchemy.orm import Session
 from users.schemas import User
 
-from physical_topology.schemas import (PhysicalTopologyDB,
+from physical_topology.schemas import (PhysicalTopologyDB, PhysicalTopologyPOST, PhysicalTopologyPUT,
                                        PhysicalTopologySchema, methods)
 
 
-class GetPT:
+class PTRepository:
     """
         Physical Topology dependency injection
 
@@ -67,6 +68,41 @@ class GetPT:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return pt_list
+
+    @staticmethod
+    def add_pt(pt: PhysicalTopologyPOST, version: int, user: User, db: Session) \
+            -> PhysicalTopologyModel:
+
+        id = uuid4().hex
+        pt_record = PhysicalTopologyModel(**pt.dict(), id=id, version=version)
+        pt_record.owner_id = user.id
+        db.add(pt_record)
+        db.commit()
+
+        return pt_record
+
+    @staticmethod
+    def update_pt(pt: PhysicalTopologyPUT, db: Session) -> None:
+
+        last_version = get_pt_last_version(pt.id, db=db)
+        pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version.version+1,
+                                          name=last_version.name, data=pt.data.dict())
+        pt_record.owner_id = last_version.owner_id
+        db.add(pt_record)
+        db.commit()
+
+    @staticmethod
+    def get_all_pt(user: User, db: Session, is_deleted: bool = False) -> List[PhysicalTopologyModel]:
+        if not (pt_list := db.query(PhysicalTopologyModel)
+                .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user.id, db)))
+                .distinct(PhysicalTopologyModel.id)
+                .order_by(PhysicalTopologyModel.id)
+                .order_by(PhysicalTopologyModel.version.desc())
+                .filter_by(is_deleted=is_deleted).all()):
+
+            raise HTTPException(
+                status_code=404, detail="no physical topology found")
+        return pt_list
 
 
 def check_pt_name_conflict(user_id: str, name: str, db: Session) -> None:
