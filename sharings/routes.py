@@ -169,7 +169,7 @@ def share_project_users(project_id: str, user: User = Depends(get_current_user),
     _ = get_project_mode_share(id=project_id, user=user, db=db)
 
     # getting all share records
-    ProjectRepository.get_project_share_users(project_id, db)
+    records = ProjectRepository.get_project_share_users(project_id, db)
 
     return list(map(lambda record: {"user_id": record.user_id, "username": record.user.username}, records))
 
