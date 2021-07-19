@@ -126,14 +126,14 @@ class ProjectRepository:
                 .filter_by(user_id=user_id, project_id=project_id, is_deleted=is_deleted) \
                 .one_or_none() is None:
             # check_project_name_conflict(user_id=id, name=project.name, db=db)
-            share_record = ProjectUsersModel(user_id=id, project_id=project_id)
+            share_record = ProjectUsersModel(user_id=user_id, project_id=project_id)
             db.add(share_record)
             db.commit()
 
     @staticmethod
     def get_project_share_users(project_id: str, db: Session, is_deleted: bool = False) -> None:
-        if not (records := db.query(ProjectUsersModel)
-                .filter_by(project_id=project_id, is_deleted=False).all()):
+        if not (records := db.query(ProjectUsersModel) \
+                .filter_by(project_id=project_id, is_deleted=is_deleted).all()):
             raise HTTPException(
                 status_code=404, detail='no user has access to this project')
 
@@ -142,8 +142,9 @@ class ProjectRepository:
     @staticmethod
     def delete_project_share(project_id: str, user_id: str, db: Session, is_deleted: bool = False) \
             -> None:
-        if (record := db.query(ProjectUsersModel)
-                .filter_by(project_id=project_id, user_id=user_id, is_deleted=is_deleted)
+
+        if (record := db.query(ProjectUsersModel) \
+                .filter_by(project_id=project_id, user_id=user_id, is_deleted=is_deleted) \
                 .one_or_none()) is not None:
 
             db.delete(record)

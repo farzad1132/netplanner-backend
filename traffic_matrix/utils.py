@@ -61,7 +61,9 @@ class TMRepository:
         elif self.mode in ("DELETE", "SHARE"):
             raise HTTPException(status_code=401, detail="not authorized")
 
-        if db.query(TrafficMatrixUsersModel).filter_by(tm_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
+        if db.query(TrafficMatrixUsersModel) \
+            .filter_by(tm_id=id, user_id=user_id, is_deleted=False) \
+                .one_or_none() is None:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return tm_list
@@ -90,9 +92,9 @@ class TMRepository:
             :param db: database session object
         """
 
-        if (tm := db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=is_deleted)
-            .distinct(TrafficMatrixModel.version)
-                .order_by(TrafficMatrixModel.version.desc()).first_or_none()) is None:
+        if (tm := db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=is_deleted) \
+                .distinct(TrafficMatrixModel.version) \
+                .order_by(TrafficMatrixModel.version.desc()).first()) is None:
 
             raise HTTPException(404, detail="not found")
 
@@ -135,13 +137,14 @@ class TMRepository:
         if db.query(TrafficMatrixUsersModel)\
                 .filter_by(tm_id=tm_id, user_id=user_id, is_deleted=is_deleted).one_or_none() is None:
             #check_tm_name_conflict(user_id=id, name=tm.name, db=db)
-            share_record = TrafficMatrixUsersModel(tm_id=tm_id, user_id=id)
+            share_record = TrafficMatrixUsersModel(
+                tm_id=tm_id, user_id=user_id)
             db.add(share_record)
             db.commit()
 
     @staticmethod
     def get_tm_share_users(tm_id: str, db: Session, is_deleted: bool = False) \
-            -> TrafficMatrixUsersModel:
+            -> List[TrafficMatrixUsersModel]:
 
         if not (records := db.query(TrafficMatrixUsersModel)
                 .filter_by(tm_id=tm_id, is_deleted=is_deleted).all()):
