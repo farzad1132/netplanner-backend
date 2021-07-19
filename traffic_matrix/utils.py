@@ -78,7 +78,7 @@ class TMRepository:
 
             raise HTTPException(
                 status_code=404, detail="no traffic matrix found")
-        
+
         return tm_list
 
     @staticmethod
@@ -128,6 +128,37 @@ class TMRepository:
         for tm in tm_list:
             tm.is_deleted = True
         db.commit()
+
+    @staticmethod
+    def add_share_tm(tm_id: str, user_id: str, db: Session, is_deleted: bool = False) -> None:
+
+        if db.query(TrafficMatrixUsersModel)\
+                .filter_by(tm_id=tm_id, user_id=user_id, is_deleted=is_deleted).one_or_none() is None:
+            #check_tm_name_conflict(user_id=id, name=tm.name, db=db)
+            share_record = TrafficMatrixUsersModel(tm_id=tm_id, user_id=id)
+            db.add(share_record)
+            db.commit()
+
+    @staticmethod
+    def get_tm_share_users(tm_id: str, db: Session, is_deleted: bool = False) \
+            -> TrafficMatrixUsersModel:
+
+        if not (records := db.query(TrafficMatrixUsersModel)
+                .filter_by(tm_id=tm_id, is_deleted=is_deleted).all()):
+            raise HTTPException(
+                status_code=404, detail='no user has access to this traffic matrix')
+
+        return records
+
+    @staticmethod
+    def delete_tm_share(tm_id: str, user_id: str, db: Session, is_deleted: bool = False) -> None:
+
+        if (record := db.query(TrafficMatrixUsersModel)
+                .filter_by(tm_id=tm_id, user_id=user_id, is_deleted=is_deleted)
+                .one_or_none()) is not None:
+
+            db.delete(record)
+            db.commit()
 
 
 def check_tm_name_conflict(user_id: str, name: str, db: Session) -> None:

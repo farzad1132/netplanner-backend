@@ -94,17 +94,14 @@ def share_traffic_matrix_add(tm_id: str = Body(...),
 
     # validating pt access (and authorization for sharing)
     _ = get_tm_mode_share(id=tm_id, version=1, user=user, db=db)
+
     for id in user_id_list:
 
         # checking user existence
         UserRepository.get_user_by_id(id, db)
 
-        if db.query(TrafficMatrixUsersModel)\
-                .filter_by(tm_id=tm_id, user_id=id, is_deleted=False).one_or_none() is None:
-            #check_tm_name_conflict(user_id=id, name=tm.name, db=db)
-            share_record = TrafficMatrixUsersModel(tm_id=tm_id, user_id=id)
-            db.add(share_record)
-    db.commit()
+        # sharing traffic matrix
+        TMRepository.add_share_tm(tm_id=tm_id, user_id=id, db=db)
     return 200
 
 
@@ -118,10 +115,10 @@ def share_traffic_matrix_users(tm_id: str, user: User = Depends(get_current_user
 
     # validating pt access (and authorization for sharing)
     _ = get_tm_mode_share(id=tm_id, version=1, user=user, db=db)
-    if not (records := db.query(TrafficMatrixUsersModel)
-            .filter_by(tm_id=tm_id, is_deleted=False).all()):
-        raise HTTPException(
-            status_code=404, detail='no user has access to this traffic matrix')
+    
+    # getting share records
+    records = TMRepository.get_tm_share_users(tm_id=tm_id, db=db)
+
     return list(map(lambda record: {"user_id": record.user_id, "username": record.user.username}, records))
 
 
@@ -131,15 +128,15 @@ def share_traffic_matrix_remove(tm_id: str = Body(...), user_id_list: List[str] 
                                 db: Session = Depends(get_db)):
     # validating pt access (and authorization for sharing)
     _ = get_tm_mode_share(id=tm_id, version=1, user=user, db=db)
+
     for id in user_id_list:
 
         # checking user existence
         UserRepository.get_user_by_id(id, db)
 
-        if (record := db.query(TrafficMatrixUsersModel)
-                .filter_by(tm_id=tm_id, user_id=id, is_deleted=False).one_or_none()) is not None:
-            db.delete(record)
-    db.commit()
+        # deleting share record
+        TMRepository.delete_tm_share(tm_id, id, db)
+
     return 200
 
 
