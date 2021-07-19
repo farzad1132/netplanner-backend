@@ -10,7 +10,7 @@ from projects.utils import ProjectRepository, check_project_name_conflict
 from sqlalchemy.orm import Session
 from traffic_matrix.utils import TMRepository, check_tm_name_conflict
 from users.schemas import User
-from users.utils import UserRegistry
+from users.utils import UserRepository
 
 from sharings.schemas import ShareRecord
 
@@ -36,7 +36,7 @@ def share_physical_topology_add(pt_id: str = Body(...),
     for id in user_id_list:
 
         # checking user existence
-        UserRegistry.get_user_by_id(id, db)
+        UserRepository.get_user_by_id(id, db)
 
         if db.query(PhysicalTopologyUsersModel)\
                 .filter_by(pt_id=pt_id, user_id=id, is_deleted=False).one_or_none() is None:
@@ -76,7 +76,7 @@ def share_physical_topology_remove(pt_id: str = Body(...),
     for id in user_id_list:
 
         # checking user existence
-        UserRegistry.get_user_by_id(id, db)
+        UserRepository.get_user_by_id(id, db)
 
         if (record := db.query(PhysicalTopologyUsersModel)
                 .filter_by(pt_id=pt_id, user_id=id, is_deleted=False).one_or_none()) is not None:
@@ -97,7 +97,7 @@ def share_traffic_matrix_add(tm_id: str = Body(...),
     for id in user_id_list:
 
         # checking user existence
-        UserRegistry.get_user_by_id(id, db)
+        UserRepository.get_user_by_id(id, db)
 
         if db.query(TrafficMatrixUsersModel)\
                 .filter_by(tm_id=tm_id, user_id=id, is_deleted=False).one_or_none() is None:
@@ -134,7 +134,7 @@ def share_traffic_matrix_remove(tm_id: str = Body(...), user_id_list: List[str] 
     for id in user_id_list:
 
         # checking user existence
-        UserRegistry.get_user_by_id(id, db)
+        UserRepository.get_user_by_id(id, db)
 
         if (record := db.query(TrafficMatrixUsersModel)
                 .filter_by(tm_id=tm_id, user_id=id, is_deleted=False).one_or_none()) is not None:
@@ -153,7 +153,7 @@ def share_project_add(project_id: str = Body(...), user_id_list: List[str] = Bod
     for id in user_id_list:
 
         # checking user existence
-        UserRegistry.get_user_by_id(id, db)
+        UserRepository.get_user_by_id(id, db)
 
         if db.query(ProjectUsersModel)\
                 .filter_by(user_id=id, project_id=project_id, is_deleted=False).one_or_none() is None:
@@ -188,7 +188,7 @@ def share_project_remove(project_id: str = Body(...), user_id_list: List[str] = 
     for id in user_id_list:
 
         # checking user existence
-        UserRegistry.get_user_by_id(id, db)
+        UserRepository.get_user_by_id(id, db)
 
         if (record := db.query(ProjectUsersModel)
                 .filter_by(project_id=project_id, user_id=id, is_deleted=False).one_or_none()) is not None:

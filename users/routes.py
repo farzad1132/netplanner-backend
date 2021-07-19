@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
 from users.schemas import RefreshToken, RegisterForm, Token, User, UserSearch
-from users.utils import (UserRegistry, clear_old_registers, send_mail,
+from users.utils import (UserRepository, clear_old_registers, send_mail,
                          validate_user_register_form)
 
 user_router = APIRouter(
@@ -27,7 +27,7 @@ def register_user(register_form: RegisterForm, request: Request,
     validate_user_register_form(register_form)
 
     # adding user register record to database
-    UserRegistry.add_user_register(username=register_form.username,
+    UserRepository.add_user_register(username=register_form.username,
                                    password=register_form.password,
                                    email=register_form.email,
                                    db=db)
@@ -93,10 +93,10 @@ def validate_email(token: str, db: Session = Depends(get_db)):
     if (username := decode_token(token)) is not None:
 
         # getting user registry record
-        record = UserRegistry.get_user_register(username=username)
+        record = UserRepository.get_user_register(username=username)
 
         # adding user to system as designer
-        UserRegistry.add_user(
+        UserRepository.add_user(
             username=username,
             password=record.password,
             email=record.email,
@@ -112,4 +112,4 @@ def search_user(search_string: str = Query(..., min_length=3),
                 db: Session = Depends(get_db),
                 _: User = Depends(get_current_user)):
 
-    return UserRegistry.search_for_user_by_username(search_string, db)
+    return UserRepository.search_for_user_by_username(search_string, db)

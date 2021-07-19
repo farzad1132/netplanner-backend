@@ -30,7 +30,7 @@ file_loader = FileSystemLoader('static')
 env = Environment(loader=file_loader)
 
 
-class UserRegistry:
+class UserRepository:
     """
         This class implements user related queries
     """
