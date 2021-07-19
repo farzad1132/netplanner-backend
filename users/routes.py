@@ -7,7 +7,6 @@ from dependencies import (ACCESS_TOKEN_EXPIRE_MINUTES, auth_user,
                           get_db, get_password_hash)
 from fastapi import APIRouter, Body, Depends, Query, Request
 from fastapi.security import OAuth2PasswordRequestForm
-from main import FRONTEND_URL
 from sqlalchemy.orm import Session
 from starlette.responses import RedirectResponse
 
@@ -89,7 +88,7 @@ def refresh_token(refresh_token: RefreshToken,
 
 @user_router.get('/v2.0.0/users/validate_email/{token}', status_code=200)
 def validate_email(token: str, db: Session = Depends(get_db)):
-
+    from main import FRONTEND_URL
     if (username := decode_token(token)) is not None:
 
         # getting user registry record
