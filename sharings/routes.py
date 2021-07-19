@@ -38,12 +38,9 @@ def share_physical_topology_add(pt_id: str = Body(...),
         # checking user existence
         UserRepository.get_user_by_id(id, db)
 
-        if db.query(PhysicalTopologyUsersModel)\
-                .filter_by(pt_id=pt_id, user_id=id, is_deleted=False).one_or_none() is None:
-            #check_pt_name_conflict(user_id=id, name=pt[0].name, db=db)
-            share_record = PhysicalTopologyUsersModel(pt_id=pt_id, user_id=id)
-            db.add(share_record)
-    db.commit()
+        # adding share records
+        PTRepository.add_share_pt(pt_id, id, db)
+
     return 200
 
 
@@ -57,10 +54,10 @@ def share_physical_topology_users(pt_id: str, user: User = Depends(get_current_u
 
     # validating pt access (and authorization for sharing)
     _ = get_pt_mode_share(id=pt_id, version=1, user=user, db=db)
-    if not(records := db.query(PhysicalTopologyUsersModel)
-           .filter_by(pt_id=pt_id, is_deleted=False).all()):
-        raise HTTPException(
-            status_code=404, detail='no user has access to this physical topology')
+    
+    # getting pt share records
+    records = PTRepository.get_pt_share_records(pt_id, db)
+
     return list(map(lambda record: {"user_id": record.user_id, "username": record.user.username}, records))
 
 
@@ -78,10 +75,9 @@ def share_physical_topology_remove(pt_id: str = Body(...),
         # checking user existence
         UserRepository.get_user_by_id(id, db)
 
-        if (record := db.query(PhysicalTopologyUsersModel)
-                .filter_by(pt_id=pt_id, user_id=id, is_deleted=False).one_or_none()) is not None:
-            db.delete(record)
-    db.commit()
+        # deleting pt share record
+        PTRepository.delete_pt_share_record(pt_id, id, db)
+
     return 200
 
 

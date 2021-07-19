@@ -64,7 +64,9 @@ class PTRepository:
         elif self.mode in ("DELETE", "SHARE"):
             raise HTTPException(status_code=401, detail="not authorized")
 
-        if db.query(PhysicalTopologyUsersModel).filter_by(pt_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
+        if db.query(PhysicalTopologyUsersModel) \
+            .filter_by(pt_id=id, user_id=user_id, is_deleted=False) \
+                .one_or_none() is None:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return pt_list
@@ -103,6 +105,40 @@ class PTRepository:
             raise HTTPException(
                 status_code=404, detail="no physical topology found")
         return pt_list
+
+    @staticmethod
+    def add_share_pt(pt_id: str, user_id: str, db: Session, is_deleted: bool = False) -> None:
+
+        if db.query(PhysicalTopologyUsersModel) \
+            .filter_by(pt_id=pt_id, user_id=user_id, is_deleted=is_deleted) \
+                .one_or_none() is None:
+            #check_pt_name_conflict(user_id=id, name=pt[0].name, db=db)
+            share_record = PhysicalTopologyUsersModel(
+                pt_id=pt_id, user_id=user_id)
+            db.add(share_record)
+        db.commit()
+
+    @staticmethod
+    def get_pt_share_records(pt_id: str, db: Session, is_deleted: bool = False) \
+            -> List[PhysicalTopologyUsersModel]:
+
+        if not(records := db.query(PhysicalTopologyUsersModel)
+           .filter_by(pt_id=pt_id, is_deleted=False).all()):
+            raise HTTPException(
+                status_code=404, detail='no user has access to this physical topology')
+
+        return records
+
+    @staticmethod
+    def delete_pt_share_record(pt_id: str, user_id: str, db: Session, is_deleted: bool = False) \
+            -> None:
+
+        if (record := db.query(PhysicalTopologyUsersModel)
+                .filter_by(pt_id=pt_id, user_id=user_id, is_deleted=is_deleted)
+                .one_or_none()) is not None:
+
+            db.delete(record)
+            db.commit()
 
 
 def check_pt_name_conflict(user_id: str, name: str, db: Session) -> None:
