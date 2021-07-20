@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Union
 from clusters.schemas import ClusterDict
 from pydantic import BaseModel
 from rwa.schemas import ProtectionType, RestorationType, RoutingType
-from traffic_matrix.schemas import BaseDemand, TrafficMatrixSchema
+from traffic_matrix.schemas import BaseDemand, ServiceType, TrafficMatrixSchema
 
 
 class MP1HThreshold(int, Enum):
@@ -40,6 +40,10 @@ class MP1HThreshold(int, Enum):
     t90 = 90
     t100 = 100
 
+
+class ServiceIdTypePair(BaseModel):
+    id: str
+    type: ServiceType
 
 class GroomingAlgorithm(str, Enum):
     """
@@ -130,6 +134,14 @@ class GroomingServiceType(str, Enum):
     groomout = "groomout"
     normal = "normal"
 
+class PanelAddress(BaseModel):
+    """
+        This schema denotes address of a panel in a node
+    """
+
+    rack_id: str
+    shelf_id: str
+    slot_id_list: List[str]
 
 class GroomingService(BaseModel):
     """
@@ -139,6 +151,8 @@ class GroomingService(BaseModel):
     """
     id: str
     type: GroomingServiceType = GroomingServiceType.normal
+    normal_service_type: Optional[ServiceType]
+    mp2x_panel_address: Optional[PanelAddress]
 
 
 class GroomOutType(str, Enum):
@@ -157,7 +171,7 @@ class GroomOut(BaseModel):
         This schema represents a groomout structure in Grooming Result
     """
     quantity: int
-    service_id_list: List[str]
+    service_id_list: List[ServiceIdTypePair]
     id: str
     sla: Optional[str]
     type: GroomOutType
@@ -288,7 +302,7 @@ class RemaningServices(BaseModel):
 
         keys are demand_id and values are remaning services id
     """
-    demands: Dict[str, List[str]]
+    demands: Dict[str, List[ServiceIdTypePair]]
 
 
 class GroomingOutput(BaseModel):
