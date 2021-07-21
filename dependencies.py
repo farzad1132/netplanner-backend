@@ -103,18 +103,20 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
+        username = payload.get("sub")
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
-    except JWTError:
+        if token_data.username is None:
+            raise Exception()
+    except (JWTError, Exception):
         raise credentials_exception
     if (user := get_user(username=token_data.username, db=db)) is None:
         raise credentials_exception
     return user
 
 
-def decode_token(token: str) -> str:
+def decode_token(token: str) -> Optional[str]:
     """
         This function decodes a given access token and retturns including username
 
@@ -155,7 +157,7 @@ def decode_refresh_token(token: str, db: Session) -> str:
         raise validation_exception
 
 
-def get_user(username: str, db: Session) -> UserModel:
+def get_user(username: str, db: Session) -> Optional[UserModel]:
     """
         This function finds a user object in database with given username
     """

@@ -2,6 +2,7 @@
     This module contains RWA workers and their handlers
 """
 
+from rwa.utils import RWARepository
 from celery.app.task import Task
 from celery_app import celeryapp
 from clusters.schemas import ClusterDict
@@ -28,21 +29,20 @@ class RWAHandle(Task):
             :param task_id: task id of instance
         """
         db = session()
-        if (register := db.query(RWARegisterModel)
-                .filter_by(id=task_id, is_deleted=False).one_or_none()):
-            rwa_res = RWAModel(id=task_id,
-                               project_id=register.project_id,
-                               grooming_id=register.grooming_id,
-                               pt_id=register.pt_id,
-                               tm_id=register.tm_id,
-                               pt_version=register.pt_version,
-                               tm_version=register.tm_version,
-                               manager_id=register.manager_id,
-                               form=register.form,
-                               lightpaths=retval["lightpaths"],
-                               start_date=register.start_date)
-            db.add(rwa_res)
-            db.commit()
+        if (register := RWARepository.update_rwa_register(rwa_id=task_id, db=db, is_finished=True)):
+
+            RWARepository.add_rwa(rwa_id=task_id,
+                                project_id=register.project_id,
+                                grooming_id=register.grooming_id,
+                                pt_id=register.pt_id,
+                                tm_id=register.tm_id,
+                                pt_version=register.pt_version,
+                                tm_version=register.tm_version,
+                                manager_id=register.manager_id,
+                                form=register.form,
+                                lightpaths=retval["lightpaths"],
+                                start_date=register.start_date,
+                                db=db)
             db.close()
 
     def on_failure(self, exc, task_id, *args, **kwargs):
@@ -56,14 +56,11 @@ class RWAHandle(Task):
         """
 
         db = session()
-        if (register := db.query(RWARegisterModel)
-                .filter_by(id=task_id).one_or_none()) is not None:
-            register.is_failed = True
-            register.exception = exc.__repr__()
-
-            db.add(register)
-            db.commit()
-            db.close()
+        RWARepository.update_rwa_register(rwa_id=task_id,
+                                        db=db,
+                                        is_failed=True,
+                                        exc=exc.__repr__())
+        db.close()
 
 
 @celeryapp.task(bind=True, base=RWAHandle)

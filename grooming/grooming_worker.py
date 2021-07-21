@@ -22,6 +22,7 @@ from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
 from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
                               ServiceMapping)
+from grooming.utils import GroomingRepository
 from models import UserModel
 
 
@@ -41,14 +42,11 @@ class GroomingBaseHandle(Task):
         """
 
         db = session()
-        if (register := db.query(GroomingRegisterModel)
-                .filter_by(id=task_id).one_or_none()) is not None:
-            register.is_failed = True
-            register.exception = exc.__repr__()
-
-            db.add(register)
-            db.commit()
-            db.close()
+        GroomingRepository.update_grooming_register(grooming_id=task_id,
+                                                    db=db,
+                                                    is_failed=True,
+                                                    exc=exc.__repr__())
+        db.close()
 
 
 class GroomingHandle(GroomingBaseHandle):
@@ -67,30 +65,31 @@ class GroomingHandle(GroomingBaseHandle):
         """
 
         db = session()
-        if (register := db.query(GroomingRegisterModel)
-                .filter_by(id=task_id).one_or_none()) is not None:
-            grooming_res = GroomingModel(
-                id=task_id,
+        """ if (register := db.query(GroomingRegisterModel)
+                .filter_by(id=task_id).one_or_none()) is not None: """
+        if (register := GroomingRepository.update_grooming_register(grooming_id=task_id, db=db,
+                                                                    is_finished=True)) is not None:
+            GroomingRepository.add_grooming(
+                grooming_id=task_id,
                 project_id=register.project_id,
                 pt_id=register.pt_id,
                 tm_id=register.tm_id,
                 pt_version=register.pt_version,
                 tm_version=register.tm_version,
-                form=register.form,
+                grooming_form=register.form,
                 manager_id=register.manager_id,
                 with_clustering=register.with_clustering,
                 clusters=register.clusters,
                 is_finished=True,
-                start_date=register.start_date,
                 algorithm=register.algorithm,
+                start_date=register.start_date,
                 traffic=retval["grooming_result"]["traffic"],
                 service_devices=retval["grooming_result"]["service_devices"],
                 node_structure=retval['grooming_result']['node_structure'],
                 clustered_tms=retval["clustered_tms"],
-                service_mapping=retval["serviceMapping"]
+                service_mapping=retval["serviceMapping"],
+                db=db
             )
-            db.add(grooming_res)
-            db.commit()
             db.close()
 
 
@@ -110,16 +109,18 @@ class AdvGroomingHandle(GroomingBaseHandle):
         """
 
         db = session()
-        if (register := db.query(GroomingRegisterModel)
-                .filter_by(id=task_id).one_or_none()) is not None:
-            grooming_res = AdvGroomingModel(
-                id=task_id,
+        """ if (register := db.query(GroomingRegisterModel)
+                .filter_by(id=task_id).one_or_none()) is not None: """
+        if (register := GroomingRepository.update_grooming_register(grooming_id=task_id, db=db,
+                                                                    is_finished=True)) is not None:
+            GroomingRepository.add_adv_grooming(
+                grooming_id=task_id,
                 project_id=register.project_id,
                 pt_id=register.pt_id,
                 tm_id=register.tm_id,
                 pt_version=register.pt_version,
                 tm_version=register.tm_version,
-                form=register.form,
+                grooming_form=register.form,
                 manager_id=register.manager_id,
                 is_finished=True,
                 with_clustering=register.with_clustering,
@@ -129,10 +130,9 @@ class AdvGroomingHandle(GroomingBaseHandle):
                 connections=retval['connections'],
                 lambda_link=retval['lambda_link'],
                 average_lambda_capacity_usage=retval['average_lambda_capacity_usage'],
-                lightpaths=retval['lightpaths']
+                lightpaths=retval['lightpaths'],
+                db=db
             )
-            db.add(grooming_res)
-            db.commit()
             db.close()
 
 # grooming_task ( traffficmatrix, mp1h_threshold, clusters, Physical_topology):
