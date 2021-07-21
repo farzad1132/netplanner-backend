@@ -121,8 +121,8 @@ def get_all(project_id: str, grooming_id: Optional[str] = None, user: User = Dep
     _ = get_project_mode_get(id=project_id, user=user, db=db)
 
     return RWARepository.get_all_rwa(project_id=project_id,
-                                   db=db,
-                                   grooming_id=grooming_id)
+                                     db=db,
+                                     grooming_id=grooming_id)
 
 
 @rwa_router.get("/v2.0.0/algorithms/rwa/faileds", response_model=List[FailedRWAInfo], status_code=200)
@@ -136,6 +136,6 @@ def get_faileds(project_id: str, grooming_id: Optional[str] = None, user: User =
     _ = get_project_mode_get(id=project_id, user=user, db=db)
 
     return RWARepository.get_all_rwa_register(project_id=project_id,
-                                            db=db,
-                                            grooming_id=grooming_id,
-                                            is_failed=True)
+                                              db=db,
+                                              grooming_id=grooming_id,
+                                              is_failed=True)
