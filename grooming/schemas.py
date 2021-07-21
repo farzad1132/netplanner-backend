@@ -283,8 +283,8 @@ class GroomingResult(BaseModel):
         keys of **traffic** are sub_tm_id
         keys of **service_devices** are device_id
     """
-    service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
-    node_structure: NodeStructure
+    service_devices: Optional[Dict[str, Union[MP2X, MP1H, TP1H]]]
+    node_structure: Optional[NodeStructure]
     traffic: Dict[str, GroomingOutput]
 
 class SubTM(BaseModel):
