@@ -304,6 +304,15 @@ class RemaningServices(BaseModel):
     """
     demands: Dict[str, List[ServiceIdTypePair]]
 
+class RemainingGroomouts(BaseModel):
+    """
+        This schema represents groomouts (MP2X outputs) that haven't attached to a MP1H
+
+        keys are demand_id and valuse are groomout_id
+    """
+
+    demands: Dict[str, List[str]]
+
 
 class GroomingOutput(BaseModel):
     """
@@ -315,6 +324,7 @@ class GroomingOutput(BaseModel):
     cluster_id: str
     low_rate_grooming_result: LowRateGrooming
     remaining_services: RemaningServices
+    remaining_groomouts: RemainingGroomouts
 
 
 class GroomingResult(BaseModel):
