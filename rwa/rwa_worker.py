@@ -41,7 +41,8 @@ class RWAHandle(Task):
                                 manager_id=register.manager_id,
                                 form=register.form,
                                 lightpaths=retval["lightpaths"],
-                                start_date=register.start_date)
+                                start_date=register.start_date,
+                                db=db)
             db.close()
 
     def on_failure(self, exc, task_id, *args, **kwargs):

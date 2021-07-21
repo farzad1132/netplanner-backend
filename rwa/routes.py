@@ -82,7 +82,8 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
         pt_version=project_db["physical_topology"]["version"],
         tm_version=project_db["traffic_matrix"]["version"],
         manager_id=user.id,
-        rwa_form=rwa_form
+        rwa_form=rwa_form,
+        db=db
     )
 
     return {"rwa_id": task.id}
