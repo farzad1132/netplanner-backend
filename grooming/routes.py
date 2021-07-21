@@ -23,7 +23,7 @@ from grooming.schemas import (FailedGroomingInfo, GroomingAlgorithm,
                               GroomingCheck, GroomingDBOut, GroomingForm,
                               GroomingId, GroomingIdList, GroomingInformation,
                               ManualGroomingDB)
-from grooming.utils import check_one_gateway_clusters
+from grooming.utils import GroomingRepository, check_one_gateway_clusters
 from models import ClusterModel
 
 grooming_router = APIRouter(
@@ -72,19 +72,19 @@ def start_automatic(project_id: str, grooming_form: GroomingForm,
     else:
         with_clustering = True
 
-    grooming_register = GroomingRegisterModel(id=task.id,
-                                              project_id=project_id,
-                                              pt_id=project_db["physical_topology"]["id"],
-                                              tm_id=project_db["traffic_matrix"]["id"],
-                                              pt_version=project_db["physical_topology"]["version"],
-                                              tm_version=project_db["traffic_matrix"]["version"],
-                                              form=grooming_form.dict(),
-                                              manager_id=user.id,
-                                              with_clustering=with_clustering,
-                                              clusters=clusters,
-                                              algorithm=GroomingAlgorithm.end_to_end)
-    db.add(grooming_register)
-    db.commit()
+    GroomingRepository.add_grooming_register(grooming_id=task.id,
+                                             project_id=project_id,
+                                             pt_id=project_db["physical_topology"]["id"],
+                                             tm_id=project_db["traffic_matrix"]["id"],
+                                             pt_version=project_db["physical_topology"]["version"],
+                                             tm_version=project_db["traffic_matrix"]["version"],
+                                             grooming_form=grooming_form,
+                                             manager_id=user.id,
+                                             with_clustering=with_clustering,
+                                             clusters=clusters,
+                                             algorithm=GroomingAlgorithm.end_to_end,
+                                             db=db)
+
     return {"grooming_id": task.id}
 
 
@@ -123,19 +123,18 @@ def start_end_to_end(project_id: str, grooming_form: GroomingForm,
     else:
         with_clustering = True
 
-    grooming_register = GroomingRegisterModel(id=task.id,
-                                              project_id=project_id,
-                                              pt_id=project_db["physical_topology"]["id"],
-                                              tm_id=project_db["traffic_matrix"]["id"],
-                                              pt_version=project_db["physical_topology"]["version"],
-                                              tm_version=project_db["traffic_matrix"]["version"],
-                                              form=grooming_form.dict(),
-                                              manager_id=user.id,
-                                              with_clustering=with_clustering,
-                                              clusters=clusters,
-                                              algorithm=GroomingAlgorithm.end_to_end)
-    db.add(grooming_register)
-    db.commit()
+    GroomingRepository.add_grooming_register(grooming_id=task.id,
+                                             project_id=project_id,
+                                             pt_id=project_db["physical_topology"]["id"],
+                                             tm_id=project_db["traffic_matrix"]["id"],
+                                             pt_version=project_db["physical_topology"]["version"],
+                                             tm_version=project_db["traffic_matrix"]["version"],
+                                             grooming_form=grooming_form,
+                                             manager_id=user.id,
+                                             with_clustering=with_clustering,
+                                             clusters=clusters,
+                                             algorithm=GroomingAlgorithm.end_to_end,
+                                             db=db)
     return {"grooming_id": task.id}
 
 
@@ -157,26 +156,23 @@ def start_manual_grooming(project_id: str, manual_grooming: ManualGroomingDB,
     # TODO: check manual grooming correctness
 
     id = uuid4().hex
-    grooming_result = GroomingModel(
-        id=id,
+    GroomingRepository.add_grooming(
+        grooming_id=id,
         project_id=project_id,
         pt_id=project_db["physical_topology"]["id"],
         tm_id=project_db["traffic_matrix"]["id"],
         pt_version=project_db["physical_topology"]["version"],
         tm_version=project_db["traffic_matrix"]["version"],
-        form=manual_grooming.form.dict(),
+        grooming_form=manual_grooming.form.dict(),
         manager_id=user.id,
-        start_date=datetime.now(),
         clusters={},
-        is_finished=True,
         algorithm=GroomingAlgorithm.end_to_end,
         traffic=manual_grooming.traffic.dict(),
         service_devices=manual_grooming.service_devices.dict(),
-        node_structure=manual_grooming.node_structure.dict()
+        node_structure=manual_grooming.node_structure.dict(),
+        db=db,
+        start_date=datetime.now()
     )
-
-    db.add(grooming_result)
-    db.commit()
 
     return {"grooming_id": id}
 
@@ -224,19 +220,18 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
     )
 
     # registering algorithm
-    grooming_register = GroomingRegisterModel(id=task.id,
-                                              project_id=project_id,
-                                              pt_id=project_db["physical_topology"]["id"],
-                                              tm_id=project_db["traffic_matrix"]["id"],
-                                              pt_version=project_db["physical_topology"]["version"],
-                                              tm_version=project_db["traffic_matrix"]["version"],
-                                              form=grooming_form.dict(),
-                                              manager_id=user.id,
-                                              with_clustering=with_clustering,
-                                              clusters=cluster_dict,
-                                              algorithm=GroomingAlgorithm.advanced)
-    db.add(grooming_register)
-    db.commit()
+    GroomingRepository.add_grooming_register(grooming_id=task.id,
+                                             project_id=project_id,
+                                             pt_id=project_db["physical_topology"]["id"],
+                                             tm_id=project_db["traffic_matrix"]["id"],
+                                             pt_version=project_db["physical_topology"]["version"],
+                                             tm_version=project_db["traffic_matrix"]["version"],
+                                             grooming_form=grooming_form,
+                                             manager_id=user.id,
+                                             with_clustering=with_clustering,
+                                             clusters=cluster_dict,
+                                             algorithm=GroomingAlgorithm.advanced,
+                                             db=db)
 
     return {"grooming_id": task.id}
 
@@ -260,9 +255,9 @@ def result_automatic_2_0_0(grooming_id: str, db: Session = Depends(get_db),
         getting grooming algorithm result\n
         ***Recomendation***: use **2.0.1 version of this path**
     """
-    if (grooming_result := db.query(GroomingModel)
-            .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
-        raise HTTPException(status_code=404, detail="grooming not found")
+
+    grooming_result = GroomingRepository.get_grooming(
+        grooming_id=grooming_id, db=db)
 
     # authorization check
     _ = get_project_mode_get(id=grooming_result.project_id, user=user, db=db)
@@ -277,17 +272,15 @@ def result_automatic_v2_0_1(grooming_id: str, db: Session = Depends(get_db),
         getting grooming algorithm result\n
         ***Whats New***: this path now returns both grooming results
     """
-    if (record := db.query(GroomingRegisterModel)
-            .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
-        raise HTTPException(status_code=404, detail="grooming not found")
+
+    record = GroomingRepository.get_grooming_register(
+        grooming_id=grooming_id, db=db)
     if record.algorithm == GroomingAlgorithm.advanced:
-        if (grooming_result := db.query(AdvGroomingModel)
-                .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
-            raise HTTPException(status_code=404, detail="grooming not found")
+        grooming_result = GroomingRepository.get_adv_grooming(
+            grooming_id=grooming_id, db=db)
     else:
-        if (grooming_result := db.query(GroomingModel)
-                .filter_by(id=grooming_id, is_deleted=False).one_or_none()) is None:
-            raise HTTPException(status_code=404, detail="grooming not found")
+        grooming_result = GroomingRepository.get_grooming(
+            grooming_id=grooming_id, db=db)
 
     # authorization check
     _ = get_project_mode_get(id=grooming_result.project_id, user=user, db=db)
@@ -295,7 +288,7 @@ def result_automatic_v2_0_1(grooming_id: str, db: Session = Depends(get_db),
 
 
 @grooming_router.get("/v2.0.0/algorithms/grooming/all", status_code=200,
-                     response_model=List[GroomingInformation])
+                     response_model=List[GroomingInformation], deprecated=True)
 def get_all(project_id: str, user: User = Depends(get_current_user),
             db: Session = Depends(get_db)):
     """
@@ -306,9 +299,30 @@ def get_all(project_id: str, user: User = Depends(get_current_user),
     _ = get_project_mode_get(id=project_id, user=user, db=db)
 
     # getting records from database
-    grooming_results = db.query(GroomingModel).filter_by(
-        project_id=project_id, is_deleted=False).all()
-    return grooming_results
+    return GroomingRepository.get_all_grooming(project_id=project_id, db=db)
+
+
+@grooming_router.get("/v2.0.1/algorithms/grooming/all", status_code=200,
+                     response_model=List[GroomingInformation])
+def get_all_v2_0_1(project_id: str, user: User = Depends(get_current_user),
+                   db: Session = Depends(get_db)):
+    """
+        getting all available grooming id's for user
+        ***Whats New***: this path now returns both end to end grooming and adv grooming records
+    """
+
+    # authorization check
+    _ = get_project_mode_get(id=project_id, user=user, db=db)
+
+    result = []
+
+    # getting records from database
+    result.extend(GroomingRepository.get_all_grooming(
+        project_id=project_id, db=db))
+    result.extend(GroomingRepository.get_all_adv_grooming(
+        project_id=project_id, db=db))
+
+    return result
 
 
 @grooming_router.get("/v2.0.0/algorithms/grooming/faileds", status_code=200,
@@ -323,6 +337,5 @@ def get_faileds(project_id: str, user: User = Depends(get_current_user),
     _ = get_project_mode_get(id=project_id, user=user, db=db)
 
     # getting information from database
-    failed_grooming_list = db.query(GroomingRegisterModel).filter_by(
-        project_id=project_id, is_deleted=False, is_failed=True).all()
-    return failed_grooming_list
+    return GroomingRepository.get_all_grooming_registers(project_id=project_id,
+                                                         db=db, is_failed=True)
