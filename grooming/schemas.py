@@ -45,6 +45,7 @@ class ServiceIdTypePair(BaseModel):
     id: str
     type: ServiceType
 
+
 class GroomingAlgorithm(str, Enum):
     """
         Grooming Algorithm `Enum`
@@ -134,6 +135,7 @@ class GroomingServiceType(str, Enum):
     groomout = "groomout"
     normal = "normal"
 
+
 class PanelAddress(BaseModel):
     """
         This schema denotes address of a panel in a node
@@ -142,6 +144,7 @@ class PanelAddress(BaseModel):
     rack_id: str
     shelf_id: str
     slot_id_list: List[str]
+
 
 class GroomingService(BaseModel):
     """
@@ -296,13 +299,41 @@ class NodeStructure(BaseModel):
     nodes: Dict[str, Rackstructure]
 
 
+class RemainingServicesCountObject(BaseModel):
+    """
+        This schema represents inner object for each type in remianing services
+    """
+
+    count: int = 0
+    service_id_list: List[str]
+    type: ServiceType
+
+
+class RemainingServicesValue(BaseModel):
+    """
+        This schema represent objects for each value that expresses remaining service
+    """
+
+    E1: RemainingServicesCountObject
+    stm1_e: RemainingServicesCountObject
+    stm1_o: RemainingServicesCountObject
+    stm4: RemainingServicesCountObject
+    stm16: RemainingServicesCountObject
+    stm64: RemainingServicesCountObject
+    FE: RemainingServicesCountObject
+    GE1: RemainingServicesCountObject
+    GE10: RemainingServicesCountObject
+    GE100: RemainingServicesCountObject
+
+
 class RemaningServices(BaseModel):
     """
         This schema represents services that grooming algorithms couldn't bundle them so user has to decide what to do
 
         keys are demand_id and values are remaning services id
     """
-    demands: Dict[str, List[ServiceIdTypePair]]
+    demands: Dict[str, RemainingServicesValue]
+
 
 class RemainingGroomouts(BaseModel):
     """
