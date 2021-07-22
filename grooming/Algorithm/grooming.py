@@ -534,8 +534,9 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
         FinalLightPath={}
         FinalLightPath.update({'LightPaths':{}})
         FinalLightPath.update({"id":uuid()})
-        
-        def addlightpath(source,destination,capacity,service_id_list,demand_id,Routing_type,groomout10_id_list, protection_type, restoration_type):
+        remaining_services= {"demands":{}}
+        remaining_groomouts= {"demands":{}}
+        def addlightpath(source,destination,capacity,service_id_list,demand_id,Routing_type,groomout10_id_list, protection_type, restoration_type, sdict):
             """
             This function create a lightpath and add it to FinalLightPath dictionary .
 
@@ -548,10 +549,16 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
             
             lst=[]
             for u in service_id_list:
-                lst.append({"id":u,"type":"normal"})
+                lst.append({"id":u,
+                            "type":"normal",
+                            "normal_service_type": sdict[str (demand_id)][u],
+                            "mp2x_panel_address": None})
             if groomout10_id_list != "None":
                 for u in groomout10_id_list:
-                    lst.append({"id":u,"type":"groomout"})
+                    lst.append({"id":u,
+                                "type":"groomout",
+                                "normal_service_type": None,
+                                "mp2x_panel_address": None})
             lightpathId = uuid()
             lp1={
 
@@ -573,7 +580,40 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
         device_dict={}
         lightpathId=1
         nume=1
+        sdict={}
         for i in TM['demands'].keys():
+            sdict.update({i:{}})
+            remaining_groomouts["demands"].update({i:[]})
+            remaining_services["demands"].update({i:{   "E1": { "count":  0,
+                                                                "service_id_list": [],
+                                                                "type": "E1"},
+                                                        "stm1_e":{ "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "STM1 Electrical"} ,
+                                                        "stm1_o": { "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "STM1 Optical"} ,
+                                                        "stm4": {   "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "STM4"} ,
+                                                        "stm16": {    "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "STM16"} ,
+                                                        "stm64": {    "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "STM64"},
+                                                        "FE": {    "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "STM64"},
+                                                        "GE1": {    "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "GE"},
+                                                        "GE10": {    "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "10GE"},
+                                                        "GE100": {    "count":  0,
+                                                                    "service_id_list": [],
+                                                                    "type": "100GE"}}})
             per = math.ceil(percentage[0] + (nume/len(TM['demands'].keys())) * (percentage[1] - percentage[0]))
             state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
             nume = nume + 1
@@ -596,6 +636,7 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
             for j in range(0,len(TM["demands"][i]["services"])):
                 if TM["demands"][i]["services"][j]["type"] == "100GE":
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
+                        sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
                         LPId=addlightpath(source=TM["demands"][i]["source"],
                         destination=TM["demands"][i]["destination"],
                         capacity=100,
@@ -604,7 +645,8 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                         demand_id=TM["demands"][i]["id"],
                         Routing_type=RoutingType.GE100,
                         protection_type=TM["demands"][i]["protection_type"], 
-                        restoration_type=TM["demands"][i]["restoration_type"]
+                        restoration_type=TM["demands"][i]["restoration_type"],
+                        sdict=sdict
                         )
                         if i in TP1H_dict.keys():   
                             TP1H_dict[i].append((LPId,k))
@@ -640,18 +682,23 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                 elif ((TM["demands"][i]["services"][j]["type"] == "STM64") or (TM["demands"][i]["services"][j]["type"] == "10GE")):
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         z.append((k,10))
+                        sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
                 elif TM["demands"][i]["services"][j]["type"] == "GE":
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         y.append((k,1.25))
+                        sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
                 elif TM["demands"][i]["services"][j]["type"] == "FE":
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         y.append((k,0.1))
+                        sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
                 elif TM["demands"][i]["services"][j]["type"] == "STM16":
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         y.append((k,2.5))
+                        sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
                 elif TM["demands"][i]["services"][j]["type"] == "STM1":
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         y.append((k,0.15552))
+                        sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
             if y:
                 service_lower10_SDH.append((i,y))
                 output_10.append((i,MP2X(y)))
@@ -670,7 +717,8 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                     listofs=[]
                     cap=0
                     for nu in range(0,len(output_10[0][1][num])):
-                        listofs.append(str (output_10[0][1][num][nu][0]))
+                        listofs.append({    "id":str (output_10[0][1][num][nu][0]),
+                                            "type":sdict[i][str (output_10[0][1][num][nu][0])]})
                         cap = cap + output_10[0][1][num][nu][1]
                     GroomOutId = uuid()
                     LastId = GroomOutId
@@ -771,7 +819,7 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
 
                                 
                             )
-           
+          
         for i in range(0,len(service_lower100)):
             NO_LP= math.ceil(len(service_lower100[i][1])/10)
             orsr=TM["demands"][service_lower100[i][0]]["source"]
@@ -794,6 +842,17 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                     remain_lower100.append((service_lower100[i][0],list_of_service))
                     remain_lower100_2.append((service_lower100[i][0],list_of_service2))
                     remain_lower100_dict.update({service_lower100[i][0]:list_of_service})
+                    for idd in list_of_service:
+                        if idd in sdict[service_lower100[i][0]]:
+                            fg="none"
+                            if sdict[service_lower100[i][0]][idd] == "10GE":
+                                fg="GE10"
+                            else:
+                                fg="stm64"
+                            remaining_services["demands"][service_lower100[i][0]][fg]["count"] = remaining_services["demands"][service_lower100[i][0]][fg]["count"] + 1
+                            remaining_services["demands"][service_lower100[i][0]][fg]["service_id_list"].append(idd)
+                        else:
+                            remaining_groomouts["demands"][service_lower100[i][0]].append(idd)
                     if service_lower100[i][0] in remaningnservices['demands'].keys():
                         remaningnservices['demands'][service_lower100[i][0]].append(list_of_service)
                     else:
@@ -815,7 +874,8 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                         demand_id=TM["demands"][service_lower100[i][0]]["id"],
                         Routing_type=RoutingType.GE100,
                         protection_type=TM["demands"][service_lower100[i][0]]["protection_type"], 
-                        restoration_type=TM["demands"][service_lower100[i][0]]["restoration_type"]
+                        restoration_type=TM["demands"][service_lower100[i][0]]["restoration_type"],
+                        sdict=sdict
                         )
                     device_dict[TM['demands'][service_lower100[i][0]]["source"]]["MP1H"].append({
                                     "panel" : "MP1H",
@@ -835,7 +895,8 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
         groomingresult={}
         groomingresult.update({'low_rate_grooming_result':Groomout10})
         groomingresult.update({'lightpaths':FinalLightPath['LightPaths']})
-        groomingresult.update({'remaining_services':remaningnservices})
+        groomingresult.update({'remaining_services':remaining_services})
+        groomingresult.update({'remaining_groomouts':remaining_groomouts})
         # groomingresult.update({'cluster_id':TM1[0]['id']})
         # devicedict.update({'service_devices': Nodestructureservices(device_dict)})
         return groomingresult,device_dict
