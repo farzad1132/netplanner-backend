@@ -551,14 +551,13 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
             for u in service_id_list:
                 lst.append({"id":u,
                             "type":"normal",
-                            "normal_service_type": sdict[str (demand_id)][u],
-                            "mp2x_panel_address": None})
+                            "normal_service_type": sdict[str (demand_id)][u]})
             if groomout10_id_list != "None":
                 for u in groomout10_id_list:
                     lst.append({"id":u,
                                 "type":"groomout",
                                 "normal_service_type": None,
-                                "mp2x_panel_address": None})
+                                "mp2x_panel_address": {}})
             lightpathId = uuid()
             lp1={
 

@@ -145,6 +145,9 @@ class PanelAddress(BaseModel):
     shelf_id: str
     slot_id_list: List[str]
 
+class NodeAddress(BaseModel):
+    source: PanelAddress
+    destination: PanelAddress
 
 class GroomingService(BaseModel):
     """
@@ -155,7 +158,7 @@ class GroomingService(BaseModel):
     id: str
     type: GroomingServiceType = GroomingServiceType.normal
     normal_service_type: Optional[ServiceType]
-    mp2x_panel_address: Optional[PanelAddress]
+    mp2x_panel_address: Optional[NodeAddress]
 
 
 class GroomOutType(str, Enum):
