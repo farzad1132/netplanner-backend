@@ -233,7 +233,7 @@ class RWAInformation(BaseModel):
     pt_version: int
     tm_version: int
     start_date: datetime
-    end_date: datetime
+    end_date: Optional[datetime]
 
     class Config:
         orm_mode = True
