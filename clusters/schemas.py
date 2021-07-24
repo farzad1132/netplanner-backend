@@ -1,10 +1,13 @@
-from pydantic import BaseModel
 from enum import Enum
-from typing import List, Dict
+from typing import Dict, List
+
+from pydantic import BaseModel
+
 
 class ClusterType(str, Enum):
     ge100 = "100GE"
     ge200 = "200GE"
+
 
 class ClusterSchema(BaseModel):
     gateways: List[str]
@@ -15,6 +18,7 @@ class ClusterSchema(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ClusterIn(BaseModel):
     data: ClusterSchema
     name: str
@@ -22,14 +26,17 @@ class ClusterIn(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ClusterOut(ClusterIn):
     id: str
+
 
 class ClusterDict(BaseModel):
     """
         keys are cluster_id
     """
     clusters: Dict[str, ClusterOut]
+
 
 class ClusterId(BaseModel):
     id: str

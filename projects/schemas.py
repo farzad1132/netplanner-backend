@@ -2,11 +2,13 @@
 This module contains pydantic models related to the project operations
 Some important schemas are `ProjectSchema` and `ProjectPOST`"""
 
-from pydantic import BaseModel
-from physical_topology.schemas import PhysicalTopologyDB
-from traffic_matrix.schemas import TrafficMatrixDB
-from typing import Optional
 from datetime import datetime
+from typing import Optional
+
+from physical_topology.schemas import PhysicalTopologyDB
+from pydantic import BaseModel
+from traffic_matrix.schemas import TrafficMatrixDB
+
 
 class ProjectSchema(BaseModel):
     """
@@ -28,6 +30,7 @@ class ProjectSchema(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ProjectPOST(BaseModel):
     """
     This schema represents required data for creating a project
@@ -41,6 +44,7 @@ class ProjectPOST(BaseModel):
     class Config:
         orm_mode = True
 
+
 class ProjectPUT(BaseModel):
     """This schema represents payload for updating a project
 
@@ -51,7 +55,7 @@ change project physical topology and traffic matrix but only their versions.
     """
     current_pt_version: Optional[int] = 1
     current_tm_version: Optional[int] = 1
-    
+
 
 class ProjectId(BaseModel):
     """This schema represents a project id
@@ -60,6 +64,7 @@ class ProjectId(BaseModel):
 
     class Config:
         orm_mode = True
+
 
 class ProjectOut(BaseModel):
     """

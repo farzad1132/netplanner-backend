@@ -1,5 +1,6 @@
 from typing import List
 
+
 def status_check(id_list: List[str], background_task):
     result = []
     for id in id_list:

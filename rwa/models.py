@@ -2,11 +2,13 @@
     This schema contains RWA related models
 """
 
-from sqlalchemy.dialects.postgresql import JSON
 from datetime import datetime
-from sqlalchemy.orm import relationship
+
 from database import base
-from sqlalchemy import Boolean, Integer, String, ForeignKey, Column, DateTime
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import relationship
+
 
 class RWARegisterModel(base):
     """
@@ -35,6 +37,7 @@ class RWARegisterModel(base):
     is_finished = Column("is_finished", Boolean, nullable=False, default=False)
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
     chain_info = Column("chain_info", JSON, nullable=False)
+
 
 class RWAModel(base):
     """
@@ -67,5 +70,5 @@ class RWAModel(base):
     lightpaths = Column("lightpaths", JSON, nullable=False)
 
     def __repr__(self):
-        return  f"RWA(id={self.id}, grooming_id={self.grooming_id}, pt_id={self.pt_id}, tm_id={self.tm_id},"\
-                f" pt_version={self.pt_version}, tm_version={self.tm_version}, manager_id={self.manager_id})"
+        return f"RWA(id={self.id}, grooming_id={self.grooming_id}, pt_id={self.pt_id}, tm_id={self.tm_id},"\
+            f" pt_version={self.pt_version}, tm_version={self.tm_version}, manager_id={self.manager_id})"
