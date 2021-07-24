@@ -233,7 +233,7 @@ class RWAInformation(BaseModel):
     pt_version: int
     tm_version: int
     start_date: datetime
-    end_date: datetime
+    end_date: Optional[datetime]
 
     class Config:
         orm_mode = True
@@ -245,3 +245,43 @@ class FailedRWAInfo(RWAInformation):
     """
 
     exception: str
+
+
+class RWABareLink(BaseModel):
+    source: str
+    destination: str
+
+
+class RWALinkState(RWABareLink):
+    wavelengths: List[int]
+
+
+class RWANodeState(BaseModel):
+    node: str
+    wavelengths: List[int]
+
+
+class WavelengthState(BaseModel):
+    wavelength: str
+    links: List[RWABareLink]
+    signal_nodes: List[str]
+    pass_nodes: List[str]
+
+
+class LightpathState(BaseModel):
+    lambda_link: int
+
+
+class RWAGeneralInfoBase(BaseModel):
+    link_state: Dict[str, RWALinkState]
+    node_state: Dict[str, RWANodeState]
+    wavelength_state: Dict[int, WavelengthState]
+    lightpath_state: Dict[str, LightpathState]
+    total_lambda_link: int
+    average_lambda_capacity_usage: float
+
+
+class RWAGeneralInfo(BaseModel):
+    working: RWAGeneralInfoBase
+    protection: Optional[RWAGeneralInfoBase]
+    restoration: Optional[RWAGeneralInfoBase]
