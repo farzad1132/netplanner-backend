@@ -9,7 +9,7 @@ from typing import Dict, List, Optional, Union
 from clusters.schemas import ClusterDict
 from pydantic import BaseModel
 from rwa.schemas import ProtectionType, RestorationType, RoutingType
-from traffic_matrix.schemas import BaseDemand, TrafficMatrixSchema
+from traffic_matrix.schemas import BaseDemand, ServiceType, TrafficMatrixSchema
 
 
 class MP1HThreshold(int, Enum):
@@ -39,6 +39,11 @@ class MP1HThreshold(int, Enum):
     t80 = 80
     t90 = 90
     t100 = 100
+
+
+class ServiceIdTypePair(BaseModel):
+    id: str
+    type: ServiceType
 
 
 class GroomingAlgorithm(str, Enum):
@@ -131,6 +136,19 @@ class GroomingServiceType(str, Enum):
     normal = "normal"
 
 
+class PanelAddress(BaseModel):
+    """
+        This schema denotes address of a panel in a node
+    """
+
+    rack_id: str
+    shelf_id: str
+    slot_id_list: List[str]
+
+class NodeAddress(BaseModel):
+    source: PanelAddress
+    destination: PanelAddress
+
 class GroomingService(BaseModel):
     """
         Grooming algorithm service schema 
@@ -139,6 +157,8 @@ class GroomingService(BaseModel):
     """
     id: str
     type: GroomingServiceType = GroomingServiceType.normal
+    normal_service_type: Optional[ServiceType]
+    mp2x_panel_address: Optional[NodeAddress]
 
 
 class GroomOutType(str, Enum):
@@ -157,7 +177,7 @@ class GroomOut(BaseModel):
         This schema represents a groomout structure in Grooming Result
     """
     quantity: int
-    service_id_list: List[str]
+    service_id_list: List[ServiceIdTypePair]
     id: str
     sla: Optional[str]
     type: GroomOutType
@@ -282,12 +302,49 @@ class NodeStructure(BaseModel):
     nodes: Dict[str, Rackstructure]
 
 
+class RemainingServicesCountObject(BaseModel):
+    """
+        This schema represents inner object for each type in remianing services
+    """
+
+    count: int = 0
+    service_id_list: List[str]
+    type: ServiceType
+
+
+class RemainingServicesValue(BaseModel):
+    """
+        This schema represent objects for each value that expresses remaining service
+    """
+
+    E1: RemainingServicesCountObject
+    stm1_e: RemainingServicesCountObject
+    stm1_o: RemainingServicesCountObject
+    stm4: RemainingServicesCountObject
+    stm16: RemainingServicesCountObject
+    stm64: RemainingServicesCountObject
+    FE: RemainingServicesCountObject
+    GE1: RemainingServicesCountObject
+    GE10: RemainingServicesCountObject
+    GE100: RemainingServicesCountObject
+
+
 class RemaningServices(BaseModel):
     """
         This schema represents services that grooming algorithms couldn't bundle them so user has to decide what to do
 
         keys are demand_id and values are remaning services id
     """
+    demands: Dict[str, RemainingServicesValue]
+
+
+class RemainingGroomouts(BaseModel):
+    """
+        This schema represents groomouts (MP2X outputs) that haven't attached to a MP1H
+
+        keys are demand_id and valuse are groomout_id
+    """
+
     demands: Dict[str, List[str]]
 
 
@@ -301,6 +358,7 @@ class GroomingOutput(BaseModel):
     cluster_id: str
     low_rate_grooming_result: LowRateGrooming
     remaining_services: RemaningServices
+    remaining_groomouts: RemainingGroomouts
 
 
 class GroomingResult(BaseModel):

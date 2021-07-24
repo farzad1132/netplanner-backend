@@ -1,5 +1,5 @@
 import math
-def Nodestructureservices(device_dict, Physical_topology, state, percentage):  
+def Nodestructureservices(device_dict, Physical_topology, grooming_res, state, percentage):  
     """
             This function places the devices that produced in grooming function in the slots of shelves and racks in each node.
                 
@@ -116,4 +116,28 @@ def Nodestructureservices(device_dict, Physical_topology, state, percentage):
                         racks.update({str (rackn): {'shelves':shelvs}})
         nodess.update({nodename:{'racks':racks}})
     NodeStructure={'nodes':nodess}
-    return NodeStructure, device_st
+    def find(groomid, noden, cln):
+        devid=0
+        for k in range(0,len(device_dict[cln][noden]["MP2X"])):
+            for i in ["1","2"]:
+                if "line"+i in device_dict[cln][noden]["MP2X"][k] and device_dict[cln][noden]["MP2X"][k]["line"+i]["groomout_id"]==groomid:
+                    devid=device_dict[cln][noden]["MP2X"][k]["id"]
+                    for rackn in nodess[noden]["racks"].keys():
+                        for shelfn in nodess[noden]["racks"][rackn]["shelves"].keys():
+                            for slotn in nodess[noden]["racks"][rackn]["shelves"][shelfn]["slots"].keys():
+                                if devid == nodess[noden]["racks"][rackn]["shelves"][shelfn]["slots"][slotn]:
+                                    return rackn, shelfn, [slotn, str (int (slotn) + 1)]
+    for cln in grooming_res['traffic'].keys():
+        for lpid in grooming_res['traffic'][cln]["lightpaths"].keys():
+            for gi in range(0,len(grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"])):
+                if grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['type'] == "groomout":
+                    for k in ["source", "destination"]:
+                        rack, shelf, slot = find(   grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['id'], 
+                                                    grooming_res['traffic'][cln]["lightpaths"][lpid][k],
+                                                    cln)
+                        grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['mp2x_panel_address'].update({k:{  "rack_id": rack,
+                                                                                                                        "shelf_id": shelf,
+                                                                                                                        "slot_id_list":slot}})
+
+                print("5")
+    return NodeStructure, device_st, grooming_res
