@@ -5,25 +5,24 @@
 import time
 from typing import List, Optional
 
-from algorithms.utils import status_check
 from clusters.schemas import ClusterDict
 from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
 from grooming.models import GroomingModel
 from grooming.schemas import GroomingResult
-from physical_topology.schemas import PhysicalTopologySchema, methods
+from physical_topology.schemas import methods
 from projects.schemas import ProjectSchema
-from projects.utils import GetProject, ProjectRepository
+from projects.utils import ProjectRepository
 from sqlalchemy.orm import Session
 from task_manager.schemas import ChainProgressReport, ChainTaskID
 from task_manager.utils import status_check
 from users.schemas import User
 
-from rwa.models import RWAModel, RWARegisterModel
-from rwa.rwa_worker import run_rwa, rwa_task, sum_test
+from rwa.models import RWARegisterModel
+from rwa.rwa_worker import run_rwa
 from rwa.utils import RWARepository
 
-from .schemas import (FailedRWAInfo, RWACheck, RWADBOut, RWAForm, RWAId,
+from .schemas import (FailedRWAInfo, RWADBOut, RWAForm, RWAId,
                       RWAIdList, RWAInformation)
 
 rwa_router = APIRouter(
@@ -69,14 +68,14 @@ def rwa_start(project_id: str, grooming_id: str, rwa_form: RWAForm,
 
     # starting rwa algorithm
     # task_id_info is an instance of ChainTaskID from task_manager
-    task_id_info = rwa_task.delay(physical_topology=physical_topology,
-                                  cluster_info=grooming_result.clusters,
-                                  grooming_result=GroomingResult(**{
-                                      "traffic": grooming_result.traffic,
-                                      "service_devices": grooming_result.service_devices,
-                                      "node_structure": grooming_result.node_structure
-                                  }).dict(),
-                                  rwa_form=rwa_form.dict())
+    task_id_info = run_rwa(physical_topology=physical_topology,
+                           cluster_info=grooming_result.clusters,
+                           grooming_result=GroomingResult(**{
+                               "traffic": grooming_result.traffic,
+                               "service_devices": grooming_result.service_devices,
+                               "node_structure": grooming_result.node_structure
+                           }).dict(),
+                           rwa_form=rwa_form.dict())
 
     RWARepository.add_rwa_register(
         id=task_id_info.chain_id,
