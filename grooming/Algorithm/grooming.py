@@ -694,7 +694,7 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         y.append((k,2.5))
                         sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
-                elif TM["demands"][i]["services"][j]["type"] == "STM1":
+                elif TM["demands"][i]["services"][j]["type"] in ["STM1 Optical", "STM1 Electrical"]:
                     for k in TM["demands"][i]["services"][j]["service_id_list"]:
                         y.append((k,0.15552))
                         sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
@@ -742,15 +742,11 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
         for i in range(0,len(groom_out10_list)):
             nooo=[]
             for j in range(0,len(groom_out10_list[i][1])):
-                
                 for k in range(0,len(groom_out10_list[i][1])):
                     if ((k not in nooo) and (j not in nooo) and (j!=k) and (groom_out10_list[i][1][j][2] + groom_out10_list[i][1][k][2]) <=16):
                         MP2x_list.append((groom_out10_list[i][0],(groom_out10_list[i][1][j][0],groom_out10_list[i][1][k][0])))
                         if groom_out10_list[i][0] in MP2x_Dict.keys():
-                            MP2x_Dict[groom_out10_list[i][0]].append((groom_out10_list[i][1][j][0],groom_out10_list[i][1][k][0])) 
-                            
-
-                            
+                            MP2x_Dict[groom_out10_list[i][0]].append((groom_out10_list[i][1][j][0],groom_out10_list[i][1][k][0]))    
                         else:
                             MP2x_Dict.update({groom_out10_list[i][0]:[(groom_out10_list[i][1][j][0],groom_out10_list[i][1][k][0])]})
                         device_dict[TM['demands'][groom_out10_list[i][0]]["source"]]["MP2X"].append({
@@ -788,7 +784,6 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
 
                         nooo.append(j)
                         nooo.append(k)
-                
             for m in range(0,len(groom_out10_list[i][1])):
                 if m not in nooo:
                     remaining_service_lower10.append((groom_out10_list[i][0],groom_out10_list[i][1][m][0])) 
@@ -796,29 +791,29 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                         remaining_service_lower10_dict[groom_out10_list[i][0]].append(groom_out10_list[i][1][m][0])
                     else:
                         remaining_service_lower10_dict.update({groom_out10_list[i][0]:[groom_out10_list[i][1][m][0]]}) 
-                        device_dict[TM['demands'][groom_out10_list[i][0]]["source"]]["MP2X"].append({
-                                        "line1":{
-                                                "demand_id": groom_out10_list[i][0],
-                                                "groomout_id": groom_out10_list[i][1][m][0]
-                                                    },
-                                        "panel" : "MP2X",
-                                        "sub_tm_id": tmId,
-                                        "id": uuid()
-                            })
-
-                        device_dict[TM['demands'][groom_out10_list[i][0]]["destination"]]["MP2X"].append({
-                                        "line1":{
-                                                "demand_id": groom_out10_list[i][0],
-                                                "groomout_id": groom_out10_list[i][1][m][0]
+                    device_dict[TM['demands'][groom_out10_list[i][0]]["source"]]["MP2X"].append({
+                                    "line1":{
+                                            "demand_id": groom_out10_list[i][0],
+                                            "groomout_id": groom_out10_list[i][1][m][0]
                                                 },
-                                        "panel" : "MP2X",
-                                        "sub_tm_id": tmId,
-                                        "id": uuid()
-                            }
+                                    "panel" : "MP2X",
+                                    "sub_tm_id": tmId,
+                                    "id": uuid()
+                        })
 
-                                
-                            )
-          
+                    device_dict[TM['demands'][groom_out10_list[i][0]]["destination"]]["MP2X"].append({
+                                    "line1":{
+                                            "demand_id": groom_out10_list[i][0],
+                                            "groomout_id": groom_out10_list[i][1][m][0]
+                                            },
+                                    "panel" : "MP2X",
+                                    "sub_tm_id": tmId,
+                                    "id": uuid()
+                        }
+
+                            
+                        )
+        
         for i in range(0,len(service_lower100)):
             NO_LP= math.ceil(len(service_lower100[i][1])/10)
             orsr=TM["demands"][service_lower100[i][0]]["source"]
