@@ -1,5 +1,5 @@
 from task_manager.schemas import ChainTaskID, ChainProgressReport
-from celery.result import AsyncResult
+from celery_app import celeryapp
 
 def status_check(chain_task_id: ChainTaskID):
     chain_task_id = chain_task_id.dict()
@@ -25,7 +25,7 @@ def status_check(chain_task_id: ChainTaskID):
         estimated_total_subtasks += chain_task_id['chain_info'][level]['task_number']
         for task in multiprocess_task_list:
             task_id = task['id']
-            task_result = AsyncResult(task_id)
+            task_result = celeryapp.AsyncResult(task_id)
             if task_result.state == 'PENDING':
                 status['total'] += 1
                 status['pending'] += 1
