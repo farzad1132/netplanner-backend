@@ -67,8 +67,6 @@ class GroomingHandle(GroomingBaseHandle):
         """
 
         db = session()
-        """ if (register := db.query(GroomingRegisterModel)
-                .filter_by(id=task_id).one_or_none()) is not None: """
         if (register := GroomingRepository.update_grooming_register(grooming_id=task_id, db=db,
                                                                     is_finished=True)) is not None:
             GroomingRepository.add_grooming(
@@ -222,7 +220,7 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
         self.update_state(state='PROGRESS', meta={
                           'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
         res.update({'cluster_id': traffic_matrix['id']})
-        finalres.update( {"service_devices": device_final})
+        finalres.update({"service_devices": device_final})
         finalres.update({"node_structure": node_structure})
         result = {"grooming_result": GroomingResult(
             **finalres).dict(), "serviceMapping": None, "clustered_tms": None}
