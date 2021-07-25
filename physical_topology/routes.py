@@ -11,14 +11,15 @@ from physical_topology.schemas import (PhysicalTopologyDB, PhysicalTopologyOut,
                                        PhysicalTopologyPOST,
                                        PhysicalTopologyPUT,
                                        PhysicalTopologySchema, PTId)
-from physical_topology.utils import (GetPT, check_pt_name_conflict,
+from physical_topology.utils import (PTRepository, check_pt_name_conflict,
                                      excel_to_pt, get_pt_last_version,
                                      get_user_pts_id)
 
 pt_router = APIRouter(
     tags=["Physical Topology"]
 )
-get_pt_mode_get = GetPT()
+get_pt_mode_get = PTRepository()
+get_pt_mode_delete = PTRepository(mode="DELETE")
 
 
 @pt_router.get('/v2.0.0/physical_topologies', status_code=200, response_model=List[PhysicalTopologyDB])
@@ -29,28 +30,18 @@ def get_physical_topology(pt_list: PhysicalTopologyDB = Depends(get_pt_mode_get)
 @pt_router.post('/v2.0.0/physical_topologies', status_code=201, response_model=PTId)
 def create_physical_toplogy(pt: PhysicalTopologyPOST, user: User = Depends(get_current_user),
                             db: Session = Depends(get_db)):
+
     check_pt_name_conflict(user.id, pt.name, db=db)
-    id = uuid4().hex
-    pt_record = PhysicalTopologyModel(**pt.dict(), id=id, version=1)
-    pt_record.owner_id = user.id
-    db.add(pt_record)
-    db.commit()
-    return pt_record
+
+    return PTRepository.add_pt(pt, 1, user, db)
 
 
 @pt_router.put('/v2.0.0/physical_topologies', status_code=200)
 def update_physical_topology(pt: PhysicalTopologyPUT, user: User = Depends(get_current_user),
                              db: Session = Depends(get_db)):
-    last_version = get_pt_last_version(pt.id, db=db)
-    pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version.version+1,
-                                      name=last_version.name, data=pt.data.dict())
-    pt_record.owner_id = last_version.owner_id
-    db.add(pt_record)
-    db.commit()
+
+    PTRepository.update_pt(pt, db)
     return 200
-
-
-get_pt_mode_delete = GetPT(mode="DELETE")
 
 
 @pt_router.delete('/v2.0.0/physical_topologies', status_code=200)
@@ -63,20 +54,15 @@ def delete_physical_topology(user: User = Depends(get_current_user),
     return 200
 
 
-@pt_router.get('/v2.0.0/physical_topologies/read_all', status_code=200, response_model=List[PhysicalTopologyOut])
+@pt_router.get('/v2.0.0/physical_topologies/read_all', status_code=200,
+               response_model=List[PhysicalTopologyOut])
 def read_all(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not (pt_list := db.query(PhysicalTopologyModel)
-            .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user.id, db)))
-            .distinct(PhysicalTopologyModel.id)
-            .order_by(PhysicalTopologyModel.id)
-            .order_by(PhysicalTopologyModel.version.desc())
-            .filter_by(is_deleted=False).all()):
-        raise HTTPException(
-            status_code=404, detail="no physical topology found")
-    return pt_list
+
+    return PTRepository.get_all_pt(user, db)
 
 
-@pt_router.post('/v2.0.0/physical_topologies/from_excel', status_code=200, response_model=PTId)
+@pt_router.post('/v2.0.0/physical_topologies/from_excel', status_code=200,
+                response_model=PTId)
 def from_excel(name: str = Body(...), pt_binary: UploadFile = File(...),
                user: User = Depends(get_current_user),
                db: Session = Depends(get_db)):

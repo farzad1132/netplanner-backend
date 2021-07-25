@@ -8,15 +8,17 @@ import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import List, Optional
 
 from celery_app import celeryapp
 from database import session
 from fastapi import HTTPException, Request
 from jinja2 import Environment, FileSystemLoader
+from sqlalchemy.orm.session import Session
 
 from models import UserModel
 from users.models import UserRegisterModel
-from users.schemas import RegisterForm
+from users.schemas import RegisterForm, UserRole
 
 PORT = 587
 MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
@@ -26,6 +28,66 @@ SERVER = 'il2.persiantools.net'
 context = ssl.create_default_context()
 file_loader = FileSystemLoader('static')
 env = Environment(loader=file_loader)
+
+
+class UserRepository:
+    """
+        This class implements user related queries
+    """
+    @staticmethod
+    def add_user_register(username: str, password: str, email: str, db: Session) -> None:
+
+        record = UserRegisterModel(username=username,
+                                   password=password,
+                                   email=email)
+
+        db.add(record)
+        db.commit()
+
+    @staticmethod
+    def add_user(username: str, password: str, email: str, db: Session,
+                 old_record: Optional[UserRegisterModel], role: UserRole = UserRole.DESIGNER) -> None:
+
+        if old_record is not None:
+            db.delete(old_record)
+
+        user = UserModel(username=username,
+                         password=password,
+                         email=email,
+                         role=role.value)
+        db.add(user)
+        db.commit()
+
+    @staticmethod
+    def get_user_register(username: str, db: Session) -> UserRegisterModel:
+
+        if (record := db.query(UserRegisterModel).filter_by(username=username)
+                .one_or_none()) is None:
+            raise HTTPException(404, detail="record not found")
+        return record
+
+    @staticmethod
+    def search_for_user_by_username(substring: str, db: Session, is_deleted: bool = False) \
+            -> List[UserModel]:
+
+        results = db.query(UserModel)\
+            .filter(UserModel.username.contains(substring))\
+            .filter_by(is_deleted=is_deleted).all()
+
+        return results
+
+    @staticmethod
+    def get_user_by_id(id: str, db: Session, is_deleted: bool = False) -> UserModel:
+
+        if (user := db.query(UserModel).filter_by(id=id, is_deleted=is_deleted)
+                .one_or_none()) is None:
+
+            raise HTTPException(
+                status_code=404,
+                detail=f"user with id={id} not found from id_list"
+            )
+        
+        return user
 
 
 def send_mail(token: str, rcv_mail: str, request: Request) -> None:

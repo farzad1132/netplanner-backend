@@ -4,6 +4,7 @@
 
 import math
 from typing import List, Optional, Tuple
+from uuid import uuid4
 
 from dependencies import auth_user, get_current_user, get_db
 from fastapi import Depends, File, HTTPException
@@ -12,11 +13,11 @@ from pandas import ExcelFile, read_excel
 from sqlalchemy.orm import Session
 from users.schemas import User
 
-from physical_topology.schemas import (PhysicalTopologyDB,
+from physical_topology.schemas import (PhysicalTopologyDB, PhysicalTopologyPOST, PhysicalTopologyPUT,
                                        PhysicalTopologySchema, methods)
 
 
-class GetPT:
+class PTRepository:
     """
         Physical Topology dependency injection
 
@@ -36,7 +37,7 @@ class GetPT:
 
     def __call__(self, id: str, version: Optional[int] = None,
                  user: User = Depends(get_current_user),
-                 db: Session = Depends(get_db)) -> List[PhysicalTopologyDB]:
+                 db: Session = Depends(get_db)) -> List[PhysicalTopologyModel]:
         """
             With implementing `__call__` objects of this class can be called to access project data
 
@@ -63,10 +64,81 @@ class GetPT:
         elif self.mode in ("DELETE", "SHARE"):
             raise HTTPException(status_code=401, detail="not authorized")
 
-        if db.query(PhysicalTopologyUsersModel).filter_by(pt_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
+        if db.query(PhysicalTopologyUsersModel) \
+            .filter_by(pt_id=id, user_id=user_id, is_deleted=False) \
+                .one_or_none() is None:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return pt_list
+
+    @staticmethod
+    def add_pt(pt: PhysicalTopologyPOST, version: int, user: User, db: Session) \
+            -> PhysicalTopologyModel:
+
+        id = uuid4().hex
+        pt_record = PhysicalTopologyModel(**pt.dict(), id=id, version=version)
+        pt_record.owner_id = user.id
+        db.add(pt_record)
+        db.commit()
+
+        return pt_record
+
+    @staticmethod
+    def update_pt(pt: PhysicalTopologyPUT, db: Session) -> None:
+
+        last_version = get_pt_last_version(pt.id, db=db)
+        pt_record = PhysicalTopologyModel(id=pt.id, comment=pt.comment, version=last_version.version+1,
+                                          name=last_version.name, data=pt.data.dict())
+        pt_record.owner_id = last_version.owner_id
+        db.add(pt_record)
+        db.commit()
+
+    @staticmethod
+    def get_all_pt(user: User, db: Session, is_deleted: bool = False) -> List[PhysicalTopologyModel]:
+        if not (pt_list := db.query(PhysicalTopologyModel)
+                .filter(PhysicalTopologyModel.id.in_(get_user_pts_id(user.id, db)))
+                .distinct(PhysicalTopologyModel.id)
+                .order_by(PhysicalTopologyModel.id)
+                .order_by(PhysicalTopologyModel.version.desc())
+                .filter_by(is_deleted=is_deleted).all()):
+
+            raise HTTPException(
+                status_code=404, detail="no physical topology found")
+        return pt_list
+
+    @staticmethod
+    def add_share_pt(pt_id: str, user_id: str, db: Session, is_deleted: bool = False) -> None:
+
+        if db.query(PhysicalTopologyUsersModel) \
+            .filter_by(pt_id=pt_id, user_id=user_id, is_deleted=is_deleted) \
+                .one_or_none() is None:
+            #check_pt_name_conflict(user_id=id, name=pt[0].name, db=db)
+            share_record = PhysicalTopologyUsersModel(
+                pt_id=pt_id, user_id=user_id)
+            db.add(share_record)
+        db.commit()
+
+    @staticmethod
+    def get_pt_share_records(pt_id: str, db: Session, is_deleted: bool = False) \
+            -> List[PhysicalTopologyUsersModel]:
+
+        if not(records := db.query(PhysicalTopologyUsersModel)
+           .filter_by(pt_id=pt_id, is_deleted=False).all()):
+            raise HTTPException(
+                status_code=404, detail='no user has access to this physical topology')
+
+        return records
+
+    @staticmethod
+    def delete_pt_share_record(pt_id: str, user_id: str, db: Session, is_deleted: bool = False) \
+            -> None:
+
+        if (record := db.query(PhysicalTopologyUsersModel)
+                .filter_by(pt_id=pt_id, user_id=user_id, is_deleted=is_deleted)
+                .one_or_none()) is not None:
+
+            db.delete(record)
+            db.commit()
 
 
 def check_pt_name_conflict(user_id: str, name: str, db: Session) -> None:

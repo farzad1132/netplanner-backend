@@ -13,7 +13,7 @@ from rwa.algorithm.components import *
 
 def random_shuffle_solver(self, solver = "Greedy", k_restoration=2, k_second_restoration=2,
                          history_window = 4, demand_group_size = 6, max_new_wavelength_num = 6,
-                         num_second_restoration_random_samples=10):
+                         num_second_restoration_random_samples=10, celeryapp_instance=None):
     import random
     from rwa.algorithm.solvers import solve_two_way_protected_windowed_ILP
     from rwa.algorithm.restoration import greedy_joint_restoration_protected_solver
@@ -41,11 +41,13 @@ def random_shuffle_solver(self, solver = "Greedy", k_restoration=2, k_second_res
                 result_is_valid = self.solve_merged_two_way_protected_greedy_heuristic_no_diversity() 
         else:
             if solver == "Greedy":
-                result_is_valid = greedy_protected_solver(self, k_restoration, k_second_restoration, num_second_restoration_random_samples) 
+                result_is_valid = greedy_protected_solver(self, k_restoration, k_second_restoration, num_second_restoration_random_samples, 
+                                                          celeryapp_instance) 
             elif solver == "window_ILP":
                 # result_is_valid = self.solve_two_way_protected_ILP()
                 result_is_valid = solve_two_way_protected_windowed_ILP(self, history_wavelength_num = history_window,
-                                            demand_group_num = demand_group_size, max_new_wavelength_num = max_new_wavelength_num)
+                                            demand_group_num = demand_group_size, max_new_wavelength_num = max_new_wavelength_num,
+                                            celeryapp_instance=celeryapp_instance)
                 print(result_is_valid)
                 #self.solve_protected_greedy_heuristic_no_diversity()
                 #self.solve_two_way_protected_greedy_heuristic_no_diversity() 
@@ -253,18 +255,18 @@ class OldNetwork(object):
     wavelengths.
 
     Methods:
-    add_node: Adds a node to the network
-    add_link: Adds two links (in 2 directions) between existing nodes
-    add_demand: Adds a demand from one node to the other
-    gen_graph: Generates and stores the network connectivity graph
-    gen_random_demands: Generates random demands between random nodes in the Network
-    print_demand_list: prints a lsit of demands
-    print_results: If called after running the algorithm, prints the path and 
-                                wavelength assigned to each demand\
-    show_routed_demand: Displays the routed path for a demand on the network graph
-    gen_protected_lightpaths: Generates valid lightpaths with protection for all demands
-    solve_two_way_protected_greedy_heuristic_no_diversity: A greedy algorithm that solves the routing problem for two way demands
-    find_objective: The objective is to minimize the total number of used wavelengths
+        - add_node: Adds a node to the network
+        - add_link: Adds two links (in 2 directions) between existing nodes
+        - add_demand: Adds a demand from one node to the other
+        - gen_graph: Generates and stores the network connectivity graph
+        - gen_random_demands: Generates random demands between random nodes in the Network
+        - print_demand_list: prints a lsit of demands
+        - print_results: If called after running the algorithm, prints the path and 
+                                    wavelength assigned to each demand\
+        - show_routed_demand: Displays the routed path for a demand on the network graph
+        - gen_protected_lightpaths: Generates valid lightpaths with protection for all demands
+        - solve_two_way_protected_greedy_heuristic_no_diversity: A greedy algorithm that solves the routing problem for two way demands
+        - find_objective: The objective is to minimize the total number of used wavelengths
     """
     def __init__(self, wavelength_num, reach_options, snr_t, config, measure = 'distance', alpha = 0.5, margin = 2):
         self.node_list = []
@@ -862,34 +864,40 @@ class OldNetwork(object):
         return protected_path_list, protection_type
                 
                 
-    def gen_protected_lightpaths(self, k, processors = 1):
+    def gen_protected_lightpaths(self, k, celeryapp_instance=None):
         self.gen_graph()
         results = {}
         # print(self.RegenOptionDict.keys())
         for option in self.RegenOptionDict.keys(): #option = (ingress_node, egress_node, modulation_type)
                 # gen_protected_lightpath(self,k,option)
                 results[option] = gen_protected_lightpath(self,k,option)
-
+        # Keep track of celery task steps
+        total_steps = len(self.demand_list)+7
+        current_step = 0
         all_options_keys = dict.fromkeys(self.RegenOptionDict.keys(),[])
         for option in all_options_keys.keys():
-                regen_option_list = results[option]
-                if regen_option_list:
-                        # Refine the options; so that we have single option for each part of dictionary
-                        # WARNING: This method is not useful if we are allowed to have segment diversity!
-                        refined_regen_option_list = refine_regen_option_list(self, regen_option_list)
-                        self.RegenOptionDict[option] = refined_regen_option_list #RegenOptionsForDemand(option, regen_option_list)
-                        self.lightpath_list.append(RegenOptionsForDemand(option, refined_regen_option_list))   
-                        # Add no protection option to dictionary if protection is not available 
-                        no_protection_key_added = False
-                        for regen_option in refined_regen_option_list:
-                            if not regen_option.protection_option.path and not no_protection_key_added:
-                                option = (option[0], option[1], option[2], "NoProtection", option[4])
-                                self.RegenOptionDict[option] = refined_regen_option_list
-                                self.lightpath_list.append(RegenOptionsForDemand(option, refined_regen_option_list))    
-                else:
-                        self.RegenOptionDict[option] = []
-                        warnings.warn("No valid path found for {}".format(option))
-                        
+            if celeryapp_instance is not None:
+                celeryapp_instance.update_state(state='PROGRESS', meta={'current': current_step+7, 'total': total_steps, 'current_stage_info': 'Preprocess: Generating candidate lighpaths.'})  
+                current_step += 1
+            regen_option_list = results[option]
+            if regen_option_list:
+                    # Refine the options; so that we have single option for each part of dictionary
+                    # WARNING: This method is not useful if we are allowed to have segment diversity!
+                    refined_regen_option_list = refine_regen_option_list(self, regen_option_list)
+                    self.RegenOptionDict[option] = refined_regen_option_list #RegenOptionsForDemand(option, regen_option_list)
+                    self.lightpath_list.append(RegenOptionsForDemand(option, refined_regen_option_list))   
+                    # Add no protection option to dictionary if protection is not available 
+                    no_protection_key_added = False
+                    for regen_option in refined_regen_option_list:
+                        if not regen_option.protection_option.path and not no_protection_key_added:
+                            option = (option[0], option[1], option[2], "NoProtection", option[4])
+                            self.RegenOptionDict[option] = refined_regen_option_list
+                            self.lightpath_list.append(RegenOptionsForDemand(option, refined_regen_option_list))    
+            else:
+                    self.RegenOptionDict[option] = []
+                    warnings.warn("No valid path found for {}".format(option))
+        celeryapp_instance.update_state(state='PROGRESS', meta={'current': total_steps, 'total': total_steps, 'current_stage_info': 'Preprocess: Finished generating candidate lighpaths.'})  
+                                
         # for option in self.RegenOptionDict.keys():
                 # self.RegenOptionDict[option] = gen_protected_lightpath(self,k,option)
         # print(self.RegenOptionDict)

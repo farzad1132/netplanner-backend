@@ -3,6 +3,7 @@
 """
 
 from typing import List, Optional, Tuple
+from uuid import uuid4
 
 from dependencies import auth_user, get_current_user, get_db
 from fastapi import Depends, File, HTTPException
@@ -12,10 +13,10 @@ from sqlalchemy.orm import Session
 from users.schemas import User
 
 from models import TrafficMatrixModel, TrafficMatrixUsersModel
-from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
+from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixPOST, TrafficMatrixPUT, TrafficMatrixSchema
 
 
-class GetTM:
+class TMRepository:
     """
         Traffic Matrix dependency injection
 
@@ -60,10 +61,107 @@ class GetTM:
         elif self.mode in ("DELETE", "SHARE"):
             raise HTTPException(status_code=401, detail="not authorized")
 
-        if db.query(TrafficMatrixUsersModel).filter_by(tm_id=id, user_id=user_id, is_deleted=False).one_or_none() is None:
+        if db.query(TrafficMatrixUsersModel) \
+            .filter_by(tm_id=id, user_id=user_id, is_deleted=False) \
+                .one_or_none() is None:
             raise HTTPException(status_code=401, detail="not authorized")
         else:
             return tm_list
+
+    @staticmethod
+    def get_all_tm(user: User, db: Session, is_deleted: bool = False):
+
+        if not (tm_list := db.query(TrafficMatrixModel)
+                .filter(TrafficMatrixModel.id.in_(get_user_tms_id(user.id, db)))
+                .distinct(TrafficMatrixModel.id)
+                .order_by(TrafficMatrixModel.id)
+                .order_by(TrafficMatrixModel.version.desc())
+                .filter_by(is_deleted=is_deleted).all()):
+
+            raise HTTPException(
+                status_code=404, detail="no traffic matrix found")
+
+        return tm_list
+
+    @staticmethod
+    def get_tm_last_version(id: str, db: Session, is_deleted: bool = False) -> TrafficMatrixDB:
+        """
+            This functions finds last version of a given traffic matrix id
+
+            :param id: traffic matrix id
+            :param db: database session object
+        """
+
+        if (tm := db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=is_deleted) \
+                .distinct(TrafficMatrixModel.version) \
+                .order_by(TrafficMatrixModel.version.desc()).first()) is None:
+
+            raise HTTPException(404, detail="not found")
+
+        return tm
+
+    @staticmethod
+    def add_tm(tm: TrafficMatrixPOST, owner: User, db: Session) -> TrafficMatrixModel:
+
+        id = uuid4().hex
+        tm_record = TrafficMatrixModel(**tm.dict(), id=id, version=1)
+        tm_record.owner_id = owner.id
+        db.add(tm_record)
+        db.commit()
+
+        return tm_record
+
+    @staticmethod
+    def update_tm(tm: TrafficMatrixPUT, db: Session) -> TrafficMatrixModel:
+
+        last_version = TMRepository.get_tm_last_version(tm.id, db=db)
+
+        tm_record = TrafficMatrixModel(id=tm.id, comment=tm.comment, version=last_version.version+1,
+                                       name=last_version.name, data=tm.data.dict())
+        tm_record.owner_id = last_version.owner_id
+        db.add(tm_record)
+        db.commit()
+
+        return tm_record
+
+    @staticmethod
+    def delete_tm(tm_list: List[TrafficMatrixModel], db: Session):
+
+        for tm in tm_list:
+            tm.is_deleted = True
+        db.commit()
+
+    @staticmethod
+    def add_share_tm(tm_id: str, user_id: str, db: Session, is_deleted: bool = False) -> None:
+
+        if db.query(TrafficMatrixUsersModel)\
+                .filter_by(tm_id=tm_id, user_id=user_id, is_deleted=is_deleted).one_or_none() is None:
+            #check_tm_name_conflict(user_id=id, name=tm.name, db=db)
+            share_record = TrafficMatrixUsersModel(
+                tm_id=tm_id, user_id=user_id)
+            db.add(share_record)
+            db.commit()
+
+    @staticmethod
+    def get_tm_share_users(tm_id: str, db: Session, is_deleted: bool = False) \
+            -> List[TrafficMatrixUsersModel]:
+
+        if not (records := db.query(TrafficMatrixUsersModel)
+                .filter_by(tm_id=tm_id, is_deleted=is_deleted).all()):
+            raise HTTPException(
+                status_code=404, detail='no user has access to this traffic matrix')
+
+        return records
+
+    @staticmethod
+    def delete_tm_share(tm_id: str, user_id: str, db: Session, is_deleted: bool = False) -> None:
+
+        if (record := db.query(TrafficMatrixUsersModel)
+                .filter_by(tm_id=tm_id, user_id=user_id, is_deleted=is_deleted)
+                .one_or_none()) is not None:
+
+            db.delete(record)
+            db.commit()
 
 
 def check_tm_name_conflict(user_id: str, name: str, db: Session) -> None:
@@ -108,20 +206,6 @@ def get_user_tms_id(user_id: str, db: Session, all: Optional[bool] = True) -> Li
         id_list.append(tm.tm_id)
 
     return id_list
-
-
-def get_tm_last_version(id: str, db: Session) -> TrafficMatrixDB:
-    """
-        This functions finds last version of a given traffic matrix id
-
-        :param id: traffic matrix id
-        :param db: database session object
-    """
-
-    tm = db.query(TrafficMatrixModel).filter_by(id=id, is_deleted=False)\
-        .distinct(TrafficMatrixModel.version)\
-        .order_by(TrafficMatrixModel.version.desc()).first()
-    return tm
 
 
 def excel_to_tm(tm_binary: bytes) -> Tuple[bool, TrafficMatrixSchema]:

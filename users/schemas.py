@@ -2,6 +2,7 @@
     This module contains user related schemas
 """
 
+from enum import Enum
 from typing import List, Optional
 
 from database import session
@@ -9,6 +10,9 @@ from pydantic import BaseModel, validator
 
 from models import UserModel
 
+class UserRole(str, Enum):
+    DESIGNER: str = "designer"
+    MANAGER: str = "manager"
 
 class Token(BaseModel):
     """

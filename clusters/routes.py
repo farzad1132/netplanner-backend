@@ -3,7 +3,7 @@ from typing import List
 from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Body, Depends, HTTPException
 from models import ClusterModel
-from projects.utils import GetProject
+from projects.utils import ProjectRepository
 from sqlalchemy.orm import Session
 from users.schemas import User
 
@@ -16,7 +16,7 @@ cluster_router = APIRouter(
     tags=["Clustering"]
 )
 
-get_project_mode_get = GetProject()
+get_project_mode_get = ProjectRepository()
 
 
 @cluster_router.post('/v2.0.0/clustering/manual', status_code=201, response_model=List[ClusterId])

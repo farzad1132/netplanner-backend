@@ -20,6 +20,8 @@ from users.routes import user_router
 
 base.metadata.create_all(bind=engine)
 
+FRONTEND_URL = "http://192.168.7.22"
+
 # version 2 of netplanner api
 app = FastAPI(version="2.0.0",
               title="NetPlanner",
