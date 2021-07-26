@@ -3,11 +3,9 @@ from enum import Flag
 from typing import List, Optional, Union
 from uuid import uuid4
 
-from fastapi.param_functions import Query
-
 from algorithms.utils import status_check
 from clusters.schemas import ClusterDict
-from clusters.utils import cluster_list_to_cluster_dict
+from clusters.utils import cluster_list_to_cluster_dict, get_clusters
 from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException
 from physical_topology.schemas import PhysicalTopologyDB, methods
@@ -105,25 +103,18 @@ def start_end_to_end(project_id: str, grooming_form: GroomingForm,
     traffic_matrix = project_db["traffic_matrix"]
     physical_topology = project_db["physical_topology"]
 
-    # fetching clusters
-    clusters = db.query(ClusterModel).filter_by(project_id=project_id,
-                                                pt_version=project_db["current_pt_version"],
-                                                pt_id=project_db["physical_topology"]["id"],
-                                                is_deleted=False).all()
+    with_clustering, clusters = get_clusters(clusters_id_list=grooming_form.clusters_id,
+                                             project_id=project_id,
+                                             pt_id=project_db["physical_topology"]["id"],
+                                             db=db,
+                                             pt_version=project_db["current_pt_version"])
 
-    # converting cluster_list to cluster_dict
-    cluster_dict = cluster_list_to_cluster_dict(cluster_list=clusters)
-    clusters = ClusterDict.parse_obj(cluster_dict).dict()
     # starting algorithm
     task = grooming_task.delay(traffic_matrix=TrafficMatrixDB.parse_obj(traffic_matrix).dict(),
                                mp1h_threshold_clustering=grooming_form.mp1h_threshold,
                                mp1h_threshold_grooming=grooming_form.mp1h_threshold,
                                clusters=clusters,
                                Physical_topology=PhysicalTopologyDB.parse_obj(physical_topology).dict())
-    if not clusters["clusters"]:
-        with_clustering = False
-    else:
-        with_clustering = True
 
     GroomingRepository.add_grooming_register(grooming_id=task.id,
                                              project_id=project_id,
@@ -195,22 +186,11 @@ def start_adv_grooming(project_id: str, grooming_form: AdvGroomingForm,
     physical_topology = project_db["physical_topology"]
 
     # fetching clusters
-    if len(grooming_form.clusters_id) != 0:
-        clusters = db.query(ClusterModel).filter_by(project_id=project_id,
-                                                    pt_version=project_db["current_pt_version"],
-                                                    pt_id=project_db["physical_topology"]["id"],
-                                                    is_deleted=False)\
-            .filter(ClusterModel.id.in_(grooming_form.clusters_id)).all()
-
-        # converting cluster_list to cluster_dict
-        cluster_dict = cluster_list_to_cluster_dict(
-            cluster_list=clusters).dict()
-
-        with_clustering = True
-        check_one_gateway_clusters(cluster_dict)
-    else:
-        with_clustering = False
-        cluster_dict = {"clusters": {}}
+    with_clustering, cluster_dict = get_clusters(clusters_id_list=grooming_form.clusters_id,
+                                                 project_id=project_id,
+                                                 pt_id=project_db["physical_topology"]["id"],
+                                                 db=db,
+                                                 pt_version=project_db["current_pt_version"])
 
     # starting algorithm
     task = adv_grooming_worker.delay(
