@@ -7,7 +7,7 @@ from algorithms.utils import status_check
 from clusters.schemas import ClusterDict
 from clusters.utils import cluster_list_to_cluster_dict, get_clusters
 from dependencies import get_current_user, get_db
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from physical_topology.schemas import PhysicalTopologyDB, methods
 from projects.schemas import ProjectSchema
 from projects.utils import ProjectRepository
