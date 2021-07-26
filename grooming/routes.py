@@ -3,6 +3,8 @@ from enum import Flag
 from typing import List, Optional, Union
 from uuid import uuid4
 
+from fastapi.param_functions import Query
+
 from algorithms.utils import status_check
 from clusters.schemas import ClusterDict
 from clusters.utils import cluster_list_to_cluster_dict
@@ -304,11 +306,14 @@ def get_all(project_id: str, user: User = Depends(get_current_user),
 
 @grooming_router.get("/v2.0.1/algorithms/grooming/all", status_code=200,
                      response_model=List[GroomingInformation])
-def get_all_v2_0_1(project_id: str, user: User = Depends(get_current_user),
+def get_all_v2_0_1(project_id: str, algorithm: GroomingAlgorithm = Query(None),
+                   user: User = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     """
-        getting all available grooming id's for user
-        ***Whats New***: this path now returns both end to end grooming and adv grooming records
+        getting all available grooming id's for user\n
+        ***Whats New***: 
+         - this path now returns both end to end grooming and adv grooming records
+         - you can filter result with algorithm query parameter
     """
 
     # authorization check
@@ -316,11 +321,18 @@ def get_all_v2_0_1(project_id: str, user: User = Depends(get_current_user),
 
     result = []
 
-    # getting records from database
-    result.extend(GroomingRepository.get_all_grooming(
-        project_id=project_id, db=db))
-    result.extend(GroomingRepository.get_all_adv_grooming(
-        project_id=project_id, db=db))
+    # getting records from database based on algorithm query parameter
+    if algorithm is None:
+        result.extend(GroomingRepository.get_all_grooming(
+            project_id=project_id, db=db))
+        result.extend(GroomingRepository.get_all_adv_grooming(
+            project_id=project_id, db=db))
+    elif algorithm == GroomingAlgorithm.advanced:
+        result.extend(GroomingRepository.get_all_adv_grooming(
+            project_id=project_id, db=db))
+    else:
+        result.extend(GroomingRepository.get_all_grooming(
+            project_id=project_id, db=db))
 
     return result
 
