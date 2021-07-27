@@ -102,7 +102,7 @@ def grooming_function(
         result = {"grooming_result": GroomingResult(
             **finalres).dict(), "serviceMapping": None, "clustered_tms": None}
     print("\n Data received on the server for Grooming!")
-
+    return result
     if state is not None:
         state.update_state(state='SUCCESS', meta={
             'current': 100, 'total': 100, 'status': 'Grooming finished. Sending back the results'})

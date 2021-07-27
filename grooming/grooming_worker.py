@@ -169,7 +169,7 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
                   test: bool = False):
     
 
-    return grooming_function(   state=self,
+    return grooming_function(   #state=self,
                                 traffic_matrix = traffic_matrix,
                                 mp1h_threshold_clustering = mp1h_threshold_clustering,
                                 mp1h_threshold_grooming = mp1h_threshold_grooming,
