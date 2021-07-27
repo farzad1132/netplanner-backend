@@ -459,7 +459,7 @@ def PS6X(Services_lower10_i):
     
 
 
-def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Threshold = None ):
+def grooming_fun( TM, MP1H_Threshold,  tmId, percentage, uuid, MP2X_Threshold = None, state=None):
         """
             This function grooms the services and produces lightpaths, groomouts, devices and remaining services.
 
@@ -614,7 +614,10 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, state, percentage, uuid, MP2X_Thres
                                                                     "service_id_list": [],
                                                                     "type": "100GE"}}})
             per = math.ceil(percentage[0] + (nume/len(TM['demands'].keys())) * (percentage[1] - percentage[0]))
-            state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+
+            if state is not None:
+                state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+    
             nume = nume + 1
             if TM['demands'][i]["source"] not in device_dict.keys():
                         device_dict.update({TM['demands'][i]["source"]:{        

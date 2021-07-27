@@ -19,28 +19,34 @@ from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
                               ServiceMapping)
 
 
+def grooming_function(
+        traffic_matrix: TrafficMatrixDB,
+        mp1h_threshold_clustering: MP1HThreshold,
+        mp1h_threshold_grooming: MP1HThreshold,
+        clusters: ClusterDict,
+        Physical_topology: PhysicalTopologyDB,
+        test: bool = False,
+        state=None):
 
-def grooming_function(  state,
-                        traffic_matrix: TrafficMatrixDB,
-                        mp1h_threshold_clustering: MP1HThreshold,
-                        mp1h_threshold_grooming: MP1HThreshold,
-                        clusters: ClusterDict,
-                        Physical_topology: PhysicalTopologyDB,
-                        test: bool = False):
     ArashId = arashId()
     if test == True:
         def uuid(): return id_gen(ArashId=ArashId, test=True)
     else:
         def uuid(): return id_gen(ArashId=ArashId, test=False)
-    state.update_state(state='PROGRESS', meta={
-                      'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+    
+    if state is not None:
+        state.update_state(state='PROGRESS', meta={
+            'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+
     if clusters != None:
         service_mapping, clusteerdtm = Change_TM_acoordingTo_Clusters(
             traffic_matrix, clusters, MP1H_Threshold=mp1h_threshold_clustering, state=state, percentage=[0, 40], uuid=uuid)
         finalres = {"traffic": {}}
         devicee = {}
-        state.update_state(state='PROGRESS', meta={
-                          'current': 40, 'total': 100, 'status': 'Clustering Finished'})
+
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={
+                'current': 40, 'total': 100, 'status': 'Clustering Finished'})
         pr = 40
         le = 0
         for i in clusteerdtm['sub_tms'].keys():
@@ -55,14 +61,20 @@ def grooming_function(  state,
                 res.update({'cluster_id': i})
                 devicee.update({i: dev})
                 finalres["traffic"].update({i: res})
-        state.update_state(state='PROGRESS', meta={
-                          'current': 80, 'total': 100, 'status': 'Grooming Finished'})
+        
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={
+                'current': 80, 'total': 100, 'status': 'Grooming Finished'})
+
         (node_structure, device_final, finalres) = Nodestructureservices(
             devicee, Physical_topology, finalres, state=state, percentage=[80, 90])
         finalres.update({"node_structure": node_structure})
         finalres.update({"service_devices": device_final})
-        state.update_state(state='PROGRESS', meta={
-                          'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
+
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={
+                'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
+        
         result3 = {"grooming_result": finalres,
                    "serviceMapping": service_mapping, "clustered_tms": clusteerdtm}
         result = {"grooming_result": GroomingResult(**finalres).dict(), "serviceMapping": ServiceMapping(
@@ -73,18 +85,24 @@ def grooming_function(  state,
         devicee = {traffic_matrix['id']: dev}
         finalres = {"traffic": {
             traffic_matrix['id']: res}}
-        state.update_state(state='PROGRESS', meta={
-                          'current': 60, 'total': 100, 'status': 'Grooming Finished'})
+
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={
+                'current': 60, 'total': 100, 'status': 'Grooming Finished'})
         (node_structure, device_final, finalres) = Nodestructureservices(
             devicee, Physical_topology, finalres, state=state, percentage=[60, 90])
-        state.update_state(state='PROGRESS', meta={
-                          'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
+        
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={
+                'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
+
         res.update({'cluster_id': traffic_matrix['id']})
-        finalres.update( {"service_devices": device_final})
+        finalres.update({"service_devices": device_final})
         finalres.update({"node_structure": node_structure})
         result = {"grooming_result": GroomingResult(
             **finalres).dict(), "serviceMapping": None, "clustered_tms": None}
     print("\n Data received on the server for Grooming!")
 
-    state.update_state(state='SUCCESS', meta={
-                      'current': 100, 'total': 100, 'status': 'Grooming finished. Sending back the results'})
+    if state is not None:
+        state.update_state(state='SUCCESS', meta={
+            'current': 100, 'total': 100, 'status': 'Grooming finished. Sending back the results'})
