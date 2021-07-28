@@ -194,7 +194,7 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         :param line_rate: line rate of network 
     """
 
-    return adv_grooming(end_to_end_fun=grooming_task,
+    return adv_grooming(end_to_end_fun=grooming_function,
                         pt=pt,
                         tm=tm,
                         multiplex_threshold=multiplex_threshold,
