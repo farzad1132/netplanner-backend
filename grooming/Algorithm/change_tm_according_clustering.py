@@ -159,7 +159,7 @@ def MP2X(Services_lower10):
 Groomout10={"id":1,"demands":{}}
 
 
-def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, uuid, MP2X_Threshold=None):
+def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, MP2X_Threshold=None, state=None):
     """
             This function breaks the remaining services based on the clusters.
 
@@ -232,7 +232,10 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
     nume=1
     for i in TM['demands'].keys():
         per = math.ceil(percentage[0] + (nume/len(TM['demands'].keys())) * ((percentage[1] - percentage[0])/3))
-        state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+        
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+
         nume = nume + 1
         y=[]
         z=[]
@@ -776,7 +779,10 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, state, percentage, 
 
     for i in range(0,len(remain_lower100_2)):
         per = math.ceil(percentage[0] + (percentage[1] - percentage[0])/3 + (i/len(remain_lower100_2)) * ((2*(percentage[1] - percentage[0]))/3))
-        state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+            
         for j in range(0,len(remain_lower100_2[i][1])):
             if (remain_lower100_2[i][0] not in Groomout10['demands']) or (remain_lower100_2[i][1][j][0] not in Groomout10['demands'][remain_lower100_2[i][0]]['services']) :
                 if TM['demands'][remain_lower100_2[i][0]]['source'] in id_in_cluster:

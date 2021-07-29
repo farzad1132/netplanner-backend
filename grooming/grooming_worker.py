@@ -24,7 +24,7 @@ from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
                               ServiceMapping)
 from grooming.utils import GroomingRepository
 from models import UserModel
-
+from grooming.Algorithm.grooming_function import grooming_function
 
 class GroomingBaseHandle(Task):
     """
@@ -167,69 +167,15 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
                   clusters: ClusterDict,
                   Physical_topology: PhysicalTopologyDB,
                   test: bool = False):
-    ArashId = arashId()
-    if test == True:
-        def uuid(): return id_gen(ArashId=ArashId, test=True)
-    else:
-        def uuid(): return id_gen(ArashId=ArashId, test=False)
-    self.update_state(state='PROGRESS', meta={
-                      'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
-    if clusters != None:
-        service_mapping, clusteerdtm = Change_TM_acoordingTo_Clusters(
-            traffic_matrix, clusters, MP1H_Threshold=mp1h_threshold_clustering, state=self, percentage=[0, 40], uuid=uuid)
-        finalres = {"traffic": {}}
-        devicee = {}
-        self.update_state(state='PROGRESS', meta={
-                          'current': 40, 'total': 100, 'status': 'Clustering Finished'})
-        pr = 40
-        le = 0
-        for i in clusteerdtm['sub_tms'].keys():
-            le = le + len(traffic_matrix['data']['demands'].keys())
-        for i in clusteerdtm['sub_tms'].keys():
-            if i != traffic_matrix['id']:
-                le2 = math.ceil(
-                    (len(clusteerdtm['sub_tms'][i]['tm']['demands'].keys())/le) * (40))
-                res, dev = grooming_fun(TM=clusteerdtm['sub_tms'][i]['tm'], MP1H_Threshold=mp1h_threshold_grooming, tmId=i, state=self, percentage=[
-                                        pr, pr+le2], uuid=uuid)
-                pr = pr + le2
-                res.update({'cluster_id': i})
-                devicee.update({i: dev})
-                finalres["traffic"].update({i: res})
-        self.update_state(state='PROGRESS', meta={
-                          'current': 80, 'total': 100, 'status': 'Grooming Finished'})
-        (node_structure, device_final, finalres) = Nodestructureservices(
-            devicee, Physical_topology, finalres, state=self, percentage=[80, 90])
-        finalres.update({"node_structure": node_structure})
-        finalres.update({"service_devices": device_final})
-        self.update_state(state='PROGRESS', meta={
-                          'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
-        result3 = {"grooming_result": finalres,
-                   "serviceMapping": service_mapping, "clustered_tms": clusteerdtm}
-        result = {"grooming_result": GroomingResult(**finalres).dict(), "serviceMapping": ServiceMapping(
-            **service_mapping).dict(), "clustered_tms": ClusteredTMs(**clusteerdtm).dict()}
-    else:
-        res, dev = grooming_fun(TM=traffic_matrix['data'], MP1H_Threshold=mp1h_threshold_grooming,
-                                tmId=traffic_matrix['id'], state=self, percentage=[0, 60], uuid=uuid)
-        devicee = {traffic_matrix['id']: dev}
-        finalres = {"traffic": {
-            traffic_matrix['id']: res}}
-        self.update_state(state='PROGRESS', meta={
-                          'current': 60, 'total': 100, 'status': 'Grooming Finished'})
-        (node_structure, device_final, finalres) = Nodestructureservices(
-            devicee, Physical_topology, finalres, state=self, percentage=[60, 90])
-        self.update_state(state='PROGRESS', meta={
-                          'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
-        res.update({'cluster_id': traffic_matrix['id']})
-        finalres.update( {"service_devices": device_final})
-        finalres.update({"node_structure": node_structure})
-        result = {"grooming_result": GroomingResult(
-            **finalres).dict(), "serviceMapping": None, "clustered_tms": None}
-    print("\n Data received on the server for Grooming!")
+    
 
-    self.update_state(state='SUCCESS', meta={
-                      'current': 100, 'total': 100, 'status': 'Grooming finished. Sending back the results'})
-
-    return result
+    return grooming_function(   #state=self,
+                                traffic_matrix = traffic_matrix,
+                                mp1h_threshold_clustering = mp1h_threshold_clustering,
+                                mp1h_threshold_grooming = mp1h_threshold_grooming,
+                                clusters = clusters,
+                                Physical_topology = Physical_topology,
+                                test=test)
 
 
 @celeryapp.task(bind=True, base=AdvGroomingHandle)
@@ -248,7 +194,7 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         :param line_rate: line rate of network 
     """
 
-    return adv_grooming(end_to_end_fun=grooming_task,
+    return adv_grooming(end_to_end_fun=grooming_function,
                         pt=pt,
                         tm=tm,
                         multiplex_threshold=multiplex_threshold,

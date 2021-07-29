@@ -924,7 +924,7 @@ class Network:
     def remove_groomout_services(self, demand_id: str, groomout: gschema.GroomOut)\
             -> None:
 
-        self.traffic_matrix.remove_service(service_id_list=groomout['service_id_list'],
+        self.traffic_matrix.remove_service(service_id_list=list(map(lambda x: x["id"], groomout['service_id_list'])),
                                            demand_id=demand_id)
 
     def remove_service(self, traffic: gschema.GroomingOutput) -> None:

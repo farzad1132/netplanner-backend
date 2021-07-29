@@ -1,5 +1,5 @@
 import math
-def Nodestructureservices(device_dict, Physical_topology, grooming_res, state, percentage):  
+def Nodestructureservices(device_dict, Physical_topology, grooming_res, percentage, state=None):  
     """
             This function places the devices that produced in grooming function in the slots of shelves and racks in each node.
                 
@@ -51,7 +51,9 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, state, p
     device_st={}
     for k in range(0,len(Physical_topology['data']['nodes'])):
         per = math.ceil(percentage[0] + (k/len(Physical_topology['data']['nodes'])) * (percentage[1] - percentage[0]))
-        state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
+
+        if state is not None:
+            state.update_state(state='PROGRESS', meta={'current': per, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
         rackn=0
         shelfn=0
         slotn=0
