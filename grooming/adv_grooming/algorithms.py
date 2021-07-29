@@ -3,13 +3,13 @@
 """
 
 from copy import copy, deepcopy
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import networkx as nx
 from clusters.schemas import ClusterDict
 from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
                                            MultiplexThreshold, Network)
-from grooming.schemas import GroomingLightPath
+from grooming.schemas import GroomingLightPath, GroomingResult
 from physical_topology.schemas import PhysicalTopologyDB
 from pydantic import validate_arguments
 from traffic_matrix.schemas import TrafficMatrixDB
@@ -148,15 +148,7 @@ def corner_loop_operation(network: Network, nodes: List[str], gateway: str,
 def split_demands(network: Network, node: str, gateway: str,
                   exclude: List[str], cluster: Optional[List[str]] = None) -> Optional[List[str]]:
     """
-        This function job is to split demand which is described by parameters
-
-        procedure:
-
-         1. finding demands that their source are node their destination are not gateway
-         2. adding step 1 demands to a connection
-         3. changing step 1 demands source from node to gateway (adjacent node)
-         4. finding all direct demands between node and gateway
-         5. adding step 4 demands to connection created in step 2
+        This function job is to split demand which are described by parameters
 
         :param network: network object
         :param node: source of target demands
@@ -165,12 +157,14 @@ def split_demands(network: Network, node: str, gateway: str,
         :param cluster: user defined clusters
     """
 
-    # create a connection and add all demands between degree 1 node and adj node to it
+    # create a connection and add all demands between degree 1 node
+    # and adj node to it
     conn_id = None
     not_dst = [gateway]
     not_dst.extend(exclude)
     target_demands = network.traffic_matrix \
-        .get_demands(source=node, destinations=not_dst, include=False)
+        .get_demands(source=node, destinations=not_dst,
+                     include=False)
 
     if len(target_demands) != 0:
         target_ids = list(map(lambda x: x.id, target_demands))
@@ -184,12 +178,9 @@ def split_demands(network: Network, node: str, gateway: str,
         for id in target_ids:
             network.change_demand_src_or_dst(id, node, gateway)
 
-    # finding direct demands
     direct_ids = []
     direct_demands = network.traffic_matrix \
         .get_demands(source=node, destinations=[gateway])
-
-    # adding direct demands to above connection
     if len(direct_demands) != 0:
         direct_ids = list(map(lambda x: x.id, direct_demands))
         if conn_id is not None:
@@ -203,8 +194,9 @@ def split_demands(network: Network, node: str, gateway: str,
                                             route=route,
                                             demands=list(direct_ids))
 
-    # returning direct demands id to upper function to delete these demand
-    # from network object
+    # add adj node to grooming nodes
+    # network.grooming.add_grooming_node(gateway)
+
     return direct_ids
 
 
@@ -233,14 +225,13 @@ def degree_1_operation(network: Network, node: str) -> Network:
     adj_node = list(network.physical_topology.nodes[node].links.keys())[0]
 
     # Step 2
-    direct_ids = split_demands(network=network, node=node,
+    ids = split_demands(network=network, node=node,
                         gateway=adj_node, exclude=[])
 
     # Deleting unwanted parts of network
     copy_network = deepcopy(network)
-
-    # removing direct demands from network
-    for id in direct_ids:
+    #map(lambda x: copy_network.remove_demand(x), ids)
+    for id in ids:
         copy_network.remove_demand(id)
 
     # removing degree 1 node
@@ -251,7 +242,7 @@ def degree_1_operation(network: Network, node: str) -> Network:
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                          pt: PhysicalTopologyDB, multiplex_threshold: int, clusters: ClusterDict) \
-        -> Tuple[Dict[str, GroomingLightPath], Network]:
+        -> Tuple[Dict[str, GroomingLightPath], Network, GroomingResult]:
     """
         In this phase we are performing hierarchial clustering and end-to-end multiplexing.
 
@@ -279,6 +270,7 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                                         network.traffic_matrix.demands.values()))
 
     lightpaths = {}
+    end_to_end_result = None
     if len(demands_for_multiplex) != 0:
         demands_for_multiplex = list(
             map(lambda x: x.id, demands_for_multiplex))
@@ -291,6 +283,8 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                                    mp1h_threshold_clustering=multiplex_threshold,
                                    mp1h_threshold_grooming=multiplex_threshold,
                                    clusters={"clusters": {}})
+
+        end_to_end_result = groom_res['grooming_result']
 
         # removing services that construct lightpaths
         res_network.remove_service(groom_res['grooming_result']['traffic'])
@@ -305,13 +299,16 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
         # performing degree 1 node operation
         while (d1_nodes := res_network.physical_topology.get_degree_n_nodes(1)):
             for d1_node in d1_nodes:
+                print(f"START: degree one operation, node = '{d1_node}'")
                 res_network = degree_1_operation(network=res_network,
                                                  node=d1_node)
+                print(f"END: degree one operation, node = '{d1_node}'")
 
         # user defined clusters
         if len(user_clusters) != 0:
             for id, cluster in list(user_clusters.items()):
                 # NOTE: corner loop operation function can handle any class with one gateway
+                print(f"START: user cluster operation, node = '{cluster}'")
                 res_network = corner_loop_operation(
                     network=res_network,
                     nodes=cluster['data']['subnodes'],
@@ -320,15 +317,18 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                              *cluster['data']['gateways']]
                 )
                 user_clusters.pop(id)
+                print(f"END: user cluster operation, node = '{cluster}'")
 
         # performing corner cycles operation
         while (loops := find_corner_cycles(res_network.physical_topology)):
             for loop in loops:
+                print(f"START: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
                 res_network = corner_loop_operation(network=res_network,
                                                     nodes=loop[1:],
                                                     gateway=loop[0])
+                print(f"END: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
 
-    return lightpaths, res_network
+    return lightpaths, res_network, end_to_end_result
 
 
 def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network: Network) \
@@ -344,6 +344,10 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     # sort demands
     demands = network.get_demands_by_rate()
 
+    # check if any demand left for phase 2
+    if len(demands) == 0:
+        return network.export_result(line_rate, original_network)
+    
     # pick first
     visit_demand = demands.pop(0)
 
@@ -351,7 +355,6 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     route = network.physical_topology.get_shortest_path(src=visit_demand.source,
                                                         dst=visit_demand.destination)
 
-    # TODO: check whether there is a connection with with src and dst or not
     # make route a connection
     conn_id = network.add_connection(source=visit_demand.source,
                                      destination=visit_demand.destination,
@@ -365,7 +368,6 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
     last_dst = visit_demand.destination
     while len(demands) != 0:
         # choosing visit demand
-        # TODO: make this a loop until processing all candidate demands (can be suboptimal)
         cand_demands = list(filter(lambda x: (x.source == last_src or x.destination == last_src),
                             demands))
         new_cands = list(filter(lambda x: (x.source == last_dst or x.destination == last_dst),
@@ -398,10 +400,11 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, original_network
 
 
 def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: ClusterDict,
-                 tm: TrafficMatrixDB, multiplex_threshold: MultiplexThreshold, line_rate: LineRate) \
-        -> AdvGroomingResult:
+                 tm: TrafficMatrixDB, multiplex_threshold: MultiplexThreshold, line_rate: LineRate,
+                 return_network: bool = True) \
+        -> Tuple[AdvGroomingResult, GroomingResult, Network]:
     """
-        This function executes 2 phase of advanced grooming functions and returns a set of
+        This function executes 2 phase of advanced grooming functions and returns a set of\n
         lightpaths and set of connections.
 
         :param end_to_end_fun: end to end multiplexing function
@@ -414,18 +417,22 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
 
     network = Network(pt=pt, tm=tm)
 
-    # phase 1
-    lightpaths, res_network = adv_grooming_phase_1(network=network,
-                                                   end_to_end_fun=end_to_end_fun,
-                                                   pt=pt,
-                                                   multiplex_threshold=int(
-                                                       multiplex_threshold),
-                                                   clusters=clusters)
+    lightpaths, res_network, end_to_end_result = adv_grooming_phase_1(
+        network=network,
+        end_to_end_fun=end_to_end_fun,
+        pt=pt,
+        multiplex_threshold=int(
+            multiplex_threshold),
+        clusters=clusters
+    )
 
-    # phase 2
     result = adv_grooming_phase_2(network=res_network,
                                   line_rate=line_rate,
                                   original_network=network)
 
     result['lightpaths'] = lightpaths
-    return result
+
+    if return_network:
+        return result, end_to_end_result, res_network
+    else:
+        return result, end_to_end_result, None

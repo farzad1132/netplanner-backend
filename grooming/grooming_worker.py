@@ -3,16 +3,18 @@
 """
 
 import math
+from typing import Tuple
 
 from celery.app.task import Task
 from celery_app import celeryapp
 from clusters.schemas import ClusterDict
 from database import session
 from physical_topology.schemas import PhysicalTopologyDB
-from traffic_matrix.schemas import TrafficMatrixDB
+from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
 
 from grooming.adv_grooming.algorithms import adv_grooming
-from grooming.adv_grooming.schemas import LineRate
+from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate
+from grooming.adv_grooming.utils import adv_grooming_result_to_tm
 from grooming.Algorithm.change_tm_according_clustering import \
     Change_TM_acoordingTo_Clusters
 from grooming.Algorithm.grooming import grooming_fun
@@ -65,8 +67,6 @@ class GroomingHandle(GroomingBaseHandle):
         """
 
         db = session()
-        """ if (register := db.query(GroomingRegisterModel)
-                .filter_by(id=task_id).one_or_none()) is not None: """
         if (register := GroomingRepository.update_grooming_register(grooming_id=task_id, db=db,
                                                                     is_finished=True)) is not None:
             GroomingRepository.add_grooming(
@@ -183,7 +183,9 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         tm: TrafficMatrixDB,
                         multiplex_threshold: MP1HThreshold,
                         clusters: ClusterDict,
-                        line_rate: LineRate):
+                        line_rate: LineRate,
+                        return_network: bool = True) \
+        -> Tuple[AdvGroomingResult, GroomingResult, TrafficMatrixSchema, ServiceMapping]:
     """
         Advanced Grooming worker
 
@@ -194,9 +196,25 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         :param line_rate: line rate of network 
     """
 
-    return adv_grooming(end_to_end_fun=grooming_function,
-                        pt=pt,
-                        tm=tm,
-                        multiplex_threshold=multiplex_threshold,
-                        clusters=clusters,
-                        line_rate=line_rate)
+    # TODO: update handler
+    # Tuple[AdvGroomingResult, GroomingResult, Network]
+    adv_grooming_result, end_to_end_result, network = adv_grooming(
+        end_to_end_fun=grooming_task,
+        pt=pt,
+        tm=tm,
+        multiplex_threshold=multiplex_threshold,
+        clusters=clusters,
+        line_rate=line_rate,
+        return_network=return_network
+    )
+
+    new_tm, mapping = adv_grooming_result_to_tm(result=adv_grooming_result,
+                                                tm=tm,
+                                                network=network)
+
+    return (
+        adv_grooming_result,
+        end_to_end_result,
+        new_tm,
+        mapping
+    )

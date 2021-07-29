@@ -400,7 +400,7 @@ class ServiceMappingOutputTMs(BaseModel):
     """
         keys are tm_id (output 1)
     """
-    traffic_matrices: Dict[str, ServiceMappingOutputDemandService]
+    traffic_matrices: Dict[str, List[ServiceMappingOutputDemandService]]
 
 
 class ServiceMappingServices(BaseModel):
