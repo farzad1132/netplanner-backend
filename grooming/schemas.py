@@ -61,6 +61,7 @@ class GroomingForm(BaseModel):
     """
         Grooming Form schema
     """
+    clusters_id: List[str] = []
     mp1h_threshold: MP1HThreshold = MP1HThreshold.t70
     comment: str
 
