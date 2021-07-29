@@ -472,3 +472,15 @@ class EndToEndResult(BaseModel):
     """
     service_devices: Dict[str, grooming_devices]
     traffic: Dict[str, GroomingOutput]
+
+class AdvGroomingOut(BaseModel):
+    """
+        This schema represents grooming algorithm result in database
+
+        keys of **traffic** are **sub_tm_id**
+        key of output traffic matrix is **out**
+    """
+    traffic: Dict[str, GroomingOutput]
+    service_devices: Dict[str, grooming_devices]
+    clustered_tms: ClusteredTMs
+    service_mapping: ServiceMapping
