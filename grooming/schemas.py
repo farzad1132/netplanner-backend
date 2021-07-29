@@ -457,3 +457,24 @@ class ManualGroomingDB(BaseModel):
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
     form: ManualGroomingForm
+
+class GroomingTableServiceTypeCountPair(BaseModel):
+    type: ServiceType
+    count: int
+
+class GroomingTableDemandEntry(BaseModel):
+    source: str
+    destination: str
+    demand_id: str
+    traffic: List[GroomingTableServiceTypeCountPair]
+
+class GroomingTableRow(BaseModel):
+    end_to_ends: List[GroomingTableDemandEntry]
+    splitted_sections: List[GroomingTableDemandEntry]
+
+class GroomingTable(BaseModel):
+    """
+        This schema demonstrates grooming output
+        keys are **demand_id**
+    """
+    demands: dict[str, GroomingTableRow]
