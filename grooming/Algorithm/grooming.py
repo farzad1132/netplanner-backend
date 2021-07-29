@@ -557,7 +557,12 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, percentage, uuid, MP2X_Threshold = 
                     lst.append({"id":u,
                                 "type":"groomout",
                                 "normal_service_type": None,
-                                "mp2x_panel_address": {}})
+                                "mp2x_panel_address": {"source":{   "rack_id": "None",
+                                                                    "shelf_id": "None",
+                                                                    "slot_id_list":["None"]},
+                                                        "destination":{ "rack_id": "None",
+                                                                        "shelf_id": "None",
+                                                                        "slot_id_list":["None"]}}})
             lightpathId = uuid()
             lp1={
 
