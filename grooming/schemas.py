@@ -457,3 +457,18 @@ class ManualGroomingDB(BaseModel):
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
     form: ManualGroomingForm
+
+class grooming_devices(BaseModel):
+    MP2X: List[MP2X]
+    MP1H: List[MP1H]
+    TP1H: List[TP1H]
+
+class EndToEndResult(BaseModel):
+    """
+        This schema represents end to end algorithm result (structure related)
+
+        keys of **traffic** are sub_tm_id
+        keys of **service_devices** are device_id
+    """
+    service_devices: Dict[str, grooming_devices]
+    traffic: Dict[str, GroomingOutput]
