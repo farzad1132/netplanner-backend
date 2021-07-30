@@ -928,8 +928,8 @@ class Network:
         self.traffic_matrix.remove_service(service_id_list=list(map(lambda x: x["id"], groomout['service_id_list'])),
                                            demand_id=demand_id)
 
-    def remove_service(self, traffic: gschema.GroomingOutput) -> None:
-        for lightpath in traffic['main']['lightpaths'].values():
+    def remove_service(self, traffic: dict) -> None:
+        for lightpath in traffic['lightpaths'].values():
             demand_id = lightpath['demand_id']
             for service in lightpath['service_id_list']:
                 id = service['id']
@@ -938,7 +938,7 @@ class Network:
                                                        demand_id=demand_id)
                 else:
                     self.remove_groomout_services(demand_id=demand_id,
-                                                  groomout=traffic['main']['low_rate_grooming_result']
+                                                  groomout=traffic['low_rate_grooming_result']
                                                   ['demands'][demand_id]['groomouts'][id])
 
     def export_result(self, line_rate: str, original_network) -> AdvGroomingResult:
