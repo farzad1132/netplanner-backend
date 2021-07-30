@@ -2,7 +2,6 @@
     This module contains grooming algorithm workers
 """
 
-import math
 from typing import Tuple
 
 from celery.app.task import Task
@@ -10,23 +9,16 @@ from celery_app import celeryapp
 from clusters.schemas import ClusterDict
 from database import session
 from physical_topology.schemas import PhysicalTopologyDB
-from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
+from traffic_matrix.schemas import TrafficMatrixDB
 
 from grooming.adv_grooming.algorithms import adv_grooming
 from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate
 from grooming.adv_grooming.utils import adv_grooming_result_to_tm
-from grooming.Algorithm.change_tm_according_clustering import \
-    Change_TM_acoordingTo_Clusters
-from grooming.Algorithm.grooming import grooming_fun
-from grooming.Algorithm.id_generator import arashId, id_gen
-from grooming.Algorithm.NodeStructure import Nodestructureservices
-from grooming.models import (AdvGroomingModel, GroomingModel,
-                             GroomingRegisterModel)
-from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
-                              ServiceMapping)
-from grooming.utils import GroomingRepository
-from models import UserModel
+from grooming.Algorithm.end_to_end import end_to_end
 from grooming.Algorithm.grooming_function import grooming_function
+from grooming.schemas import AdvGroomingOut, MP1HThreshold
+from grooming.utils import GroomingRepository
+
 
 class GroomingBaseHandle(Task):
     """
@@ -167,15 +159,13 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
                   clusters: ClusterDict,
                   Physical_topology: PhysicalTopologyDB,
                   test: bool = False):
-    
 
-    return grooming_function(   #state=self,
-                                traffic_matrix = traffic_matrix,
-                                mp1h_threshold_clustering = mp1h_threshold_clustering,
-                                mp1h_threshold_grooming = mp1h_threshold_grooming,
-                                clusters = clusters,
-                                Physical_topology = Physical_topology,
-                                test=test)
+    return grooming_function(traffic_matrix=traffic_matrix,
+                             mp1h_threshold_clustering=mp1h_threshold_clustering,
+                             mp1h_threshold_grooming=mp1h_threshold_grooming,
+                             clusters=clusters,
+                             Physical_topology=Physical_topology,
+                             test=test)
 
 
 @celeryapp.task(bind=True, base=AdvGroomingHandle)
@@ -185,7 +175,7 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         clusters: ClusterDict,
                         line_rate: LineRate,
                         return_network: bool = True) \
-        -> Tuple[AdvGroomingResult, GroomingResult, TrafficMatrixSchema, ServiceMapping]:
+        -> Tuple[AdvGroomingResult, AdvGroomingOut]:
     """
         Advanced Grooming worker
 
@@ -196,10 +186,10 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         :param line_rate: line rate of network 
     """
 
-    # TODO: update handler
+    # TODO: update handler (and database)
     # Tuple[AdvGroomingResult, GroomingResult, Network]
     adv_grooming_result, end_to_end_result, network = adv_grooming(
-        end_to_end_fun=grooming_task,
+        end_to_end_fun=end_to_end,
         pt=pt,
         tm=tm,
         multiplex_threshold=multiplex_threshold,
@@ -212,9 +202,6 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                                                 tm=tm,
                                                 network=network)
 
-    return (
-        adv_grooming_result,
-        end_to_end_result,
-        new_tm,
-        mapping
-    )
+    return adv_grooming_result, AdvGroomingOut(end_to_end_result=end_to_end_result,
+                                               output_tm=new_tm,
+                                               service_mapping=mapping).dict()
