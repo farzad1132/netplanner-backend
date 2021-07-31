@@ -57,7 +57,7 @@ def completingadv(  state,
         for noden in adv_result["end_to_end_result"]["service_devices"].keys():
             for num in range(0,len(adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"])):
                 for i in ["line1", "line2"]:
-                    if i in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num] and gid == adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num][i]["groomout_id"]:
+                    if i in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num] and adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num][i] != None and gid == adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num][i]["groomout_id"]:
                         adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num].pop(i)
                         return
 
@@ -65,7 +65,7 @@ def completingadv(  state,
         for did in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"].keys():
             for gid in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"][did]:
                 delete(gid)
-    new_result = grooming_fun(  TM = adv_result["output_tm"]["traffic"], 
+    new_result = grooming_fun(  TM = adv_result["output_tm"], 
                                 MP1H_Threshold = mp1h_threshold, 
                                 tmId = "output_tm", 
                                 state = state, 
@@ -102,6 +102,7 @@ def completingadv(  state,
                 new_result[0]["lightpaths"].update({lpid:adv_result["end_to_end_result"]["traffic"][stmid]["lightpaths"][lpid]})
     devicee = {"output_tm": new_result[1]}
     finalres = {"traffic": {"output_tm": new_result[0]}}
+    finalres["traffic"]["output_tm"].update({"cluster_id": "output_tm"})
     (node_structure, device_final, finalres) = Nodestructureservices(
             devicee, pt, finalres, state=state, percentage=[60, 90])
     finalres.update({"service_devices": device_final})
