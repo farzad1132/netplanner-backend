@@ -296,10 +296,11 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
         # performing degree 1 node operation
         while (d1_nodes := res_network.physical_topology.get_degree_n_nodes(1)):
             for d1_node in d1_nodes:
-                print(f"START: degree one operation, node = '{d1_node}'")
-                res_network = degree_1_operation(network=res_network,
-                                                 node=d1_node)
-                print(f"END: degree one operation, node = '{d1_node}'")
+                if len(res_network.physical_topology.nodes) != 1:
+                    print(f"START: degree one operation, node = '{d1_node}'")
+                    res_network = degree_1_operation(network=res_network,
+                                                    node=d1_node)
+                    print(f"END: degree one operation, node = '{d1_node}'")
 
         # user defined clusters
         if len(user_clusters) != 0:
