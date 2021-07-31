@@ -136,10 +136,10 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, percenta
                     for k in ["source", "destination"]:
                         rack, shelf, slot = find(   grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['id'], 
                                                     grooming_res['traffic'][cln]["lightpaths"][lpid][k],
-                                                    cln)
+                                                    cln)                     
                         grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['mp2x_panel_address'].update({k:{  "rack_id": rack,
                                                                                                                         "shelf_id": shelf,
                                                                                                                         "slot_id_list":slot}})
+                        grooming_res['traffic'][cln]["low_rate_grooming_result"]["demands"][grooming_res['traffic'][cln]["lightpaths"][lpid]["demand_id"]]["groomouts"][grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['id']].update({"lightpath_id":lpid})
 
-                print("5")
     return NodeStructure, device_st, grooming_res
