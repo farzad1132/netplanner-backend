@@ -20,25 +20,11 @@ class MultiplexThreshold(str, Enum):
     """
      MP1H threshold `Enum`
 
-      - 0
-      - 10
-      - 20
-      - 30
-      - 40
-      - 50
-      - 60
       - 70
       - 80
       - 90
     """
 
-    t0 = "0"
-    t10 = "10"
-    t20 = "20"
-    t30 = "30"
-    t40 = "40"
-    t50 = "50"
-    t60 = "60"
     t70 = "70"
     t80 = "80"
     t90 = "90"
@@ -962,7 +948,10 @@ class Network:
             tot_capacity_link += connection['capacity_link']
 
         result['lambda_link'] = tot_lambda_link
-        result['average_lambda_capacity_usage'] = tot_capacity_link / \
-            tot_lambda_link
+        if tot_lambda_link != 0:
+            result['average_lambda_capacity_usage'] = tot_capacity_link / \
+                tot_lambda_link
+        else:
+            result['average_lambda_capacity_usage'] = 0
 
         return result
