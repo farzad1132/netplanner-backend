@@ -183,6 +183,7 @@ class GroomOut(BaseModel):
     sla: Optional[str]
     type: GroomOutType
     capacity: float
+    lightpath_id: str = None
 
 
 class GroomingLowRateDemand(BaseDemand):
