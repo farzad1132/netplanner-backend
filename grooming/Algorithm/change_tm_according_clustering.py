@@ -851,16 +851,16 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
             for k in clusteredTM.keys():
                 if x in clusteredTM[k]['tm']['demands']:
                    listofm.append((k,x,y)) 
-                   service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].update({k:xy})
+                   service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].update({k:[xy]})
         for k in service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].keys():
-            did = service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k]['demand_id']
-            sid =service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k]['service_id']
+            did = service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k][0]['demand_id']
+            sid =service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k][0]['service_id']
 
             if did in service_maping2["traffic_matrices"][k]["demands"].keys():
                 service_maping2["traffic_matrices"][k]["demands"][did]["services"].update({sid:{"traffic_matrices":{}}})
             else:
                 service_maping2["traffic_matrices"][k]["demands"].update({did:{"services":{sid:{"traffic_matrices":{}}}}})
-            service_maping2["traffic_matrices"][k]["demands"][did]["services"][sid]["traffic_matrices"].update({TMi['id']:{"demand_id":i[0],"service_id":i[1]}})
+            service_maping2["traffic_matrices"][k]["demands"][did]["services"][sid]["traffic_matrices"].update({TMi['id']:[{"demand_id":i[0],"service_id":i[1]}]})
             for h in service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].keys():
                 if h != k:
                     service_maping2["traffic_matrices"][k]["demands"][did]["services"][sid]["traffic_matrices"].update({h:service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][h]})  
