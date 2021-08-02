@@ -468,7 +468,7 @@ class GroomingTableDemandEntry(BaseModel):
     demand_id: str
     service_id: str
     type: ServiceType
-    traffic: List[GroomingTableServiceTypeCountPair]
+    
 
 class GroomingTableRow(BaseModel):
     end_to_ends: GroomingTableDemandEntry
