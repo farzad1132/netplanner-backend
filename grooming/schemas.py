@@ -466,15 +466,24 @@ class GroomingTableDemandEntry(BaseModel):
     source: str
     destination: str
     demand_id: str
+    service_id: str
+    type: ServiceType
     traffic: List[GroomingTableServiceTypeCountPair]
 
 class GroomingTableRow(BaseModel):
-    end_to_ends: List[GroomingTableDemandEntry]
+    end_to_ends: GroomingTableDemandEntry
     splitted_sections: List[GroomingTableDemandEntry]
+
+class GroomingTableService(BaseModel):
+    """
+        This schema demonstrates grooming output
+        keys are **service_id**
+    """
+    services: dict[str, GroomingTableRow]
 
 class GroomingTable(BaseModel):
     """
         This schema demonstrates grooming output
         keys are **demand_id**
     """
-    demands: dict[str, GroomingTableRow]
+    demands: dict[str, GroomingTableService]
