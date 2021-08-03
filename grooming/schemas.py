@@ -450,6 +450,11 @@ class GroomingTable(BaseModel):
     """
     demands: dict[str, GroomingTableRow]
 
+class StatisticalGroomingResult(BaseModel):
+    lightpath_no: int
+    mean_lightpath_cap: float
+
+
 class GroomingDBOut(GroomingInformation):
     """
         This schema represents grooming algorithm result in database
@@ -463,6 +468,7 @@ class GroomingDBOut(GroomingInformation):
     service_mapping: ServiceMapping
     grooming_table: GroomingTable
     clusters: ClusterDict
+    statistical_result: StatisticalGroomingResult
     form: GroomingForm
 
     class Config:
