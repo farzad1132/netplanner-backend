@@ -427,6 +427,28 @@ class ServiceMapping(BaseModel):
     """
     traffic_matrices: Dict[str, ServiceMappingDemands]
 
+class GroomingTableServiceTypeCountPair(BaseModel):
+    type: ServiceType
+    count: int
+
+class GroomingTableDemandEntry(BaseModel):
+    source: str
+    destination: str
+    demand_id: str
+    traffic: GroomingTableServiceTypeCountPair
+    
+
+class GroomingTableRow(BaseModel):
+    end_to_ends: List[GroomingTableDemandEntry]
+    splitted_sections: List[GroomingTableDemandEntry]
+
+
+class GroomingTable(BaseModel):
+    """
+        This schema demonstrates grooming output
+        keys are **demand_id**
+    """
+    demands: dict[str, GroomingTableRow]
 
 class GroomingDBOut(GroomingInformation):
     """
@@ -439,6 +461,7 @@ class GroomingDBOut(GroomingInformation):
     node_structure: NodeStructure
     clustered_tms: ClusteredTMs
     service_mapping: ServiceMapping
+    grooming_table: GroomingTable
     clusters: ClusterDict
     form: GroomingForm
 
@@ -458,33 +481,3 @@ class ManualGroomingDB(BaseModel):
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
     form: ManualGroomingForm
-
-class GroomingTableServiceTypeCountPair(BaseModel):
-    type: ServiceType
-    count: int
-
-class GroomingTableDemandEntry(BaseModel):
-    source: str
-    destination: str
-    demand_id: str
-    service_id: str
-    type: ServiceType
-    
-
-class GroomingTableRow(BaseModel):
-    end_to_ends: GroomingTableDemandEntry
-    splitted_sections: List[GroomingTableDemandEntry]
-
-class GroomingTableService(BaseModel):
-    """
-        This schema demonstrates grooming output
-        keys are **service_id**
-    """
-    services: dict[str, GroomingTableRow]
-
-class GroomingTable(BaseModel):
-    """
-        This schema demonstrates grooming output
-        keys are **demand_id**
-    """
-    demands: dict[str, GroomingTableService]
