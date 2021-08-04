@@ -16,7 +16,8 @@ from grooming.Algorithm.NodeStructure import Nodestructureservices
 from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
 from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
-                              ServiceMapping)
+                              ServiceMapping, GroomingTable, StatisticalGroomingResult)
+from grooming.Algorithm.statistical_grooming_result import statistical_result
 
 
 def grooming_function(
@@ -39,7 +40,7 @@ def grooming_function(
             'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
 
     if clusters != None:
-        service_mapping, clusteerdtm = Change_TM_acoordingTo_Clusters(
+        service_mapping, clusteerdtm, table = Change_TM_acoordingTo_Clusters(
             traffic_matrix, clusters, MP1H_Threshold=mp1h_threshold_clustering, state=state, percentage=[0, 40], uuid=uuid)
         finalres = {"traffic": {}}
         devicee = {}
@@ -74,11 +75,12 @@ def grooming_function(
         if state is not None:
             state.update_state(state='PROGRESS', meta={
                 'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
-        
+        statres = statistical_result(finalres)
         result3 = {"grooming_result": finalres,
                    "serviceMapping": service_mapping, "clustered_tms": clusteerdtm}
         result = {"grooming_result": GroomingResult(**finalres).dict(), "serviceMapping": ServiceMapping(
-            **service_mapping).dict(), "clustered_tms": ClusteredTMs(**clusteerdtm).dict()}
+            **service_mapping).dict(), "clustered_tms": ClusteredTMs(**clusteerdtm).dict(), 
+            "grooming_table": GroomingTable(**table).dict(), "statistical_result": StatisticalGroomingResult(**statres).dict()}
     else:
         res, dev = grooming_fun(TM=traffic_matrix['data'], MP1H_Threshold=mp1h_threshold_grooming,
                                 tmId=traffic_matrix['id'], state=state, percentage=[0, 60], uuid=uuid)
@@ -95,12 +97,13 @@ def grooming_function(
         if state is not None:
             state.update_state(state='PROGRESS', meta={
                 'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
-
+        statres = statistical_result(finalres)
         res.update({'cluster_id': traffic_matrix['id']})
         finalres.update({"service_devices": device_final})
         finalres.update({"node_structure": node_structure})
         result = {"grooming_result": GroomingResult(
-            **finalres).dict(), "serviceMapping": None, "clustered_tms": None}
+            **finalres).dict(), "serviceMapping": None, "clustered_tms": None, "grooming_table": None,
+            "statistical_result": StatisticalGroomingResult(**statres).dict()}
     print("\n Data received on the server for Grooming!")
     return result
     if state is not None:

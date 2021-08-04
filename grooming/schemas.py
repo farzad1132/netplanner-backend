@@ -183,6 +183,7 @@ class GroomOut(BaseModel):
     sla: Optional[str]
     type: GroomOutType
     capacity: float
+    lightpath_id: str = None
 
 
 class GroomingLowRateDemand(BaseDemand):
@@ -426,6 +427,33 @@ class ServiceMapping(BaseModel):
     """
     traffic_matrices: Dict[str, ServiceMappingDemands]
 
+class GroomingTableServiceTypeCountPair(BaseModel):
+    type: ServiceType
+    count: int
+
+class GroomingTableDemandEntry(BaseModel):
+    source: str
+    destination: str
+    demand_id: str
+    traffic: GroomingTableServiceTypeCountPair
+    
+
+class GroomingTableRow(BaseModel):
+    end_to_ends: List[GroomingTableDemandEntry]
+    splitted_sections: List[GroomingTableDemandEntry]
+
+
+class GroomingTable(BaseModel):
+    """
+        This schema demonstrates grooming output
+        keys are **demand_id**
+    """
+    demands: dict[str, GroomingTableRow]
+
+class StatisticalGroomingResult(BaseModel):
+    lightpath_no: int
+    mean_lightpath_cap: float
+
 
 class GroomingDBOut(GroomingInformation):
     """
@@ -438,7 +466,9 @@ class GroomingDBOut(GroomingInformation):
     node_structure: NodeStructure
     clustered_tms: ClusteredTMs
     service_mapping: ServiceMapping
+    grooming_table: GroomingTable
     clusters: ClusterDict
+    statistical_result: StatisticalGroomingResult
     form: GroomingForm
 
     class Config:
