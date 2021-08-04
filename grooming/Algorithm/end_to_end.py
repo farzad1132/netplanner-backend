@@ -9,7 +9,14 @@ def end_to_end(traffic_matrix: TrafficMatrixDB,
                mp1h_threshold_grooming: MP1HThreshold,
                test: bool = False,
                state=None) -> EndToEndResult:
+    """end to end multiplexing
 
+        
+        :param traffic_matrix: traffic matrix object
+        :param mp1h_threshold_grooming: MP1H multiplexing threshold
+        :param test: pharameter for specifies test mode
+        :param state: current object
+    """
     ArashId = arashId()
     if test == True:
         def uuid(): return id_gen(ArashId=ArashId, test=True)

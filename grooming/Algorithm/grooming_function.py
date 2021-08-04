@@ -29,7 +29,16 @@ def grooming_function(
         Physical_topology: PhysicalTopologyDB,
         test: bool = False,
         state=None):
-
+    """ Grooming function
+        
+        :param traffic_matrix: traffic matrix object
+        :param mp1h_threshold_clustering: MP1H multiplexing threshold for clustering
+        :param mp1h_threshold_grooming: MP1H multiplexing threshold for grooming
+        :param clusters: user defined clusters
+        :param Physical_topology: physical topology object
+        :param test: pharameter for specifies test mode
+        :param state: current object
+    """
     ArashId = arashId()
     if test == True:
         def uuid(): return id_gen(ArashId=ArashId, test=True)

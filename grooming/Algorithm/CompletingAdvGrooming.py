@@ -27,6 +27,14 @@ def completingadv(  state,
                     input_tm: TrafficMatrixDB,
                     mp1h_threshold:MP1HThreshold,
                     test: bool = False ):
+    """completing Advanced Grooming 
+
+        :param adv_result_t: advance grooming output
+        :param pt: physical topology object
+        :param input_tm: traffic matrix object
+        :param mp1h_threshold: MP1H multiplexing threshold
+        :param test: pharameter for specifies test mode
+    """
     adv_result=adv_result_t[1]
     ArashId = arashId()
     if test == True:

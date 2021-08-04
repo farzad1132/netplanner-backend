@@ -1,5 +1,11 @@
 
 def producing_table(service_mapping, clusterd_tms, TM_input):
+    """Producing grooming table
+
+        :param service_mapping: keys are the id of clusters and values are the relation between broken services 
+        :param clusterd_tms: traffic matrix that broken according to clusters
+        :param TM_input: input traffic matrix object
+    """
     TM=TM_input["data"]
     input_m_id=TM_input["id"]
     table={"demands":{}}

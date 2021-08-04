@@ -1,6 +1,11 @@
 
 
 def statistical_result(finalres,devicee):
+    """statistical Grooming  result
+
+        :param finalres: grooming results
+        :param devicee: service devices in nodes
+    """
     sum=0
     num=0
     for sbtmid in finalres["traffic"].keys():
