@@ -453,6 +453,10 @@ class GroomingTable(BaseModel):
 class StatisticalGroomingResult(BaseModel):
     lightpath_no: int
     mean_lightpath_cap: float
+    groomout_no: int
+    mp2x_no: int
+    tp1h_no: int
+    mp1h_no: int
 
 class GroomingDBOut(GroomingInformation):
     """

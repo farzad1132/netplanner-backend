@@ -76,7 +76,7 @@ def grooming_function(
         if state is not None:
             state.update_state(state='PROGRESS', meta={
                 'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
-        statres = statistical_result(finalres)
+        statres = statistical_result(finalres, devicee)
         result3 = {"grooming_result": finalres,
                    "serviceMapping": service_mapping, "clustered_tms": clusteerdtm}
         result = {"grooming_result": GroomingResult(**finalres).dict(), "serviceMapping": ServiceMapping(
@@ -98,7 +98,7 @@ def grooming_function(
         if state is not None:
             state.update_state(state='PROGRESS', meta={
                 'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
-        statres = statistical_result(finalres)
+        statres = statistical_result(finalres, devicee)
         res.update({'cluster_id': traffic_matrix['id']})
         finalres.update({"service_devices": device_final})
         finalres.update({"node_structure": node_structure})

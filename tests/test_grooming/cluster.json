@@ -5165,6 +5165,10 @@
     },
     "statistical_result": {
         "lightpath_no": 6,
-        "mean_lightpath_cap": 41.53333333333334
+        "mean_lightpath_cap": 41.53333333333334,
+        "groomout_no": 13,
+        "mp2x_no": 26,
+        "tp1h_no": 2,
+        "mp1h_no": 10
     }
 }
