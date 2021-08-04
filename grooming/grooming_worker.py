@@ -203,5 +203,5 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                                                 network=network)
 
     return adv_grooming_result, AdvGroomingOut(end_to_end_result=end_to_end_result,
-                                               output_tm=new_tm,
+                                               output=new_tm,
                                                service_mapping=mapping).dict()

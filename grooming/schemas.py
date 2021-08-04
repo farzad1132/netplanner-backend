@@ -512,5 +512,5 @@ class AdvGroomingOut(BaseModel):
         There is another schema for this algorithms that demonstrates original results of this algorithm
     """
     end_to_end_result: EndToEndResult
-    output_tm: TrafficMatrixSchema
+    output: TrafficMatrixSchema
     service_mapping: ServiceMapping

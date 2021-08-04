@@ -16,43 +16,23 @@ from grooming.adv_grooming.algorithms import adv_grooming
 from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate
 from grooming.adv_grooming.utils import adv_grooming_result_to_tm
 from grooming.Algorithm.end_to_end import end_to_end
-from grooming.schemas import AdvGroomingOut, MP1HThreshold
-
+from grooming.schemas import (  AdvGroomingOut, MP1HThreshold, ClusteredTMs, GroomingResult, MP1HThreshold, 
+                                ServiceMapping, GroomingTable, StatisticalGroomingResult)
+from grooming.Algorithm.statistical_grooming_result import statistical_result
+from grooming.Algorithm.table_producer import producing_table
 
 def completingadv(  state, 
+                    adv_result_t: AdvGroomingOut,
                     pt: PhysicalTopologyDB,
-                    tm: TrafficMatrixDB,
-                    multiplex_threshold: MP1HThreshold,
+                    input_tm: TrafficMatrixDB,
                     mp1h_threshold:MP1HThreshold,
-                    clusters: ClusterDict,
-                    line_rate: LineRate,
-                    test: bool= False,
-                    return_network: bool = True):
+                    test: bool = False ):
+    adv_result=adv_result_t[1]
     ArashId = arashId()
     if test == True:
         def uuid(): return id_gen(ArashId=ArashId, test=True)
     else:
         def uuid(): return id_gen(ArashId=ArashId, test=False)
-    
-    adv_grooming_result, end_to_end_result, network = adv_grooming(
-        end_to_end_fun=end_to_end,
-        pt=pt,
-        tm=tm,
-        multiplex_threshold=multiplex_threshold,
-        clusters=clusters,
-        line_rate=line_rate,
-        return_network=return_network
-    )
-
-    new_tm, mapping = adv_grooming_result_to_tm(result=adv_grooming_result,
-                                                tm=tm,
-                                                network=network)
-
-    adv_result1 = adv_grooming_result, AdvGroomingOut(end_to_end_result=end_to_end_result,
-                                               output_tm=new_tm,
-                                               service_mapping=mapping).dict()
-
-    adv_result = adv_result1[1]
     def delete (gid):
         for noden in adv_result["end_to_end_result"]["service_devices"].keys():
             for num in range(0,len(adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"])):
@@ -65,10 +45,10 @@ def completingadv(  state,
         for did in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"].keys():
             for gid in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"][did]:
                 delete(gid)
-    new_result = grooming_fun(  TM = adv_result["output_tm"], 
+    new_result = grooming_fun(  TM = adv_result["output"], 
                                 MP1H_Threshold = mp1h_threshold, 
-                                tmId = "output_tm", 
-                                state = state, 
+                                tmId = "output", 
+                                state = None, 
                                 percentage=[40, 60], 
                                 uuid=uuid)
     
@@ -100,14 +80,19 @@ def completingadv(  state,
                 raise Exception("Error, Lightpath ID is exist!!!")
             else:
                 new_result[0]["lightpaths"].update({lpid:adv_result["end_to_end_result"]["traffic"][stmid]["lightpaths"][lpid]})
-    devicee = {"output_tm": new_result[1]}
-    finalres = {"traffic": {"output_tm": new_result[0]}}
-    finalres["traffic"]["output_tm"].update({"cluster_id": "output_tm"})
+    devicee = {"output": new_result[1]}
+    finalres = {"traffic": {"output": new_result[0]}}
+    finalres["traffic"]["output"].update({"cluster_id": "output"})
     (node_structure, device_final, finalres) = Nodestructureservices(
-            devicee, pt, finalres, state=state, percentage=[60, 90])
+            devicee, pt, finalres, state=None, percentage=[60, 90])
+    statres = statistical_result(finalres, devicee)
+    clusteerdtm = {"sub_tms":{"output": {"tm":adv_result["output"]}}}
+    input_tm["id"] = 'input'
+    table = producing_table(service_mapping= adv_result["service_mapping"], clusterd_tms = clusteerdtm, TM_input=input_tm)
     finalres.update({"service_devices": device_final})
     finalres.update({"node_structure": node_structure})
     result = {  "grooming_result": GroomingResult(**finalres).dict(), 
                 "serviceMapping": ServiceMapping(**adv_result["service_mapping"]).dict(), 
-                "clustered_tms": None}
+                "clustered_tms": None, "grooming_table": GroomingTable(**table).dict(), 
+                "statistical_result": StatisticalGroomingResult(**statres).dict()}
     return result
