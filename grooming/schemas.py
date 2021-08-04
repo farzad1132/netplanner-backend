@@ -454,7 +454,6 @@ class StatisticalGroomingResult(BaseModel):
     lightpath_no: int
     mean_lightpath_cap: float
 
-
 class GroomingDBOut(GroomingInformation):
     """
         This schema represents grooming algorithm result in database

@@ -231,32 +231,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
     remain_lower100=[]
     service_maping={}
     nume=1
-    table={"demands":{}}
-    table2={"demands":{}}
-    def add_to_table_endToend(did, type):
-        if did not in table["demands"].keys():
-            table["demands"].update({did:{"end_to_ends":{},"splitted_sections":{}}})    
-        
-        #table["demands"][sp[0]]["end_to_ends"].append(end_to_ends)
-        
-        if type in table["demands"][did]["end_to_ends"]:
-            n = table["demands"][did]["end_to_ends"][type]["count"]
-            table["demands"][did]["end_to_ends"][type].update({"count":n+1})
-        else:
-            table["demands"][did]["end_to_ends"].update({type:{"count":1}})
-    def add_to_table_endToend2( did, sid, st):
-        if st == "normal":
-            for num in range(0,len(TM["demands"][did]["services"])):
-                if sid in TM["demands"][did]["services"][num]["service_id_list"]:
-                    ty = TM["demands"][did]["services"][num]["type"]
-            add_to_table_endToend(did = did, type=ty )
-        else:
-            for sid2 in Groomout10['demands'][did]["services"][sid]["service_id_list"]:
-                for num in range(0,len(TM["demands"][did]["services"])):
-                    if sid2 in TM["demands"][did]["services"][num]["service_id_list"]:
-                        ty = TM["demands"][did]["services"][num]["type"]
-                add_to_table_endToend(did = did, type=ty )
-
 
     for i in TM['demands'].keys():
         per = math.ceil(percentage[0] + (nume/len(TM['demands'].keys())) * ((percentage[1] - percentage[0])/3))
@@ -271,7 +245,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
         output_10=[] 
         for j in range(0,len(TM["demands"][i]["services"])):
             if TM["demands"][i]["services"][j]["type"] == "100GE":
-                add_to_table_endToend(did=i, type=TM["demands"][i]["services"][j]["type"])
                 pass
             elif ((TM["demands"][i]["services"][j]["type"] == "STM64") or (TM["demands"][i]["services"][j]["type"] == "10GE")):
                 for k in TM["demands"][i]["services"][j]["service_id_list"]:
@@ -356,43 +329,12 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                 remain_lower100_2.append((service_lower100[i][0],list_of_service2))
                 remain_lower100_dict.update({service_lower100[i][0]:list_of_service})
             else:
-                los1=[]
-                los2=[]
-                for ii in list_of_service:
-                    if (service_lower100[i][0] in Groomout10["demands"]) and (ii in  Groomout10["demands"][service_lower100[i][0]]["services"]):
-                        los2.append(ii)
-                    else:
-                        los1.append(ii)
-                for sid in los1:
-                    for num in range(0,len(TM["demands"][service_lower100[i][0]]["services"])):
-                        if sid in TM["demands"][service_lower100[i][0]]["services"][num]["service_id_list"]:
-                            add_to_table_endToend(  did=service_lower100[i][0], 
-                                                    type=TM["demands"][service_lower100[i][0]]["services"][num]["type"])
-                for gid in los2:
-                    for sid in Groomout10["demands"][service_lower100[i][0]]["services"][gid]["service_id_list"]:
-                        for num in range(0,len(TM["demands"][service_lower100[i][0]]["services"])):
-                            if sid in TM["demands"][service_lower100[i][0]]["services"][num]["service_id_list"]:
-                                add_to_table_endToend(  did=service_lower100[i][0], 
-                                                        type=TM["demands"][service_lower100[i][0]]["services"][num]["type"])
                 pass
 
 
 
     remain_lower100_2_newV=[] 
     
-    def add_to_table(sp, typ, splitted_sections):
-        if sp[0] not in table["demands"].keys():
-            table["demands"].update({sp[0]:{"end_to_ends":{},"splitted_sections":{}}}) 
-        
-        if splitted_sections in table["demands"][sp[0]]["splitted_sections"]:
-            if typ in table["demands"][sp[0]]["splitted_sections"][splitted_sections]:
-                table["demands"][sp[0]]["splitted_sections"][splitted_sections][typ]["count"] = table["demands"][sp[0]]["splitted_sections"][splitted_sections][typ]["count"]+1
-            else:
-                table["demands"][sp[0]]["splitted_sections"][splitted_sections].update({typ:{"count":1}})
-        else:
-            table["demands"][sp[0]]["splitted_sections"].update({splitted_sections:{typ:{"count":1}}})
-        # for i in range(0,len(splitted_sections)):
-        #     table["demands"][sp[0]]["splitted_sections"].append(splitted_sections[i])
 
     def add_service_to_exist_demand(did,typee):
         """
@@ -489,9 +431,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                     GW2 = CL['clusters'][j]['data']["gateways"]
                     SB2 = CL['clusters'][j]['data']["subnodes"]
                     if i!=j and TM['demands'][Demandid]['destination'] in GW2:
-                        add_to_table_endToend2( did = Demandid, 
-                                                sid = servId,
-                                                st="normal")
                         return
                     elif i!=j and TM['demands'][Demandid]['destination'] in SB2:
                         newdes = GW2[0]
@@ -528,28 +467,19 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                             (ndid2,newid2) = add_service_to_new_demand(source = newdes, destination=orgdes, typee=TM['demands'][Demandid]['type'], 
                             protection_type = TM['demands'][Demandid]['protection_type'], restoration_type = TM['demands'][Demandid]['restoration_type'], stype = typee )
                         service_maping.update({ (Demandid,servId):[(ndid1,newid1),(ndid2,newid2)]})
-                        add_to_table(   sp =(Demandid,servId) ,
-                                        typ=typee,
-                                        splitted_sections=(ndid1,ndid2)
-                                                    )  
+
                         TM['demands'][Demandid]['services'][sno]['service_id_list'].pop(idno)
                         TM['demands'][Demandid]['services'][sno]['quantity'] = TM['demands'][Demandid]['services'][sno]['quantity']-1
                         if TM['demands'][Demandid]['services'][sno]['quantity'] == 0:
                             TM['demands'][Demandid]['services'].pop(sno)
                         return 
                     elif i==j and TM['demands'][Demandid]['destination'] in SB2:
-                        add_to_table_endToend2( did = Demandid, 
-                                                sid = servId,
-                                                st="normal")
                         return 
             elif TM['demands'][Demandid]['source'] in SB:
                 for j in CL['clusters'].keys():
                     GW2 = CL['clusters'][j]['data']["gateways"]
                     SB2 = CL['clusters'][j]['data']["subnodes"]
                     if i==j and (TM['demands'][Demandid]['destination'] in SB2 or TM['demands'][Demandid]['destination'] in GW):
-                        add_to_table_endToend2( did = Demandid, 
-                                                sid = servId,
-                                                st="normal")
                         return 
                     elif i!=j and TM['demands'][Demandid]['destination'] in SB2:
                         i1=0
@@ -596,10 +526,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                             (ndid3,newid3)=add_service_to_new_demand( source = GW2[0], destination = TM['demands'][Demandid]['destination'], typee=TM['demands'][Demandid]['type'], 
                             protection_type = TM['demands'][Demandid]['protection_type'], restoration_type = TM['demands'][Demandid]['restoration_type'], stype = typee)
                         service_maping.update({(Demandid,servId):[(ndid1,newid1),(ndid2,newid2),(ndid3,newid3)]})
-                        add_to_table(   sp =(Demandid,servId) ,
-                                        typ=typee,
-                                        splitted_sections=(ndid1, ndid2, ndid3)
-                                                    ) 
                         TM['demands'][Demandid]['services'][sno]['service_id_list'].pop(idno)
                         TM['demands'][Demandid]['services'][sno]['quantity'] = TM['demands'][Demandid]['services'][sno]['quantity']-1
                         if TM['demands'][Demandid]['services'][sno]['quantity'] == 0:
@@ -641,9 +567,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                             (ndid2,newid2)=add_service_to_new_demand(source=GW[0], destination=GW2[0], typee=TM['demands'][Demandid]['type'], 
                             protection_type = TM['demands'][Demandid]['protection_type'], restoration_type = TM['demands'][Demandid]['restoration_type'], stype = typee )
                         service_maping.update({(Demandid,servId):[(ndid1,newid1),(ndid2,newid2)]})
-                        add_to_table(   sp =(Demandid,servId) ,
-                                        typ=typee,
-                                        splitted_sections=(ndid1, ndid2))
                         TM['demands'][Demandid]['services'][sno]['service_id_list'].pop(idno)
                         TM['demands'][Demandid]['services'][sno]['quantity'] = TM['demands'][Demandid]['services'][sno]['quantity']-1
                         if TM['demands'][Demandid]['services'][sno]['quantity'] == 0:
@@ -672,9 +595,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
             GW = CL['clusters'][i]['data']["gateways"]
             SB = CL['clusters'][i]['data']["subnodes"]
             if TM['demands'][Demandid]['source'] in GW:
-                add_to_table_endToend2( did = Demandid, 
-                                        sid = servId,
-                                        st="normal")
                 return
             elif TM['demands'][Demandid]['source'] in SB:
                 typee='None'
@@ -712,9 +632,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                     protection_type = TM['demands'][Demandid]['protection_type'], restoration_type = TM['demands'][Demandid]['restoration_type'], stype = typee )
                         
                 service_maping.update({(Demandid,servId):[(ndid1,newid1),(ndid2,newid2)]})
-                add_to_table(   sp =(Demandid,servId) ,
-                                        typ=typee,
-                                        splitted_sections=(ndid1, ndid2))
                 TM['demands'][Demandid]['services'][sno]['service_id_list'].pop(idno)
                 TM['demands'][Demandid]['services'][sno]['quantity'] = TM['demands'][Demandid]['services'][sno]['quantity']-1
                 if TM['demands'][Demandid]['services'][sno]['quantity'] == 0:
@@ -746,9 +663,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
             GW = CL['clusters'][i]['data']["gateways"]
             SB =CL['clusters'][i]['data']["subnodes"]
             if TM['demands'][Demandid]['destination'] in GW:
-                add_to_table_endToend2( did = Demandid, 
-                                        sid = servId,
-                                        st="normal")
                 return 
             elif TM['demands'][Demandid]['destination'] in SB:
                 typee='None'
@@ -789,9 +703,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
 
                         
                 service_maping.update({(Demandid,servId):[(ndid1,newid1),(ndid2,newid2)]})
-                add_to_table(   sp =(Demandid,servId) ,
-                                        typ=typee,
-                                        splitted_sections=(ndid1,ndid2))
                 TM['demands'][Demandid]['services'][sno]['service_id_list'].pop(idno)
                 TM['demands'][Demandid]['services'][sno]['quantity'] = TM['demands'][Demandid]['services'][sno]['quantity']-1
                 if TM['demands'][Demandid]['services'][sno]['quantity'] == 0:
@@ -896,9 +807,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                     if TM['demands'][remain_lower100_2[i][0]]['destination'] in id_in_cluster:
                         changing_onlydes_inC(remain_lower100_2[i][0],remain_lower100_2[i][1][j][0])
                     else:
-                        add_to_table_endToend2( did = remain_lower100_2[i][0], 
-                                                sid = remain_lower100_2[i][1][j][0],
-                                                st="normal")
                         pass
             else:
                 if Groomout10['demands'][remain_lower100_2[i][0]]['source'] in id_in_cluster:
@@ -910,38 +818,9 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                     if Groomout10['demands'][remain_lower100_2[i][0]]['destination'] in id_in_cluster:
                         changing_onlydes_inC_groom10(remain_lower100_2[i][0],remain_lower100_2[i][1][j][0])
                     else:
-                        add_to_table_endToend2( did = remain_lower100_2[i][0], 
-                                                sid = remain_lower100_2[i][1][j][0],
-                                                st="groom")
                         pass
     
     TMi['data']=TM
-    for did in table["demands"].keys():
-        for typ in table["demands"][did]["end_to_ends"]:
-            if did not in table2["demands"]:
-                table2["demands"].update({did:{"end_to_ends":[],"splitted_sections":[]}})
-                
-            table2["demands"][did]["end_to_ends"].append({  "source": TM['demands'][did]["source"],
-                                                            "destination": TM['demands'][did]["destination"],
-                                                            "demand_id": did,
-                                                            "traffic": {"type": typ,
-                                                                        "count": table["demands"][did]["end_to_ends"][typ]["count"]}})
-    for did in table["demands"].keys():
-
-        if did not in table2["demands"]:
-            table2["demands"].update({did:{"end_to_ends":[],"splitted_sections":[]}})
-        lst=[]
-        for i in table["demands"][did]["splitted_sections"].keys():
-            for typ in table["demands"][did]["splitted_sections"][i]:
-                for sp in i:
-                    lst.append({    "source": TM['demands'][sp]["source"],
-                                    "destination": TM['demands'][sp]["destination"],
-                                    "demand_id": sp,
-                                    "traffic": {"type": typ,
-                                                "count": table["demands"][did]["splitted_sections"][i][typ]["count"]}})
-
-        table2["demands"][did]["splitted_sections"] = lst
-
     clusteredTM={}
     didd=[]
     
@@ -997,7 +876,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
 
 
  
-    return  service_maping2, ClusteredTms, table2
+    return  service_maping2, ClusteredTms
 
                 
 

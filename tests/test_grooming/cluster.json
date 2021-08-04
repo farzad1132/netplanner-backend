@@ -5019,62 +5019,15 @@
                         }
                     }
                 ],
-                "splitted_sections": [
-                    {
-                        "source": "K3",
-                        "destination": "K1",
-                        "demand_id": "3010",
-                        "traffic": {
-                            "type": "STM16",
-                            "count": 5
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "BFT",
-                        "demand_id": "5",
-                        "traffic": {
-                            "type": "STM16",
-                            "count": 5
-                        }
-                    },
-                    {
-                        "source": "BFT",
-                        "destination": "SB",
-                        "demand_id": "3012",
-                        "traffic": {
-                            "type": "STM16",
-                            "count": 5
-                        }
-                    },
-                    {
-                        "source": "K3",
-                        "destination": "K1",
-                        "demand_id": "3010",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 12
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "BFT",
-                        "demand_id": "5",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 12
-                        }
-                    },
-                    {
-                        "source": "BFT",
-                        "destination": "SB",
-                        "demand_id": "3012",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 12
-                        }
-                    }
-                ]
+                "splitted_sections": []
+            },
+            "2": {
+                "end_to_ends": [],
+                "splitted_sections": []
+            },
+            "3": {
+                "end_to_ends": [],
+                "splitted_sections": []
             },
             "4": {
                 "end_to_ends": [
@@ -5083,8 +5036,8 @@
                         "destination": "HG",
                         "demand_id": "4",
                         "traffic": {
-                            "type": "STM64",
-                            "count": 5
+                            "type": "FE",
+                            "count": 3
                         }
                     },
                     {
@@ -5092,8 +5045,8 @@
                         "destination": "HG",
                         "demand_id": "4",
                         "traffic": {
-                            "type": "FE",
-                            "count": 3
+                            "type": "STM64",
+                            "count": 5
                         }
                     }
                 ],
@@ -5106,14 +5059,54 @@
                         "destination": "BFT",
                         "demand_id": "5",
                         "traffic": {
-                            "type": "STM64",
-                            "count": 1
+                            "type": "FE",
+                            "count": 18
                         }
                     },
                     {
                         "source": "K1",
                         "destination": "BFT",
                         "demand_id": "5",
+                        "traffic": {
+                            "type": "STM64",
+                            "count": 2
+                        }
+                    },
+                    {
+                        "source": "K1",
+                        "destination": "BFT",
+                        "demand_id": "5",
+                        "traffic": {
+                            "type": "STM16",
+                            "count": 5
+                        }
+                    }
+                ],
+                "splitted_sections": []
+            },
+            "6": {
+                "end_to_ends": [],
+                "splitted_sections": []
+            },
+            "7": {
+                "end_to_ends": [],
+                "splitted_sections": []
+            },
+            "3064": {
+                "end_to_ends": [
+                    {
+                        "source": "K1",
+                        "destination": "HG",
+                        "demand_id": "3064",
+                        "traffic": {
+                            "type": "10GE",
+                            "count": 2
+                        }
+                    },
+                    {
+                        "source": "K1",
+                        "destination": "HG",
+                        "demand_id": "3064",
                         "traffic": {
                             "type": "FE",
                             "count": 3
@@ -5122,104 +5115,12 @@
                 ],
                 "splitted_sections": []
             },
-            "2": {
-                "end_to_ends": [],
-                "splitted_sections": [
-                    {
-                        "source": "K2",
-                        "destination": "K1",
-                        "demand_id": "3062",
-                        "traffic": {
-                            "type": "10GE",
-                            "count": 2
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "HG",
-                        "demand_id": "3064",
-                        "traffic": {
-                            "type": "10GE",
-                            "count": 2
-                        }
-                    },
-                    {
-                        "source": "K2",
-                        "destination": "K1",
-                        "demand_id": "3062",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 3
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "HG",
-                        "demand_id": "3064",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 3
-                        }
-                    }
-                ]
-            },
-            "3": {
-                "end_to_ends": [],
-                "splitted_sections": [
-                    {
-                        "source": "K3",
-                        "destination": "K1",
-                        "demand_id": "3010",
-                        "traffic": {
-                            "type": "STM64",
-                            "count": 1
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "BFT",
-                        "demand_id": "5",
-                        "traffic": {
-                            "type": "STM64",
-                            "count": 1
-                        }
-                    },
-                    {
-                        "source": "K3",
-                        "destination": "K1",
-                        "demand_id": "3010",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 3
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "BFT",
-                        "demand_id": "5",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 3
-                        }
-                    }
-                ]
-            },
-            "6": {
-                "end_to_ends": [],
-                "splitted_sections": [
+            "3082": {
+                "end_to_ends": [
                     {
                         "source": "HG",
                         "destination": "K1",
                         "demand_id": "3082",
-                        "traffic": {
-                            "type": "STM64",
-                            "count": 1
-                        }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "K3",
-                        "demand_id": "3084",
                         "traffic": {
                             "type": "STM64",
                             "count": 1
@@ -5233,45 +5134,18 @@
                             "type": "FE",
                             "count": 3
                         }
-                    },
-                    {
-                        "source": "K1",
-                        "destination": "K3",
-                        "demand_id": "3084",
-                        "traffic": {
-                            "type": "FE",
-                            "count": 3
-                        }
                     }
-                ]
+                ],
+                "splitted_sections": []
             },
-            "7": {
-                "end_to_ends": [],
-                "splitted_sections": [
-                    {
-                        "source": "SB",
-                        "destination": "BFT",
-                        "demand_id": "3092",
-                        "traffic": {
-                            "type": "STM64",
-                            "count": 1
-                        }
-                    },
+            "3094": {
+                "end_to_ends": [
                     {
                         "source": "BFT",
                         "destination": "HG",
                         "demand_id": "3094",
                         "traffic": {
                             "type": "STM64",
-                            "count": 1
-                        }
-                    },
-                    {
-                        "source": "SB",
-                        "destination": "BFT",
-                        "demand_id": "3092",
-                        "traffic": {
-                            "type": "FE",
                             "count": 1
                         }
                     },
@@ -5284,7 +5158,8 @@
                             "count": 1
                         }
                     }
-                ]
+                ],
+                "splitted_sections": []
             }
         }
     },
