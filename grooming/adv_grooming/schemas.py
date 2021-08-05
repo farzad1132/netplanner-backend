@@ -927,7 +927,7 @@ class Network:
                                                   groomout=traffic['low_rate_grooming_result']
                                                   ['demands'][demand_id]['groomouts'][id])
 
-    def export_result(self, line_rate: str, original_network) -> AdvGroomingResult:
+    def export_result(self, line_rate: str, after_end_end_network) -> AdvGroomingResult:
         result = self.grooming.export_result()
 
         tot_lambda_link = 0
@@ -935,7 +935,7 @@ class Network:
         for connection in result['connections']:
             rate = 0
             for demand_id in connection['demands_id_list']:
-                rate += original_network.traffic_matrix.demands[demand_id].rate
+                rate += after_end_end_network.traffic_matrix.demands[demand_id].rate
 
             rate_by_line_rate = rate/(int(line_rate))
             connection['lambda_link'] = math.ceil(

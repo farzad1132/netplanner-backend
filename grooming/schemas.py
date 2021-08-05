@@ -448,7 +448,7 @@ class GroomingTable(BaseModel):
         This schema demonstrates grooming output
         keys are **demand_id**
     """
-    demands: dict[str, GroomingTableRow]
+    demands: Dict[str, GroomingTableRow]
 
 class StatisticalGroomingResult(BaseModel):
     lightpath_no: int
