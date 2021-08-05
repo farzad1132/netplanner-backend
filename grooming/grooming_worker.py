@@ -12,7 +12,7 @@ from physical_topology.schemas import PhysicalTopologyDB
 from traffic_matrix.schemas import TrafficMatrixDB
 
 from grooming.adv_grooming.algorithms import adv_grooming
-from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate
+from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate, MultiplexThreshold
 from grooming.adv_grooming.utils import adv_grooming_result_to_tm
 from grooming.Algorithm.end_to_end import end_to_end
 from grooming.Algorithm.grooming_function import grooming_function
@@ -171,7 +171,7 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
 @celeryapp.task(bind=True, base=AdvGroomingHandle)
 def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         tm: TrafficMatrixDB,
-                        multiplex_threshold: MP1HThreshold,
+                        multiplex_threshold: MultiplexThreshold,
                         clusters: ClusterDict,
                         line_rate: LineRate,
                         return_network: bool = True) \
@@ -188,19 +188,17 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
 
     # TODO: update handler (and database)
     # Tuple[AdvGroomingResult, GroomingResult, Network]
-    adv_grooming_result, end_to_end_result, network = adv_grooming(
+    adv_grooming_result, end_to_end_result, after_end_to_end_network = adv_grooming(
         end_to_end_fun=end_to_end,
         pt=pt,
         tm=tm,
         multiplex_threshold=multiplex_threshold,
         clusters=clusters,
-        line_rate=line_rate,
-        return_network=return_network
+        line_rate=line_rate
     )
 
     new_tm, mapping = adv_grooming_result_to_tm(result=adv_grooming_result,
-                                                tm=tm,
-                                                network=network)
+                                                tm=after_end_to_end_network.traffic_matrix.export())
 
     return adv_grooming_result, AdvGroomingOut(end_to_end_result=end_to_end_result,
                                                output=new_tm,

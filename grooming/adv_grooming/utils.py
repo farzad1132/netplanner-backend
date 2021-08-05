@@ -32,7 +32,7 @@ def find_demand_by_src_and_dst(src: str, dst: str, tm: TrafficMatrixDB) -> Optio
             return id
 
 
-def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB, network: Network) \
+def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB) \
         -> Tuple[TrafficMatrixSchema, ServiceMapping]:
 
     INPUT_TM = "input"
