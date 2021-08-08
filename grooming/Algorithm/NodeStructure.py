@@ -122,7 +122,7 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, percenta
         devid=0
         for k in range(0,len(device_dict[cln][noden]["MP2X"])):
             for i in ["1","2"]:
-                if "line"+i in device_dict[cln][noden]["MP2X"][k] and device_dict[cln][noden]["MP2X"][k]["line"+i]["groomout_id"]==groomid:
+                if "line"+i in device_dict[cln][noden]["MP2X"][k] and device_dict[cln][noden]["MP2X"][k]["line"+i]!= None and device_dict[cln][noden]["MP2X"][k]["line"+i]["groomout_id"]==groomid:
                     devid=device_dict[cln][noden]["MP2X"][k]["id"]
                     for rackn in nodess[noden]["racks"].keys():
                         for shelfn in nodess[noden]["racks"][rackn]["shelves"].keys():

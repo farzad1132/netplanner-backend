@@ -60,16 +60,15 @@ def completingadv(adv_result_t: AdvGroomingOut,
 
     for stmid in adv_result["end_to_end_result"]["traffic"].keys():
         for did in adv_result["end_to_end_result"]["traffic"][stmid]["low_rate_grooming_result"]["demands"].keys():
-            for gid in adv_result["end_to_end_result"]["traffic"][stmid]["low_rate_grooming_result"]["demands"][did]["groomouts"].keys():
-                if did in new_result[0]["low_rate_grooming_result"]["demands"]:
+            if did in new_result[0]["low_rate_grooming_result"]["demands"]:
+                for gid in adv_result["end_to_end_result"]["traffic"][stmid]["low_rate_grooming_result"]["demands"][did]["groomouts"].keys():
                     if gid in new_result[0]["low_rate_grooming_result"]["demands"][did]["groomouts"]:
                         raise Exception("Error, GroomOut ID is exist!!!", gid)
                     else:
                         new_result[0]["low_rate_grooming_result"]["demands"][did]["groomouts"].update(
                             {gid: adv_result["end_to_end_result"]["traffic"][stmid]["low_rate_grooming_result"]["demands"][did]["groomouts"][gid]})
-                else:
-                    new_result[0]["low_rate_grooming_result"].update({did: {"groomouts": {
-                                                                     gid: adv_result["end_to_end_result"]["traffic"][stmid]["low_rate_grooming_result"]["demands"][did]["groomouts"][gid]}}})
+            else:
+                new_result[0]["low_rate_grooming_result"]['demands'].update({did: adv_result["end_to_end_result"]["traffic"][stmid]["low_rate_grooming_result"]["demands"][did]})
 
     for noden in adv_result["end_to_end_result"]["service_devices"].keys():
         for dev in adv_result["end_to_end_result"]["service_devices"][noden]:
