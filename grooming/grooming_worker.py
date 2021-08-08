@@ -20,6 +20,7 @@ from grooming.Algorithm.end_to_end import end_to_end
 from grooming.Algorithm.grooming_function import grooming_function
 from grooming.schemas import AdvGroomingOut, MP1HThreshold
 from grooming.utils import GroomingRepository
+from grooming.Algorithm.CompletingAdvGrooming import completingadv
 
 
 class GroomingBaseHandle(Task):
@@ -207,6 +208,13 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
     new_tm, mapping = adv_grooming_result_to_tm(result=adv_grooming_result,
                                                 tm=after_end_to_end_network.traffic_matrix.export())
 
-    return adv_grooming_result, AdvGroomingOut(end_to_end_result=end_to_end_result,
-                                               output=new_tm,
-                                               service_mapping=mapping).dict()
+    adv_grooming_out = AdvGroomingOut(end_to_end_result=end_to_end_result,
+                                      output=new_tm,
+                                      service_mapping=mapping).dict()
+
+    groom_res = completingadv(adv_result_t=adv_grooming_out,
+                              pt=pt,
+                              input_tm=tm,
+                              mp1h_threshold=int(multiplex_threshold.value))
+
+    return groom_res
