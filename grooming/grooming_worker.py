@@ -21,6 +21,7 @@ from grooming.Algorithm.grooming_function import grooming_function
 from grooming.schemas import AdvGroomingOut, MP1HThreshold
 from grooming.utils import GroomingRepository
 from grooming.Algorithm.CompletingAdvGrooming import completingadv
+from models import UserModel
 
 
 class GroomingBaseHandle(Task):
@@ -83,6 +84,8 @@ class GroomingHandle(GroomingBaseHandle):
                 node_structure=retval['grooming_result']['node_structure'],
                 clustered_tms=retval["clustered_tms"],
                 service_mapping=retval["serviceMapping"],
+                grooming_table=retval["grooming_table"],
+                statistical_result=retval["statistical_result"],
                 db=db
             )
             db.close()
@@ -171,13 +174,13 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
                              test=test)
 
 
-@celeryapp.task(bind=True, base=AdvGroomingHandle)
+@celeryapp.task(bind=True, base=GroomingHandle)
 def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         tm: TrafficMatrixDB,
                         multiplex_threshold: MultiplexThreshold,
                         clusters: ClusterDict,
                         line_rate: LineRate,
-                        check_input_type: bool = True) \
+                        check_input_type: bool = False) \
         -> Tuple[AdvGroomingResult, AdvGroomingOut]:
     """
         Advanced Grooming worker
@@ -215,6 +218,6 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
     groom_res = completingadv(adv_result_t=adv_grooming_out,
                               pt=pt,
                               input_tm=tm,
-                              mp1h_threshold=int(multiplex_threshold.value))
+                              mp1h_threshold=int(multiplex_threshold))
 
     return groom_res

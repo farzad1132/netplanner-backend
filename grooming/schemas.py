@@ -467,7 +467,7 @@ class GroomingDBOut(GroomingInformation):
     traffic: Dict[str, GroomingOutput]
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
-    clustered_tms: ClusteredTMs
+    clustered_tms: Optional[ClusteredTMs]
     service_mapping: ServiceMapping
     grooming_table: GroomingTable
     clusters: ClusterDict

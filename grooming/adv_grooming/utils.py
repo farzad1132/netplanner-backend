@@ -197,6 +197,6 @@ def check_adv_grooming_inputs(pt: PhysicalTopologyDB,
 
     PhysicalTopologyDB(**pt)
     TrafficMatrixDB(**tm)
-    MultiplexThreshold(**multiplex_threshold)
+    # MultiplexThreshold(multiplex_threshold=multiplex_threshold)
     ClusterDict(**clusters)
-    LineRate(**line_rate)
+    # LineRate(line_rate=line_rate)

@@ -77,7 +77,8 @@ class GroomingRepository:
     def add_grooming(grooming_id: str, project_id: str, pt_id: str, tm_id: str, pt_version: int,
                      tm_version: int, grooming_form: GroomingForm, manager_id: str, clusters: dict,
                      algorithm: GroomingAlgorithm, traffic: dict, service_devices: dict,
-                     node_structure: dict, db: Session, start_date: datetime, is_finished: bool = True,
+                     node_structure: dict, statistical_result: dict, grooming_table: dict,
+                     db: Session, start_date: datetime, is_finished: bool = True,
                      with_clustering: bool = False, clustered_tms: Optional[dict] = None,
                      service_mapping: Optional[dict] = None) -> None:
 
@@ -99,7 +100,9 @@ class GroomingRepository:
             node_structure=node_structure,
             with_clustering=with_clustering,
             clustered_tms=clustered_tms,
-            service_mapping=service_mapping
+            service_mapping=service_mapping,
+            statistical_result=statistical_result,
+            grooming_table=grooming_table
         )
 
         db.add(grooming_result)
