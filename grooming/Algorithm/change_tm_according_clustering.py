@@ -9,6 +9,7 @@ import time
 from grooming.Algorithm.grooming import grooming_fun
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpStatus, PULP_CBC_CMD
 from grooming.schemas import ServiceMapping, GroomingResult, ClusteredTMs
+import copy
 
 
 def MP2X(Services_lower10):
@@ -215,7 +216,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
             :type <dictionary>: <keys are the id of clusters and values are the relation between broken services >
 
     """
-    TM=TMi['data']
+    TM=copy.deepcopy(TMi['data'])
     service_lower10_SDH=[]
     service_lower10_E=[]
     service_lower100=[]
@@ -230,6 +231,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
     remain_lower100=[]
     service_maping={}
     nume=1
+
     for i in TM['demands'].keys():
         per = math.ceil(percentage[0] + (nume/len(TM['demands'].keys())) * ((percentage[1] - percentage[0])/3))
         
@@ -330,8 +332,10 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                 pass
 
 
-    
+
     remain_lower100_2_newV=[] 
+    
+
     def add_service_to_exist_demand(did,typee):
         """
             This function adds service to a existing demand.
@@ -463,6 +467,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                             (ndid2,newid2) = add_service_to_new_demand(source = newdes, destination=orgdes, typee=TM['demands'][Demandid]['type'], 
                             protection_type = TM['demands'][Demandid]['protection_type'], restoration_type = TM['demands'][Demandid]['restoration_type'], stype = typee )
                         service_maping.update({ (Demandid,servId):[(ndid1,newid1),(ndid2,newid2)]})
+
                         TM['demands'][Demandid]['services'][sno]['service_id_list'].pop(idno)
                         TM['demands'][Demandid]['services'][sno]['quantity'] = TM['demands'][Demandid]['services'][sno]['quantity']-1
                         if TM['demands'][Demandid]['services'][sno]['quantity'] == 0:
@@ -499,6 +504,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                             if TM['demands'][Demandid]['source'] == TM['demands'][ii]['source'] and TM['demands'][ii]['destination'] in GW:
                                 newdes=GW[0]
                                 orgsrc = TM['demands'][Demandid]['source']
+                                orgdes = TM['demands'][Demandid]['destination']
                                 newid1 = add_service_to_exist_demand(did=ii,typee=typee )
                                 ndid1=ii
                                 i1=1
@@ -546,6 +552,7 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                             if TM['demands'][Demandid]['source'] == TM['demands'][ii]['source'] and TM['demands'][ii]['destination'] in GW:
                                 newdes=GW[0]
                                 orgsrc = TM['demands'][Demandid]['source']
+                                orgdes = TM['demands'][Demandid]['destination']
                                 newid1 = add_service_to_exist_demand(did=ii, typee=typee)
                                 ndid1=ii
                                 i1=1
@@ -605,6 +612,9 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                 newid2=-1
                 ndid1=-1
                 ndid2=-1
+                orgsrc = TM['demands'][Demandid]['source']
+                orgdes = TM['demands'][Demandid]['destination']
+                newdes =GW[0]
                 for ii in TM['demands'].keys():
                     if TM['demands'][ii]['source'] == TM['demands'][Demandid]['source'] and  TM['demands'][ii]['destination'] == GW[0]:
                         newid1 = add_service_to_exist_demand(did=ii,typee=typee )
@@ -670,6 +680,9 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                 newid2=-1
                 ndid1=-1
                 ndid2=-1
+                orgsrc = TM['demands'][Demandid]["source"]
+                orgdes = TM['demands'][Demandid]["destination"]
+                newdes = GW[0] 
                 for ii in TM['demands'].keys():
                     if TM['demands'][ii]['source'] == TM['demands'][Demandid]['source'] and  TM['demands'][ii]['destination'] == GW[0]:
                         newid1 = add_service_to_exist_demand(did=ii,typee=typee )
@@ -808,8 +821,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
                         pass
     
     TMi['data']=TM
-
-
     clusteredTM={}
     didd=[]
     
@@ -833,8 +844,6 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
     clusteredTM.update({"main":{'tm': TMm, 'cluster_id': "main"}})
     #clusteredTMfinal={'data':clusteredTM,'id':uuid()}
     ClusteredTms = {"sub_tms":clusteredTM}
-
-
     service_maping2={"traffic_matrices":{TMi['id']:{"demands":{}}}}
     for i in clusteredTM.keys():
         service_maping2["traffic_matrices"].update({i:{"demands":{}}})
@@ -851,23 +860,23 @@ def Change_TM_acoordingTo_Clusters( TMi, CL, MP1H_Threshold, percentage, uuid, M
             for k in clusteredTM.keys():
                 if x in clusteredTM[k]['tm']['demands']:
                    listofm.append((k,x,y)) 
-                   service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].update({k:xy})
+                   service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].update({k:[xy]})
         for k in service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].keys():
-            did = service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k]['demand_id']
-            sid =service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k]['service_id']
+            did = service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k][0]['demand_id']
+            sid =service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][k][0]['service_id']
 
             if did in service_maping2["traffic_matrices"][k]["demands"].keys():
                 service_maping2["traffic_matrices"][k]["demands"][did]["services"].update({sid:{"traffic_matrices":{}}})
             else:
                 service_maping2["traffic_matrices"][k]["demands"].update({did:{"services":{sid:{"traffic_matrices":{}}}}})
-            service_maping2["traffic_matrices"][k]["demands"][did]["services"][sid]["traffic_matrices"].update({TMi['id']:{"demand_id":i[0],"service_id":i[1]}})
+            service_maping2["traffic_matrices"][k]["demands"][did]["services"][sid]["traffic_matrices"].update({TMi['id']:[{"demand_id":i[0],"service_id":i[1]}]})
             for h in service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"].keys():
                 if h != k:
                     service_maping2["traffic_matrices"][k]["demands"][did]["services"][sid]["traffic_matrices"].update({h:service_maping2["traffic_matrices"][TMi['id']]["demands"][i[0]]["services"][i[1]]["traffic_matrices"][h]})  
 
 
  
-    return  service_maping2,ClusteredTms
+    return  service_maping2, ClusteredTms
 
                 
 

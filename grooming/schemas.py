@@ -183,6 +183,7 @@ class GroomOut(BaseModel):
     sla: Optional[str]
     type: GroomOutType
     capacity: float
+    lightpath_id: str = None
 
 
 class GroomingLowRateDemand(BaseDemand):
@@ -426,6 +427,36 @@ class ServiceMapping(BaseModel):
     """
     traffic_matrices: Dict[str, ServiceMappingDemands]
 
+class GroomingTableServiceTypeCountPair(BaseModel):
+    type: ServiceType
+    count: int
+
+class GroomingTableDemandEntry(BaseModel):
+    source: str
+    destination: str
+    demand_id: str
+    traffic: GroomingTableServiceTypeCountPair
+    
+
+class GroomingTableRow(BaseModel):
+    end_to_ends: List[GroomingTableDemandEntry]
+    splitted_sections: List[GroomingTableDemandEntry]
+
+
+class GroomingTable(BaseModel):
+    """
+        This schema demonstrates grooming output
+        keys are **demand_id**
+    """
+    demands: Dict[str, GroomingTableRow]
+
+class StatisticalGroomingResult(BaseModel):
+    lightpath_no: int
+    mean_lightpath_cap: float
+    groomout_no: int
+    mp2x_no: int
+    tp1h_no: int
+    mp1h_no: int
 
 class GroomingDBOut(GroomingInformation):
     """
@@ -436,9 +467,11 @@ class GroomingDBOut(GroomingInformation):
     traffic: Dict[str, GroomingOutput]
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
-    clustered_tms: ClusteredTMs
+    clustered_tms: Optional[ClusteredTMs]
     service_mapping: ServiceMapping
+    grooming_table: GroomingTable
     clusters: ClusterDict
+    statistical_result: StatisticalGroomingResult
     form: GroomingForm
 
     class Config:
@@ -457,3 +490,27 @@ class ManualGroomingDB(BaseModel):
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
     form: ManualGroomingForm
+
+class GroomingDevices(BaseModel):
+    MP2X: List[MP2X]
+    MP1H: List[MP1H]
+    TP1H: List[TP1H]
+
+class EndToEndResult(BaseModel):
+    """
+        This schema represents end to end algorithm result (structure related)
+
+        keys of **traffic** are sub_tm_id
+        keys of **service_devices** are device_id
+    """
+    service_devices: Dict[str, GroomingDevices]
+    traffic: Dict[str, GroomingOutput]
+
+class AdvGroomingOut(BaseModel):
+    """
+        This schema represents adv grooming algorithm result (for main planner procedure)
+        There is another schema for this algorithms that demonstrates original results of this algorithm
+    """
+    end_to_end_result: EndToEndResult
+    output: TrafficMatrixSchema
+    service_mapping: ServiceMapping

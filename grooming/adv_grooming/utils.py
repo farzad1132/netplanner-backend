@@ -5,8 +5,11 @@
 from typing import List, Optional, Tuple
 from uuid import uuid4
 
-from grooming.adv_grooming.schemas import AdvGroomingResult, Network
+from clusters.schemas import ClusterDict
+from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
+                                           MultiplexThreshold, Network)
 from grooming.schemas import ServiceMapping
+from physical_topology.schemas import PhysicalTopologyDB
 from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
 
 
@@ -32,7 +35,7 @@ def find_demand_by_src_and_dst(src: str, dst: str, tm: TrafficMatrixDB) -> Optio
             return id
 
 
-def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB, network: Network) \
+def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB) \
         -> Tuple[TrafficMatrixSchema, ServiceMapping]:
 
     INPUT_TM = "input"
@@ -184,3 +187,16 @@ def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB, ne
                              restoration_type=restoration_type)
 
     return TrafficMatrixSchema(**output).dict(), ServiceMapping(**mapping).dict()
+
+
+def check_adv_grooming_inputs(pt: PhysicalTopologyDB,
+                              tm: TrafficMatrixDB,
+                              multiplex_threshold: MultiplexThreshold,
+                              clusters: ClusterDict,
+                              line_rate: LineRate):
+
+    PhysicalTopologyDB(**pt)
+    TrafficMatrixDB(**tm)
+    # MultiplexThreshold(multiplex_threshold=multiplex_threshold)
+    ClusterDict(**clusters)
+    # LineRate(line_rate=line_rate)

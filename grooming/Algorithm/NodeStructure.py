@@ -122,7 +122,7 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, percenta
         devid=0
         for k in range(0,len(device_dict[cln][noden]["MP2X"])):
             for i in ["1","2"]:
-                if "line"+i in device_dict[cln][noden]["MP2X"][k] and device_dict[cln][noden]["MP2X"][k]["line"+i]["groomout_id"]==groomid:
+                if "line"+i in device_dict[cln][noden]["MP2X"][k] and device_dict[cln][noden]["MP2X"][k]["line"+i]!= None and device_dict[cln][noden]["MP2X"][k]["line"+i]["groomout_id"]==groomid:
                     devid=device_dict[cln][noden]["MP2X"][k]["id"]
                     for rackn in nodess[noden]["racks"].keys():
                         for shelfn in nodess[noden]["racks"][rackn]["shelves"].keys():
@@ -136,10 +136,10 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, percenta
                     for k in ["source", "destination"]:
                         rack, shelf, slot = find(   grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['id'], 
                                                     grooming_res['traffic'][cln]["lightpaths"][lpid][k],
-                                                    cln)
+                                                    cln)                     
                         grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['mp2x_panel_address'].update({k:{  "rack_id": rack,
                                                                                                                         "shelf_id": shelf,
                                                                                                                         "slot_id_list":slot}})
+                        grooming_res['traffic'][cln]["low_rate_grooming_result"]["demands"][grooming_res['traffic'][cln]["lightpaths"][lpid]["demand_id"]]["groomouts"][grooming_res['traffic'][cln]["lightpaths"][lpid]["service_id_list"][gi]['id']].update({"lightpath_id":lpid})
 
-                print("5")
     return NodeStructure, device_st, grooming_res

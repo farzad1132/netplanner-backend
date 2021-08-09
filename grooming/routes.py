@@ -247,21 +247,14 @@ def result_automatic_2_0_0(grooming_id: str, db: Session = Depends(get_db),
 
 
 @grooming_router.get("/v2.0.1/algorithms/grooming/result", status_code=200,
-                     response_model=Union[GroomingDBOut, AdvGroomingDBOut])
+                     response_model=GroomingDBOut)
 def result_automatic_v2_0_1(grooming_id: str, db: Session = Depends(get_db),
                             user: User = Depends(get_current_user)):
     """
-        getting grooming algorithm result\n
-        ***Whats New***: this path now returns both grooming results
+        getting grooming algorithm result
     """
 
-    record = GroomingRepository.get_grooming_register(
-        grooming_id=grooming_id, db=db)
-    if record.algorithm == GroomingAlgorithm.advanced:
-        grooming_result = GroomingRepository.get_adv_grooming(
-            grooming_id=grooming_id, db=db)
-    else:
-        grooming_result = GroomingRepository.get_grooming(
+    grooming_result = GroomingRepository.get_grooming(
             grooming_id=grooming_id, db=db)
 
     # authorization check

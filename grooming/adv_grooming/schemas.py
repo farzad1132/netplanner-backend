@@ -20,25 +20,11 @@ class MultiplexThreshold(str, Enum):
     """
      MP1H threshold `Enum`
 
-      - 0
-      - 10
-      - 20
-      - 30
-      - 40
-      - 50
-      - 60
       - 70
       - 80
       - 90
     """
 
-    t0 = "0"
-    t10 = "10"
-    t20 = "20"
-    t30 = "30"
-    t40 = "40"
-    t50 = "50"
-    t60 = "60"
     t70 = "70"
     t80 = "80"
     t90 = "90"
@@ -928,8 +914,8 @@ class Network:
         self.traffic_matrix.remove_service(service_id_list=list(map(lambda x: x["id"], groomout['service_id_list'])),
                                            demand_id=demand_id)
 
-    def remove_service(self, traffic: gschema.GroomingOutput) -> None:
-        for lightpath in traffic['main']['lightpaths'].values():
+    def remove_service(self, traffic: dict) -> None:
+        for lightpath in traffic['lightpaths'].values():
             demand_id = lightpath['demand_id']
             for service in lightpath['service_id_list']:
                 id = service['id']
@@ -938,10 +924,10 @@ class Network:
                                                        demand_id=demand_id)
                 else:
                     self.remove_groomout_services(demand_id=demand_id,
-                                                  groomout=traffic['main']['low_rate_grooming_result']
+                                                  groomout=traffic['low_rate_grooming_result']
                                                   ['demands'][demand_id]['groomouts'][id])
 
-    def export_result(self, line_rate: str, original_network) -> AdvGroomingResult:
+    def export_result(self, line_rate: str, after_end_end_network) -> AdvGroomingResult:
         result = self.grooming.export_result()
 
         tot_lambda_link = 0
@@ -949,7 +935,7 @@ class Network:
         for connection in result['connections']:
             rate = 0
             for demand_id in connection['demands_id_list']:
-                rate += original_network.traffic_matrix.demands[demand_id].rate
+                rate += after_end_end_network.traffic_matrix.demands[demand_id].rate
 
             rate_by_line_rate = rate/(int(line_rate))
             connection['lambda_link'] = math.ceil(
@@ -962,7 +948,10 @@ class Network:
             tot_capacity_link += connection['capacity_link']
 
         result['lambda_link'] = tot_lambda_link
-        result['average_lambda_capacity_usage'] = tot_capacity_link / \
-            tot_lambda_link
+        if tot_lambda_link != 0:
+            result['average_lambda_capacity_usage'] = tot_capacity_link / \
+                tot_lambda_link
+        else:
+            result['average_lambda_capacity_usage'] = 0
 
         return result

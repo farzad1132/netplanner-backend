@@ -2,7 +2,6 @@
     This module contains grooming algorithm workers
 """
 
-import math
 from typing import Tuple
 
 from celery.app.task import Task
@@ -10,23 +9,20 @@ from celery_app import celeryapp
 from clusters.schemas import ClusterDict
 from database import session
 from physical_topology.schemas import PhysicalTopologyDB
-from traffic_matrix.schemas import TrafficMatrixDB, TrafficMatrixSchema
+from traffic_matrix.schemas import TrafficMatrixDB
 
 from grooming.adv_grooming.algorithms import adv_grooming
-from grooming.adv_grooming.schemas import AdvGroomingResult, LineRate
-from grooming.adv_grooming.utils import adv_grooming_result_to_tm
-from grooming.Algorithm.change_tm_according_clustering import \
-    Change_TM_acoordingTo_Clusters
-from grooming.Algorithm.grooming import grooming_fun
-from grooming.Algorithm.id_generator import arashId, id_gen
-from grooming.Algorithm.NodeStructure import Nodestructureservices
-from grooming.models import (AdvGroomingModel, GroomingModel,
-                             GroomingRegisterModel)
-from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
-                              ServiceMapping)
-from grooming.utils import GroomingRepository
-from models import UserModel
+from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
+                                           MultiplexThreshold)
+from grooming.adv_grooming.utils import (adv_grooming_result_to_tm,
+                                         check_adv_grooming_inputs)
+from grooming.Algorithm.end_to_end import end_to_end
 from grooming.Algorithm.grooming_function import grooming_function
+from grooming.schemas import AdvGroomingOut, MP1HThreshold
+from grooming.utils import GroomingRepository
+from grooming.Algorithm.CompletingAdvGrooming import completingadv
+from models import UserModel
+
 
 class GroomingBaseHandle(Task):
     """
@@ -88,6 +84,8 @@ class GroomingHandle(GroomingBaseHandle):
                 node_structure=retval['grooming_result']['node_structure'],
                 clustered_tms=retval["clustered_tms"],
                 service_mapping=retval["serviceMapping"],
+                grooming_table=retval["grooming_table"],
+                statistical_result=retval["statistical_result"],
                 db=db
             )
             db.close()
@@ -167,25 +165,23 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
                   clusters: ClusterDict,
                   Physical_topology: PhysicalTopologyDB,
                   test: bool = False):
-    
 
-    return grooming_function(   #state=self,
-                                traffic_matrix = traffic_matrix,
-                                mp1h_threshold_clustering = mp1h_threshold_clustering,
-                                mp1h_threshold_grooming = mp1h_threshold_grooming,
-                                clusters = clusters,
-                                Physical_topology = Physical_topology,
-                                test=test)
+    return grooming_function(traffic_matrix=traffic_matrix,
+                             mp1h_threshold_clustering=mp1h_threshold_clustering,
+                             mp1h_threshold_grooming=mp1h_threshold_grooming,
+                             clusters=clusters,
+                             Physical_topology=Physical_topology,
+                             test=test)
 
 
-@celeryapp.task(bind=True, base=AdvGroomingHandle)
+@celeryapp.task(bind=True, base=GroomingHandle)
 def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         tm: TrafficMatrixDB,
-                        multiplex_threshold: MP1HThreshold,
+                        multiplex_threshold: MultiplexThreshold,
                         clusters: ClusterDict,
                         line_rate: LineRate,
-                        return_network: bool = True) \
-        -> Tuple[AdvGroomingResult, GroomingResult, TrafficMatrixSchema, ServiceMapping]:
+                        check_input_type: bool = False) \
+        -> Tuple[AdvGroomingResult, AdvGroomingOut]:
     """
         Advanced Grooming worker
 
@@ -193,28 +189,35 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         :param tm: traffic matrix object
         :param multiplex_threshold: MP1H multiplexing threshold
         :param clusters: user defined clusters
-        :param line_rate: line rate of network 
+        :param line_rate: line rate of network
+        :param check_input_type: if this is True, all parameters type will be checked strictly (defult is True)
     """
 
-    # TODO: update handler
+    if check_input_type:
+        check_adv_grooming_inputs(pt=pt, tm=tm, multiplex_threshold=multiplex_threshold,
+                                  clusters=clusters, line_rate=line_rate)
+
+    # TODO: update handler (and database)
     # Tuple[AdvGroomingResult, GroomingResult, Network]
-    adv_grooming_result, end_to_end_result, network = adv_grooming(
-        end_to_end_fun=grooming_task,
+    adv_grooming_result, end_to_end_result, after_end_to_end_network = adv_grooming(
+        end_to_end_fun=end_to_end,
         pt=pt,
         tm=tm,
         multiplex_threshold=multiplex_threshold,
         clusters=clusters,
-        line_rate=line_rate,
-        return_network=return_network
+        line_rate=line_rate
     )
 
     new_tm, mapping = adv_grooming_result_to_tm(result=adv_grooming_result,
-                                                tm=tm,
-                                                network=network)
+                                                tm=after_end_to_end_network.traffic_matrix.export())
 
-    return (
-        adv_grooming_result,
-        end_to_end_result,
-        new_tm,
-        mapping
-    )
+    adv_grooming_out = AdvGroomingOut(end_to_end_result=end_to_end_result,
+                                      output=new_tm,
+                                      service_mapping=mapping).dict()
+
+    groom_res = completingadv(adv_result_t=adv_grooming_out,
+                              pt=pt,
+                              input_tm=tm,
+                              mp1h_threshold=int(multiplex_threshold))
+
+    return groom_res
