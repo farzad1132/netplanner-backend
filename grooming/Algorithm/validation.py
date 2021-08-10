@@ -1,4 +1,4 @@
-
+from traffic_matrix.schemas import ServiceType
 
 def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
     """
@@ -66,26 +66,26 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
                 for servid in groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]["service_id_list"]:
                     if groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]['type']== "MP2X":
                         for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"])):
-                            if servid in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
+                            if servid['id'] in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
                                 if groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"] in MP2Xservices:
                                     capacity = capacity + cap(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"])
                                 else:
-                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid)
+                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid['id'])
                                 if servid in servicelist:
-                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid)
+                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid['id'])
                                 else:
-                                    servicelist.append(servid)
+                                    servicelist.append(servid['id'])
                     elif groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]['type']== "PS6X":
                         for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"])):
-                            if servid in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
+                            if servid['id'] in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
                                 if groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"] in PS6Xservices:
                                     capacity = capacity + cap(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"])
                                 else:
-                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid)
-                                if servid in servicelist:
-                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid)
+                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid['id'])
+                                if servid['id'] in servicelist:
+                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid['id'])
                                 else:
-                                    servicelist.append(servid)
+                                    servicelist.append(servid['id'])
                 if capacity > 10:
                     raise Exception("Error, groomout capacity is more than device capability for groomutid:",groomoutid)
                 if capacity != groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]['capacity']:
