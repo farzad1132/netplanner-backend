@@ -71,7 +71,7 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
                                     capacity = capacity + cap(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"])
                                 else:
                                     raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid['id'])
-                                if servid in servicelist:
+                                if servid['id'] in servicelist:
                                     raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid['id'])
                                 else:
                                     servicelist.append(servid['id'])
@@ -120,7 +120,7 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
             if capacity > 100:
                 raise Exception("Error, groomout capacity is more than device capability for LightpathId:",Lpid)
             if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['routing_type'] == "10NonCoherent" and capacity > 10:
-                raise Exception("Error, groomout capacity is more than device capability for LightpathId:",Lpid)
+                raise Exception("Error, lightpath capacity is more than device capability for LightpathId:",Lpid)
             if capacity != groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['capacity']:
                     raise Exception("Error, lightpath capacity differs with service capacities summation for LightpathId:",Lpid)
 
