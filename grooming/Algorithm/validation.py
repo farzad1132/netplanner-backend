@@ -126,12 +126,21 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
 
 
         for demandid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"].keys():
-            for servid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"][demandid]:
+            for servtyp in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"][demandid]:
+                for servid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"][demandid][servtyp]['service_id_list']:
+                    for Lpid in groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"].keys():
+                        did = groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]["demand_id"]
+                        for servn in range(0,len(groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'])):
+                            if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'][servn]['id'] == servid:
+                                raise Exception("service:", servid, "is considered as a remaining but is assigned to lightpath:",Lpid)
+        for demandid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_groomouts"]["demands"].keys():
+            for gid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_groomouts"]["demands"][demandid]:
                 for Lpid in groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"].keys():
                     did = groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]["demand_id"]
                     for servn in range(0,len(groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'])):
-                        if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'][servn]['id'] == servid:
-                            raise Exception("service:", servid, "is considered as a remaining but is assigned to lightpath:",Lpid)
+                        if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'][servn]['id'] == gid:
+                            raise Exception("groomout:", gid, "is considered as a remaining but is assigned to lightpath:",Lpid)
+                            
     for devid in groomingresult["grooming_result"]["service_devices"].keys():
         
         if groomingresult["grooming_result"]["service_devices"][devid]["panel"] == "MP2X":
