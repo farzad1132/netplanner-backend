@@ -1,0 +1,559 @@
+{
+    "pt": {
+        "data": {
+            "nodes": [
+                {
+                    "name": "K1",
+                    "lat": 30.262489,
+                    "lng": 57.106441,
+                    "roadm_type": "Directionless"
+                },
+                {
+                    "name": "K2",
+                    "lat": 30.292477,
+                    "lng": 57.089221,
+                    "roadm_type": "Directionless"
+                },
+                {
+                    "name": "K3",
+                    "lat": 30.290032,
+                    "lng": 57.039864,
+                    "roadm_type": "Directionless"
+                },
+                {
+                    "name": "FE",
+                    "lat": 30.264507,
+                    "lng": 57.049214,
+                    "roadm_type": "Directionless"
+                },
+                {
+                    "name": "HG",
+                    "lat": 30.307728,
+                    "lng": 57.098888,
+                    "roadm_type": "Directionless"
+                },
+                {
+                    "name": "BFT",
+                    "lat": 30.292568,
+                    "lng": 57.111453,
+                    "roadm_type": "Directionless"
+                },
+                {
+                    "name": "SB",
+                    "lat": 30.31261,
+                    "lng": 57.068984,
+                    "roadm_type": "Directionless"
+                }
+            ],
+            "links": [
+                {
+                    "source": "K2",
+                    "destination": "K1",
+                    "length": 10,
+                    "fiber_type": "sm"
+                },
+                {
+                    "source": "K3",
+                    "destination": "K1",
+                    "length": 10,
+                    "fiber_type": "sm"
+                },
+                {
+                    "source": "K1",
+                    "destination": "BFT",
+                    "length": 10,
+                    "fiber_type": "sm"
+                },
+                {
+                    "source": "K1",
+                    "destination": "FE",
+                    "length": 10,
+                    "fiber_type": "sm"
+                },
+                {
+                    "source": "K1",
+                    "destination": "HG",
+                    "length": 10,
+                    "fiber_type": "sm"
+                },
+                {
+                    "source": "SB",
+                    "destination": "BFT",
+                    "length": 10,
+                    "fiber_type": "sm"
+                }
+            ]
+        },
+        "id": "0663a9623a1d4d3886e3dc07db4f71b1",
+        "version": 1,
+        "create_date": "2021-02-17T14:31:40.239419",
+        "name": "dsfsdf"
+    },
+    "tm": {
+        "data": {
+            "demands": {
+                "1": {
+                    "id": "1",
+                    "source": "K1",
+                    "destination": "BFT",
+                    "type": "None",
+                    "protection_type": "NoProtection",
+                    "restoration_type": "None",
+                    "services": [
+                        {
+                            "quantity": 4,
+                            "service_id_list": [
+                                "1",
+                                "12",
+                                "13",
+                                "14"
+                            ],
+                            "sla": "None",
+                            "type": "STM16",
+                            "granularity": "None",
+                            "granularity_vc12": "None",
+                            "granularity_vc4": "None"
+                        },
+                        {
+                            "quantity": 1,
+                            "service_id_list": [
+                                "2"
+                            ],
+                            "sla": "None",
+                            "type": "10GE",
+                            "granularity": "None",
+                            "granularity_vc12": "None",
+                            "granularity_vc4": "None"
+                        }
+                    ]
+                }
+            }
+        },
+        "id": "7dc15f3709e04cd6a8a96d6f158c0bde",
+        "version": 1,
+        "name": "test",
+        "create_date": "2021-01-23T20:19:46.490580",
+        "comment": "None"
+    },
+    "cl": {
+        "clusters": {
+            "4548eabc7f34434d9deb405aad4d6356": {
+                "data": {
+                    "gateways": [
+                        "BFT"
+                    ],
+                    "subnodes": [
+                        "SB"
+                    ],
+                    "color": "red",
+                    "type": "GE100"
+                },
+                "name": "CL2",
+                "id": "4548eabc7f34434d9deb405aad4d6356"
+            },
+            "4548eabc7f34434d9deb405aad4d6352": {
+                "data": {
+                    "gateways": [
+                        "K1"
+                    ],
+                    "subnodes": [
+                        "K2",
+                        "K3"
+                    ],
+                    "color": "blue",
+                    "type": "100GE"
+                },
+                "name": "CL1",
+                "id": "4548eabc7f34434d9deb405aad4d6352"
+            }
+        }
+    },
+    "res": {
+        "grooming_result": {
+            "service_devices": {
+
+                "3012": {
+                    "panel" : "TPAX", 
+                    "id": "3012", 
+                    "ch1": {"lightpath_id": "3011", "demand_id": "1", "traffic_matrix_id": "main"},
+                    "ch2": {"lightpath_id": "x", "demand_id": "1", "traffic_matrix_id": "main"}
+                },
+                "3009": {
+                    "sub_tm_id": "main",
+                    "line1": {
+                        "groomout_id": "3008",
+                        "demand_id": "1"
+                    },
+                    "line2": null,
+                    "id": "3009",
+                    "panel": "MP2X"
+                },
+                "3013": {
+                    "ch2": "None",
+                    "panel" : "TPAX", 
+                    "id": "3013", 
+                    "ch1": {"lightpath_id": "3011", "demand_id": "1", "traffic_matrix_id": "main"}
+                }
+                ,
+                "3010": {
+                    "sub_tm_id": "main",
+                    "line1": {
+                        "groomout_id": "3008",
+                        "demand_id": "1"
+                    },
+                    "line2": null,
+                    "id": "3010",
+                    "panel": "MP2X"
+                }
+            },
+            "node_structure": {
+                "nodes": {
+                    "K1": {
+                        "racks": {
+                            "0": {
+                                "shelves": {
+                                    "0": {
+                                        "slots": {
+                                            "0": "3012",
+                                            "1": "3012",
+                                            "2": "3009",
+                                            "3": "3009"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "K2": {
+                        "racks": {}
+                    },
+                    "K3": {
+                        "racks": {}
+                    },
+                    "FE": {
+                        "racks": {}
+                    },
+                    "HG": {
+                        "racks": {}
+                    },
+                    "BFT": {
+                        "racks": {
+                            "0": {
+                                "shelves": {
+                                    "0": {
+                                        "slots": {
+                                            "0": "3013",
+                                            "1": "3013",
+                                            "2": "3010",
+                                            "3": "3010"
+
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "SB": {
+                        "racks": {}
+                    }
+                }
+            },
+            "traffic": {
+                "4548eabc7f34434d9deb405aad4d6356": {
+                    "lightpaths": {},
+                    "cluster_id": "4548eabc7f34434d9deb405aad4d6356",
+                    "low_rate_grooming_result": {
+                        "demands": {}
+                    },
+                    "remaining_services": {
+                        "demands": {}
+                    },
+                    "remaining_groomouts": {
+                        "demands": {}
+                    }
+                },
+                "4548eabc7f34434d9deb405aad4d6352": {
+                    "lightpaths": {},
+                    "cluster_id": "4548eabc7f34434d9deb405aad4d6352",
+                    "low_rate_grooming_result": {
+                        "demands": {}
+                    },
+                    "remaining_services": {
+                        "demands": {}
+                    },
+                    "remaining_groomouts": {
+                        "demands": {}
+                    }
+                },
+                "main": {
+                    "lightpaths": {
+                        "3005": {
+                            "id": "3005",
+                            "source": "K1",
+                            "destination": "BFT",
+                            "service_id_list": [
+                                {
+                                    "id": "2",
+                                    "type": "normal",
+                                    "normal_service_type": "10GE",
+                                    "mp2x_panel_address": null
+                                }
+                            ],
+                            "routing_type": "10NonCoherent",
+                            "demand_id": "1",
+                            "protection_type": "NoProtection",
+                            "restoration_type": "None",
+                            "capacity": 10
+                        },
+                        "3011": {
+                            "id": "3011",
+                            "source": "K1",
+                            "destination": "BFT",
+                            "service_id_list": [
+                                {
+                                    "id": "3008",
+                                    "type": "groomout",
+                                    "normal_service_type": null,
+                                    "mp2x_panel_address": {
+                                        "source": {
+                                            "rack_id": "0",
+                                            "shelf_id": "0",
+                                            "slot_id_list": [
+                                                "4",
+                                                "5"
+                                            ]
+                                        },
+                                        "destination": {
+                                            "rack_id": "0",
+                                            "shelf_id": "0",
+                                            "slot_id_list": [
+                                                "4",
+                                                "5"
+                                            ]
+                                        }
+                                    }
+                                }
+                            ],
+                            "routing_type": "10NonCoherent",
+                            "demand_id": "1",
+                            "protection_type": "NoProtection",
+                            "restoration_type": "None",
+                            "capacity": 10.0
+                        }
+                    },
+                    "cluster_id": "main",
+                    "low_rate_grooming_result": {
+                        "demands": {
+                            "1": {
+                                "id": "1",
+                                "source": "K1",
+                                "destination": "BFT",
+                                "type": null,
+                                "protection_type": "NoProtection",
+                                "restoration_type": "None",
+                                "groomouts": {
+                                    "3008": {
+                                        "quantity": 1,
+                                        "service_id_list": [
+                                            {
+                                                "id": "1",
+                                                "type": "STM16"
+                                            },
+                                            {
+                                                "id": "12",
+                                                "type": "STM16"
+                                            },
+                                            {
+                                                "id": "13",
+                                                "type": "STM16"
+                                            },
+                                            {
+                                                "id": "14",
+                                                "type": "STM16"
+                                            }
+                                        ],
+                                        "id": "3008",
+                                        "sla": "None",
+                                        "type": "MP2X",
+                                        "capacity": 10.0,
+                                        "lightpath_id": "3011"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "remaining_services": {
+                        "demands": {
+                            "1": {
+                                "E1": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "E1"
+                                },
+                                "stm1_e": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "STM1 Electrical"
+                                },
+                                "stm1_o": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "STM1 Optical"
+                                },
+                                "stm4": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "STM4"
+                                },
+                                "stm16": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "STM16"
+                                },
+                                "stm64": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "STM64"
+                                },
+                                "FE": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "STM64"
+                                },
+                                "GE1": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "GE"
+                                },
+                                "GE10": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "10GE"
+                                },
+                                "GE100": {
+                                    "count": 0,
+                                    "service_id_list": [],
+                                    "type": "100GE"
+                                }
+                            }
+                        }
+                    },
+                    "remaining_groomouts": {
+                        "demands": {
+                            "1": []
+                        }
+                    }
+                }
+            }
+        },
+        "serviceMapping": {
+            "traffic_matrices": {
+                "7dc15f3709e04cd6a8a96d6f158c0bde": {
+                    "demands": {}
+                },
+                "4548eabc7f34434d9deb405aad4d6356": {
+                    "demands": {}
+                },
+                "4548eabc7f34434d9deb405aad4d6352": {
+                    "demands": {}
+                },
+                "main": {
+                    "demands": {}
+                }
+            }
+        },
+        "clustered_tms": {
+            "sub_tms": {
+                "4548eabc7f34434d9deb405aad4d6356": {
+                    "cluster_id": "4548eabc7f34434d9deb405aad4d6356",
+                    "tm": {
+                        "demands": {}
+                    }
+                },
+                "4548eabc7f34434d9deb405aad4d6352": {
+                    "cluster_id": "4548eabc7f34434d9deb405aad4d6352",
+                    "tm": {
+                        "demands": {}
+                    }
+                },
+                "main": {
+                    "cluster_id": "main",
+                    "tm": {
+                        "demands": {
+                            "1": {
+                                "id": "1",
+                                "source": "K1",
+                                "destination": "BFT",
+                                "type": "None",
+                                "protection_type": "NoProtection",
+                                "restoration_type": "None",
+                                "services": [
+                                    {
+                                        "quantity": 4,
+                                        "service_id_list": [
+                                            "1",
+                                            "12",
+                                            "13",
+                                            "14"
+                                        ],
+                                        "sla": "None",
+                                        "type": "STM16",
+                                        "granularity": "None",
+                                        "granularity_vc12": "None",
+                                        "granularity_vc4": "None"
+                                    },
+                                    {
+                                        "quantity": 1,
+                                        "service_id_list": [
+                                            "2"
+                                        ],
+                                        "sla": "None",
+                                        "type": "10GE",
+                                        "granularity": "None",
+                                        "granularity_vc12": "None",
+                                        "granularity_vc4": "None"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "grooming_table": {
+            "demands": {
+                "1": {
+                    "end_to_ends": [
+                        {
+                            "source": "K1",
+                            "destination": "BFT",
+                            "demand_id": "1",
+                            "traffic": {
+                                "type": "STM16",
+                                "count": 4
+                            }
+                        },
+                        {
+                            "source": "K1",
+                            "destination": "BFT",
+                            "demand_id": "1",
+                            "traffic": {
+                                "type": "100GE",
+                                "count": 1
+                            }
+                        }
+                    ],
+                    "splitted_sections": []
+                }
+            }
+        },
+        "statistical_result": {
+            "lightpath_no": 2,
+            "mean_lightpath_cap": 55.0,
+            "groomout_no": 1,
+            "mp2x_no": 2,
+            "tp1h_no": 2,
+            "mp1h_no": 2
+        }
+    }
+}
