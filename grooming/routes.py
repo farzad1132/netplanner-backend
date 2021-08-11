@@ -255,7 +255,7 @@ def result_automatic_v2_0_1(grooming_id: str, db: Session = Depends(get_db),
     """
 
     grooming_result = GroomingRepository.get_grooming(
-            grooming_id=grooming_id, db=db)
+        grooming_id=grooming_id, db=db)
 
     # authorization check
     _ = get_project_mode_get(id=grooming_result.project_id, user=user, db=db)
@@ -292,22 +292,9 @@ def get_all_v2_0_1(project_id: str, algorithm: GroomingAlgorithm = Query(None),
     # authorization check
     _ = get_project_mode_get(id=project_id, user=user, db=db)
 
-    result = []
-
     # getting records from database based on algorithm query parameter
-    if algorithm is None:
-        result.extend(GroomingRepository.get_all_grooming(
-            project_id=project_id, db=db))
-        result.extend(GroomingRepository.get_all_adv_grooming(
-            project_id=project_id, db=db))
-    elif algorithm == GroomingAlgorithm.advanced:
-        result.extend(GroomingRepository.get_all_adv_grooming(
-            project_id=project_id, db=db))
-    else:
-        result.extend(GroomingRepository.get_all_grooming(
-            project_id=project_id, db=db))
-
-    return result
+    return GroomingRepository.get_all_grooming(
+        project_id=project_id, db=db, algorithm=algorithm)
 
 
 @grooming_router.get("/v2.0.0/algorithms/grooming/faileds", status_code=200,
