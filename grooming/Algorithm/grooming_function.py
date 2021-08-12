@@ -19,7 +19,7 @@ from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
                               ServiceMapping, GroomingTable, StatisticalGroomingResult)
 from grooming.Algorithm.statistical_grooming_result import statistical_result
 from grooming.Algorithm.table_producer import producing_table
-
+import copy
 
 def grooming_function(
         traffic_matrix: TrafficMatrixDB,
@@ -50,11 +50,11 @@ def grooming_function(
             'current': 0, 'total': 100, 'status': 'Starting Grooming Algorithm!'})
 
     if clusters != None:
+        input_tm=copy.deepcopy(traffic_matrix) 
         service_mapping, clusteerdtm = Change_TM_acoordingTo_Clusters(
             traffic_matrix, clusters, MP1H_Threshold=mp1h_threshold_clustering, state=state, percentage=[0, 40], uuid=uuid)
         finalres = {"traffic": {}}
         devicee = {}
-
         if state is not None:
             state.update_state(state='PROGRESS', meta={
                 'current': 40, 'total': 100, 'status': 'Clustering Finished'})
@@ -81,7 +81,7 @@ def grooming_function(
             devicee, Physical_topology, finalres, state=state, percentage=[80, 90])
         finalres.update({"node_structure": node_structure})
         finalres.update({"service_devices": device_final})
-        table = producing_table(service_mapping= service_mapping, clusterd_tms = clusteerdtm, TM_input=traffic_matrix)
+        table = producing_table(service_mapping= service_mapping, clusterd_tms = clusteerdtm, TM_input=input_tm)
         if state is not None:
             state.update_state(state='PROGRESS', meta={
                 'current': 90, 'total': 100, 'status': 'Algorithm Finished'})
