@@ -324,8 +324,18 @@ class GroomingErrorTestCase(unittest.TestCase):
             input2 = json.load(json_file2)
     
         with self.assertRaises(Exception): 
-            manual_grooming_validation(groomingresult=input2['res'], Trafficmatrix=input2['tm'], cluster=input2['cl'])                                                                                                                                                          
+            manual_grooming_validation(groomingresult=input2['res'], Trafficmatrix=input2['tm'], cluster=input2['cl'])    
+
+    def test_table_test_NO_split(self):
+        with open(r'tests\test_grooming\validation_tests\table_test_NO_split.json') as json_file2:
+                input2 = json.load(json_file2)
+        with self.assertRaises(Exception): 
+            manual_grooming_validation(groomingresult=input2['res'], Trafficmatrix=input2['tm'], cluster=input2['cl'])
                           
-    
+    def test_table_test_NO_end(self):
+        with open(r'tests\test_grooming\validation_tests\table_test_NO_end.json') as json_file2:
+            input2 = json.load(json_file2)
+        with self.assertRaises(Exception): 
+            manual_grooming_validation(groomingresult=input2['res'], Trafficmatrix=input2['tm'], cluster=input2['cl'])
 if __name__ == '__main__':
     unittest.main()
