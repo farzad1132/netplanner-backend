@@ -293,4 +293,33 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
                             raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)    
                         if servid not in servicess:
                             raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
+                        
+
+    for did in Trafficmatrix['data']['demands']:
+        for servs in Trafficmatrix['data']['demands'][did]['services']:
+            end_count = servs['quantity']
+            split_cont = 0
+            for servid in servs["service_id_list"]:
+                if did in groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"] and servid in groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][did]:
+                    split_cont= split_cont+1
+            end_count = end_count - split_cont
+            if did not in groomingresult['grooming_table']['demands']:
+                raise Exception("demand:", did, "does not exist in tables")
+            else:
+                
+                for item in groomingresult['grooming_table']['demands'][did]['end_to_ends']:
+                    if item['traffic']['type'] == servs['type']  and item['traffic']['count'] != end_count:
+                        raise Exception("demand:", did, "service type:", servs['type'],  "end to end service counter is not correct")
+                src = groomingresult['grooming_table']['demands'][did]['end_to_ends'][0]['source']
+                des = groomingresult['grooming_table']['demands'][did]['end_to_ends'][0]['destination']
+                for item in groomingresult['grooming_table']['demands'][did]['splitted_sections']:
+                    servs2=[]
+                    if item['traffic']['type'] == servs['type']  and item['traffic']['count'] != end_count:
+                        raise Exception("demand:", did, "service type:", servs['type'],  "splitted sections service counter is not correct")
+                    """
+                    servs2.append(item['source'])
+                    servs2.append(item['destination'])
+                    if des == item['destination']:
+                        if servs2[0] !="""
+                #if servs[]
         
