@@ -251,20 +251,19 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
                 if tmid not in groomingresult["clustered_tms"]["sub_tms"].keys():
                     raise Exception("traffic matrix id:", tmid, "is not availabale") 
                 else:
-                    did=groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][demandid]["services"][servid]["traffic_matrices"][tmid]["demand_id"]
-                    if  did not in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"].keys():
-                        raise Exception("demand id:", servid, "is not availabale in traffic matrix:",tmid)
-                    else:
-                        nodesofservs.update({num:(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["source"],groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["destination"])})
-                        num=num+1
-                        servi=groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][demandid]["services"][servid]["traffic_matrices"][tmid]["service_id"]
-                        flag=0
-                        for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["services"])):
-                            if servi in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["services"][i]["service_id_list"]:
-                                flag=1
-                        if flag == 0:
-                            raise Exception("service id:", servi, "is not availabale in traffic matrix:", tmid, "demand:",did)
-                
+                    for tdid in groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][demandid]["services"][servid]["traffic_matrices"][tmid]:
+                        if  tdid["demand_id"] not in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"].keys():
+                            raise Exception("demand id:", tdid["demand_id"], "is not availabale in traffic matrix:",tmid)
+                        else:
+                            nodesofservs.update({num:(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["source"],groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["destination"])})
+                            num=num+1
+                            flag=0
+                            for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["services"])):
+                                if tdid["service_id"] in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["services"][i]["service_id_list"]:
+                                    flag=1
+                            if flag == 0:
+                                raise Exception("service id:", tdid["service_id"], "is not availabale in traffic matrix:", tmid, "demand:",tdid["demand_id"])
+                    
             for numer in nodesofservs.keys():
                 for nn in nodesofservs[numer]:
                     ff=1
@@ -280,12 +279,18 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
        for demandid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"].keys():
            for servid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"].keys():
                 for ntmid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"].keys():
-                    did=groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"][ntmid]["demand_id"]
-                    sid=groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"][ntmid]["service_id"]
-                    if tmid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"].keys():
-                        raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
-                    if demandid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"][tmid]["demand_id"]:
-                        raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)    
-                    if servid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"][tmid]["service_id"]:
-                        raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
-    
+                    for tdid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"][ntmid]:
+                        did = tdid['demand_id']
+                        sid = tdid ['service_id']
+                        demandss=[]
+                        servicess=[]
+                        if tmid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"].keys():
+                            raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
+                        for item in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"][tmid]:
+                            demandss.append(item['demand_id'])
+                            servicess.append(item['service_id'])
+                        if demandid not in demandss:
+                            raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)    
+                        if servid not in servicess:
+                            raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
+        
