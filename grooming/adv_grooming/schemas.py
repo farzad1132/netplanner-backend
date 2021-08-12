@@ -135,6 +135,11 @@ class Network:
 
         class Link:
             def __init__(self, link: pschema.Link) -> None:
+                """
+                    Links constructor
+
+                    .. note:: Initial link cost is 100 times length
+                """
                 self.length = link["length"]
                 self.fiber_type = link["fiber_type"]
                 self.capacity = 0
@@ -177,39 +182,43 @@ class Network:
             self.nodes[link["destination"]
                        ].links[link["source"]] = self.Link(link)
 
-        def update_link(self, src: str, dst: str, traffic_rate: float,
-                        line_rate: int) -> None:
+        def update_link_capacity(self, src: str, dst: str, added_rate: float,
+                                 line_rate: int):
+            """
+                This method updates link capacities
+            """
 
-            def update_capacity_cost(capacity: float, traffic_rate: float, line_rate: int,
-                                     length: int) -> Tuple[float, int]:
+            old_capacity = self.nodes[src].links[dst].capacity
+            new_capacity = old_capacity + added_rate
 
-                new_capacity = traffic_rate + capacity
+            if new_capacity >= int(line_rate):
+                new_capacity -= line_rate
 
-                if new_capacity >= line_rate:
-                    new_capacity -= line_rate
+            self.nodes[src].links[dst].capacity = new_capacity
+            self.nodes[dst].links[src].capacity = new_capacity
 
-                if new_capacity > 0.95*line_rate:
-                    new_capacity = 0
-                    cost = length * 100
-                elif new_capacity < 0.05*line_rate:
-                    cost = length*100
-                else:
-                    cost = length
+        def update_link_cost(self, src: str, dst: str, new_rate: float,
+                             line_rate: int):
+            """
+                This method updates a link metric
 
-                return new_capacity, cost
+                If new rate plus old capacity is less than line rate then we will reduce the cost
+                otherwise the cost will be increased
+            """
 
-            line_rate = int(line_rate)
+            capacity = self.nodes[src].links[dst].capacity
+            length = self.nodes[src].links[dst].length
 
-            capacity, cost = update_capacity_cost(capacity=self.nodes[src].links[dst].capacity,
-                                                  traffic_rate=traffic_rate,
-                                                  line_rate=line_rate,
-                                                  length=self.nodes[src].links[dst].length)
+            if new_rate+capacity <= int(line_rate):
+                cost = length
+            else:
+                cost = length * 100
 
+            # updating capcities and costs in data structure
             self.nodes[src].links[dst].cost = cost
-            self.nodes[src].links[dst].capacity = capacity
             self.nodes[dst].links[src].cost = cost
-            self.nodes[dst].links[src].capacity = capacity
 
+            # updating costs in networkx object (used for shortest path calculation)
             self.graph[src][dst]['weight'] = cost
             self.graph[dst][src]['weight'] = cost
 
@@ -799,12 +808,10 @@ class Network:
                                           destination=destination,
                                           route=path)
 
-        for i in range(len(path)-1):
-            self.physical_topology.update_link(src=path[i],
-                                               dst=path[i+1],
-                                               traffic_rate=traffic_rate,
-                                               line_rate=line_rate)
-
+        # updating links capacity
+        self.update_path_capacity(path=path,
+                                  line_rate=line_rate,
+                                  traffic_rate=traffic_rate)
         return id
 
     def update_connections(self, demand_id: str, demand_path: List[str],
@@ -812,14 +819,28 @@ class Network:
 
         intersections = self.grooming.find_intersections(
             demand_path=demand_path)
+
         self.grooming.find_split_sections(
             intersections=intersections, demand_path=demand_path, demand_id=demand_id)
 
-        for i in range(len(demand_path)-1):
-            self.physical_topology.update_link(src=demand_path[i],
-                                               dst=demand_path[i+1],
-                                               traffic_rate=traffic_rate,
-                                               line_rate=line_rate)
+        # updating links capacity
+        self.update_path_capacity(path=demand_path,
+                                  line_rate=line_rate,
+                                  traffic_rate=traffic_rate)
+
+    def update_path_capacity(self, path: List[str], line_rate: int, traffic_rate: float):
+        for i in range(len(path)-1):
+            self.physical_topology.update_link_capacity(src=path[i],
+                                                        dst=path[i+1],
+                                                        added_rate=traffic_rate,
+                                                        line_rate=line_rate)
+
+    def update_path_cost(self, path: List[str], line_rate: int, traffic_rate: float):
+        for i in range(len(path)-1):
+            self.physical_topology.update_link_cost(src=path[i],
+                                                    dst=path[i+1],
+                                                    new_rate=traffic_rate,
+                                                    line_rate=line_rate)
 
     def get_demands_by_rate(self) -> List[TrafficMatrix.Demand]:
         demands = list(self.traffic_matrix.demands.values())
