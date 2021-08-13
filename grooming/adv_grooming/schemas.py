@@ -192,7 +192,7 @@ class Network:
             new_capacity = old_capacity + added_rate
 
             if new_capacity >= int(line_rate):
-                new_capacity -= line_rate
+                new_capacity -= int(line_rate)
 
             self.nodes[src].links[dst].capacity = new_capacity
             self.nodes[dst].links[src].capacity = new_capacity
