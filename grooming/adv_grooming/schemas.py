@@ -783,8 +783,6 @@ class Network:
         def export_result(self) -> AdvGroomingResult:
             return AdvGroomingResult(**{
                 'connections': list(map(lambda x: x.export_result(), self.connections.values())),
-                'average_lambda_capacity_usage': 0,
-                'lambda_link': 0,
                 'lightpaths': {}
             }).dict()
 
