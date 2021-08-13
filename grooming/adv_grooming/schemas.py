@@ -63,9 +63,9 @@ class GroomingConnection(BaseModel):
     destination: str
     id: str
     path: List[str]
-    lambda_link: int
+    """ lambda_link: int
     capacity_link: float
-    rate_by_line_rate: float
+    rate_by_line_rate: float """
     demands_id_list: List[str]
 
 
@@ -75,8 +75,8 @@ class AdvGroomingResult(BaseModel):
     """
 
     connections: List[GroomingConnection]
-    lambda_link: int
-    average_lambda_capacity_usage: float
+    """ lambda_link: int
+    average_lambda_capacity_usage: float """
     lightpaths: Dict[str, gschema.GroomingLightPath]
 
 
@@ -86,8 +86,8 @@ class AdvGroomingDBOut(gschema.GroomingInformation):
     """
 
     connections: List[GroomingConnection]
-    lambda_link: int
-    average_lambda_capacity_usage: float
+    """ lambda_link: int
+    average_lambda_capacity_usage: float """
     lightpaths: Dict[str, gschema.GroomingLightPath]
     form: AdvGroomingForm
 
@@ -951,7 +951,7 @@ class Network:
     def export_result(self, line_rate: str, after_end_end_network) -> AdvGroomingResult:
         result = self.grooming.export_result()
 
-        tot_lambda_link = 0
+        """ tot_lambda_link = 0
         tot_capacity_link = 0
         for connection in result['connections']:
             rate = 0
@@ -973,6 +973,6 @@ class Network:
             result['average_lambda_capacity_usage'] = tot_capacity_link / \
                 tot_lambda_link
         else:
-            result['average_lambda_capacity_usage'] = 0
+            result['average_lambda_capacity_usage'] = 0 """
 
         return result
