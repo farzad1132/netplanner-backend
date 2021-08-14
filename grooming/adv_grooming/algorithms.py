@@ -239,7 +239,8 @@ def degree_1_operation(network: Network, node: str) -> Network:
 
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
-                         pt: PhysicalTopologyDB, multiplex_threshold: int, clusters: ClusterDict) \
+                         multiplex_threshold: int, clusters: ClusterDict,
+                         line_rate: LineRate) \
         -> Tuple[Dict[str, GroomingLightPath], Network, EndToEndResult, Network]:
     """
         In this phase we are performing hierarchial clustering and end-to-end multiplexing.
@@ -267,11 +268,12 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
     res_network = deepcopy(network)
     user_clusters = deepcopy(clusters['clusters'])
 
-    demands_for_multiplex = list(filter(lambda x: x.rate >= multiplex_threshold,
+    demands_for_multiplex = list(filter(lambda x: x.rate >= multiplex_threshold*int(line_rate),
                                         network.traffic_matrix.demands.values()))
 
     lightpaths = {}
     end_to_end_result = None
+    after_end_to_end_network = res_network
     if len(demands_for_multiplex) != 0:
         demands_for_multiplex = list(
             map(lambda x: x.id, demands_for_multiplex))
@@ -300,7 +302,7 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
                 if len(res_network.physical_topology.nodes) != 1:
                     print(f"START: degree one operation, node = '{d1_node}'")
                     res_network = degree_1_operation(network=res_network,
-                                                    node=d1_node)
+                                                     node=d1_node)
                     print(f"END: degree one operation, node = '{d1_node}'")
 
         # user defined clusters
@@ -345,7 +347,7 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, after_end_to_end
     # sort demands
     demands = network.get_demands_by_rate()
 
-    # check if any demand left for phase 2
+    # check if any demand is left for phase 2
     if len(demands) == 0:
         return network.export_result(line_rate, after_end_to_end_network)
 
@@ -386,11 +388,16 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, after_end_to_end
         else:
             visit_demand = demands.pop(0)
 
+        # update links cost
+        network.update_path_cost(path=route,
+                                 line_rate=line_rate,
+                                 traffic_rate=visit_demand.rate)
+
         # find shortest route
         route = network.physical_topology.get_shortest_path(src=visit_demand.source,
                                                             dst=visit_demand.destination)
 
-        # create or break connections (also updating link metrics)
+        # create or break connections
         network.update_connections(demand_id=visit_demand.id,
                                    demand_path=route,
                                    line_rate=line_rate,
@@ -420,10 +427,10 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
     lightpaths, res_network, end_to_end_result, after_end_to_end_network = adv_grooming_phase_1(
         network=network,
         end_to_end_fun=end_to_end_fun,
-        pt=pt,
         multiplex_threshold=int(
             multiplex_threshold),
-        clusters=clusters
+        clusters=clusters,
+        line_rate=line_rate
     )
 
     result = adv_grooming_phase_2(network=res_network,
