@@ -1,0 +1,137 @@
+ERROR: Exception in ASGI application
+
+Traceback (most recent call last):
+
+File "/usr/local/lib/python3.9/site-packages/uvicorn/protocols/http/httptools_impl.py", line 396, in run_asgi
+
+result = await app(self.scope, self.receive, self.send)
+
+File "/usr/local/lib/python3.9/site-packages/uvicorn/middleware/proxy_headers.py", line 45, in __call__
+
+return await self.app(scope, receive, send)
+
+File "/usr/local/lib/python3.9/site-packages/fastapi/applications.py", line 199, in __call__
+
+await super().__call__(scope, receive, send)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/applications.py", line 111, in __call__
+
+await self.middleware_stack(scope, receive, send)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/middleware/errors.py", line 181, in __call__
+
+raise exc from None
+
+File "/usr/local/lib/python3.9/site-packages/starlette/middleware/errors.py", line 159, in __call__
+
+await self.app(scope, receive, _send)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/middleware/cors.py", line 86, in __call__
+
+await self.simple_response(scope, receive, send, request_headers=headers)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/middleware/cors.py", line 142, in simple_response
+
+await self.app(scope, receive, send)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/exceptions.py", line 82, in __call__
+
+raise exc from None
+
+File "/usr/local/lib/python3.9/site-packages/starlette/exceptions.py", line 71, in __call__
+
+await self.app(scope, receive, sender)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/routing.py", line 566, in __call__
+
+await route.handle(scope, receive, send)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/routing.py", line 227, in handle
+
+await self.app(scope, receive, send)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/routing.py", line 41, in app
+
+response = await func(request)
+
+File "/usr/local/lib/python3.9/site-packages/fastapi/routing.py", line 201, in app
+
+raw_response = await run_endpoint_function(
+
+File "/usr/local/lib/python3.9/site-packages/fastapi/routing.py", line 150, in run_endpoint_function
+
+return await run_in_threadpool(dependant.call, **values)
+
+File "/usr/local/lib/python3.9/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+
+return await loop.run_in_executor(None, func, *args)
+
+File "/usr/local/lib/python3.9/concurrent/futures/thread.py", line 52, in run
+
+result = self.fn(*self.args, **self.kwargs)
+
+File "/app/rwa/routes.py", line 64, in rwa_start
+
+if (grooming_result := db.query(GroomingModel)
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/orm/query.py", line 3459, in one_or_none
+
+
+ret = list(self)
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/orm/query.py", line 3535, in __iter__
+
+return self._execute_and_instances(context)
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/orm/query.py", line 3560, in _execute_and_instances
+
+result = conn.execute(querycontext.statement, self._params)
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1011, in execute
+
+return meth(self, multiparams, params)
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/sql/elements.py", line 298, in _execute_on_connection
+
+return connection._execute_clauseelement(self, multiparams, params)
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1124, in _execute_clauseelement
+
+ret = self._execute_context(
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1316, in _execute_context
+
+self._handle_dbapi_exception(
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1510, in _handle_dbapi_exception
+
+util.raise_(
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/util/compat.py", line 182, in raise_
+
+raise exception
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/engine/base.py", line 1276, in _execute_context
+
+self.dialect.do_execute(
+
+File "/usr/local/lib/python3.9/site-packages/sqlalchemy/engine/default.py", line 609, in do_execute
+
+cursor.execute(statement, parameters)
+
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column Grooming.statistical_result does not exist
+
+LINE 1: ...ing".node_structure AS "Grooming_node_structure", "Grooming"...
+
+^
+
+
+[SQL: SELECT "Grooming".id AS "Grooming_id", "Grooming".project_id AS "Grooming_project_id", "Grooming".pt_id AS "Grooming_pt_id", "Grooming".tm_id AS "Grooming_tm_id", "Grooming".pt_version AS "Grooming_pt_version", "Grooming".tm_version AS "Grooming_tm_version", "Grooming".form AS "Grooming_form", "Grooming".manager_id AS "Grooming_manager_id", "Grooming".start_date AS "Grooming_start_date", "Grooming".end_date AS "Grooming_end_date", "Grooming".with_clustering AS "Grooming_with_clustering", "Grooming".clusters AS "Grooming_clusters", "Grooming".is_finished AS "Grooming_is_finished", "Grooming".is_deleted AS "Grooming_is_deleted", "Grooming".algorithm AS "Grooming_algorithm", "Grooming".traffic AS "Grooming_traffic", "Grooming".service_devices AS "Grooming_service_devices", "Grooming".node_structure AS "Grooming_node_structure", "Grooming".statistical_result AS "Grooming_statistical_result", "Grooming".grooming_table AS "Grooming_grooming_table", "Grooming".clustered_tms AS "Grooming_clustered_tms", "Grooming".service_mapping AS "Grooming_service_mapping"
+
+FROM "Grooming"
+
+WHERE "Grooming".id = %(id_1)s]
+
+[parameters: {'id_1': '58b6f358-b730-42d8-a98b-4068585576f3'}]
+
+(Background on this error at: http://sqlalche.me/e/13/f405)
