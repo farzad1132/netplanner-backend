@@ -192,9 +192,9 @@ class RWAId(BaseModel):
     rwa_id: str
 
 
-class RWAResult(BaseModel):
+class RWALightpathsOutput(BaseModel):
     """
-        RWA result schema
+        RWA output lightpaths schema
 
         **lightpaths** keys are **lightpath_id**
     """
@@ -285,3 +285,13 @@ class RWAGeneralInfo(BaseModel):
     working: RWAGeneralInfoBase
     protection: Optional[RWAGeneralInfoBase]
     restoration: Optional[RWAGeneralInfoBase]
+
+
+class RWAResult(BaseModel):
+    """
+        RWA result schema
+
+        **lightpaths** keys are **lightpath_id**
+    """
+    lightpaths: Dict[str, Lightpath]
+    general_info: RWAGeneralInfo
