@@ -1,4 +1,4 @@
-
+from traffic_matrix.schemas import ServiceType
 
 def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
     """
@@ -66,26 +66,26 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
                 for servid in groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]["service_id_list"]:
                     if groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]['type']== "MP2X":
                         for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"])):
-                            if servid in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
+                            if servid['id'] in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
                                 if groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"] in MP2Xservices:
                                     capacity = capacity + cap(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"])
                                 else:
-                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid)
-                                if servid in servicelist:
-                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid)
+                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid['id'])
+                                if servid['id'] in servicelist:
+                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid['id'])
                                 else:
-                                    servicelist.append(servid)
+                                    servicelist.append(servid['id'])
                     elif groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]['type']== "PS6X":
                         for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"])):
-                            if servid in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
+                            if servid['id'] in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["service_id_list"]:
                                 if groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"] in PS6Xservices:
                                     capacity = capacity + cap(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][demandid]["services"][i]["type"])
                                 else:
-                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid)
-                                if servid in servicelist:
-                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid)
+                                    raise Exception("Error, service type does not supported for groomutid:",groomoutid,"service_id:",servid['id'])
+                                if servid['id'] in servicelist:
+                                    raise Exception("Error, service is belong to two groomout.  groomutid:",groomoutid,"service_id:",servid['id'])
                                 else:
-                                    servicelist.append(servid)
+                                    servicelist.append(servid['id'])
                 if capacity > 10:
                     raise Exception("Error, groomout capacity is more than device capability for groomutid:",groomoutid)
                 if capacity != groomingresult["grooming_result"]["traffic"][tmid]["low_rate_grooming_result"]["demands"][demandid]["groomouts"][groomoutid]['capacity']:
@@ -120,18 +120,27 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
             if capacity > 100:
                 raise Exception("Error, groomout capacity is more than device capability for LightpathId:",Lpid)
             if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['routing_type'] == "10NonCoherent" and capacity > 10:
-                raise Exception("Error, groomout capacity is more than device capability for LightpathId:",Lpid)
+                raise Exception("Error, lightpath capacity is more than device capability for LightpathId:",Lpid)
             if capacity != groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['capacity']:
                     raise Exception("Error, lightpath capacity differs with service capacities summation for LightpathId:",Lpid)
 
 
         for demandid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"].keys():
-            for servid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"][demandid]:
+            for servtyp in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"][demandid]:
+                for servid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_services"]["demands"][demandid][servtyp]['service_id_list']:
+                    for Lpid in groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"].keys():
+                        did = groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]["demand_id"]
+                        for servn in range(0,len(groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'])):
+                            if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'][servn]['id'] == servid:
+                                raise Exception("service:", servid, "is considered as a remaining but is assigned to lightpath:",Lpid)
+        for demandid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_groomouts"]["demands"].keys():
+            for gid in groomingresult["grooming_result"]["traffic"][tmid]["remaining_groomouts"]["demands"][demandid]:
                 for Lpid in groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"].keys():
                     did = groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]["demand_id"]
                     for servn in range(0,len(groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'])):
-                        if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'][servn]['id'] == servid:
-                            raise Exception("service:", servid, "is considered as a remaining but is assigned to lightpath:",Lpid)
+                        if groomingresult["grooming_result"]["traffic"][tmid]["lightpaths"][Lpid]['service_id_list'][servn]['id'] == gid:
+                            raise Exception("groomout:", gid, "is considered as a remaining but is assigned to lightpath:",Lpid)
+                            
     for devid in groomingresult["grooming_result"]["service_devices"].keys():
         
         if groomingresult["grooming_result"]["service_devices"][devid]["panel"] == "MP2X":
@@ -242,20 +251,19 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
                 if tmid not in groomingresult["clustered_tms"]["sub_tms"].keys():
                     raise Exception("traffic matrix id:", tmid, "is not availabale") 
                 else:
-                    did=groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][demandid]["services"][servid]["traffic_matrices"][tmid]["demand_id"]
-                    if  did not in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"].keys():
-                        raise Exception("demand id:", servid, "is not availabale in traffic matrix:",tmid)
-                    else:
-                        nodesofservs.update({num:(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["source"],groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["destination"])})
-                        num=num+1
-                        servi=groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][demandid]["services"][servid]["traffic_matrices"][tmid]["service_id"]
-                        flag=0
-                        for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["services"])):
-                            if servi in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][did]["services"][i]["service_id_list"]:
-                                flag=1
-                        if flag == 0:
-                            raise Exception("service id:", servi, "is not availabale in traffic matrix:", tmid, "demand:",did)
-                
+                    for tdid in groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][demandid]["services"][servid]["traffic_matrices"][tmid]:
+                        if  tdid["demand_id"] not in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"].keys():
+                            raise Exception("demand id:", tdid["demand_id"], "is not availabale in traffic matrix:",tmid)
+                        else:
+                            nodesofservs.update({num:(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["source"],groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["destination"])})
+                            num=num+1
+                            flag=0
+                            for i in range(0,len(groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["services"])):
+                                if tdid["service_id"] in groomingresult["clustered_tms"]["sub_tms"][tmid]["tm"]["demands"][tdid["demand_id"]]["services"][i]["service_id_list"]:
+                                    flag=1
+                            if flag == 0:
+                                raise Exception("service id:", tdid["service_id"], "is not availabale in traffic matrix:", tmid, "demand:",tdid["demand_id"])
+                    
             for numer in nodesofservs.keys():
                 for nn in nodesofservs[numer]:
                     ff=1
@@ -271,12 +279,47 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
        for demandid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"].keys():
            for servid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"].keys():
                 for ntmid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"].keys():
-                    did=groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"][ntmid]["demand_id"]
-                    sid=groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"][ntmid]["service_id"]
-                    if tmid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"].keys():
-                        raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
-                    if demandid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"][tmid]["demand_id"]:
-                        raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)    
-                    if servid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"][tmid]["service_id"]:
-                        raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
-    
+                    for tdid in groomingresult["serviceMapping"]["traffic_matrices"][tmid]["demands"][demandid]["services"][servid]["traffic_matrices"][ntmid]:
+                        did = tdid['demand_id']
+                        sid = tdid ['service_id']
+                        demandss=[]
+                        servicess=[]
+                        if tmid not in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"].keys():
+                            raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
+                        for item in groomingresult["serviceMapping"]["traffic_matrices"][ntmid]["demands"][did]["services"][sid]["traffic_matrices"][tmid]:
+                            demandss.append(item['demand_id'])
+                            servicess.append(item['service_id'])
+                        if demandid not in demandss:
+                            raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)    
+                        if servid not in servicess:
+                            raise Exception("service mapping is not valid for traffic matrix:", tmid, "demand:", demandid, "service id:", servid)
+                        
+
+    for did in Trafficmatrix['data']['demands']:
+        for servs in Trafficmatrix['data']['demands'][did]['services']:
+            end_count = servs['quantity']
+            split_cont = 0
+            for servid in servs["service_id_list"]:
+                if did in groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"] and servid in groomingresult["serviceMapping"]["traffic_matrices"][tmmainid]["demands"][did]:
+                    split_cont= split_cont+1
+            end_count = end_count - split_cont
+            if did not in groomingresult['grooming_table']['demands']:
+                raise Exception("demand:", did, "does not exist in tables")
+            else:
+                
+                for item in groomingresult['grooming_table']['demands'][did]['end_to_ends']:
+                    if item['traffic']['type'] == servs['type']  and item['traffic']['count'] != end_count:
+                        raise Exception("demand:", did, "service type:", servs['type'],  "end to end service counter is not correct")
+                src = groomingresult['grooming_table']['demands'][did]['end_to_ends'][0]['source']
+                des = groomingresult['grooming_table']['demands'][did]['end_to_ends'][0]['destination']
+                for item in groomingresult['grooming_table']['demands'][did]['splitted_sections']:
+                    servs2=[]
+                    if item['traffic']['type'] == servs['type']  and item['traffic']['count'] != end_count:
+                        raise Exception("demand:", did, "service type:", servs['type'],  "splitted sections service counter is not correct")
+                    """
+                    servs2.append(item['source'])
+                    servs2.append(item['destination'])
+                    if des == item['destination']:
+                        if servs2[0] !="""
+                #if servs[]
+        
