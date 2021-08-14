@@ -10,7 +10,7 @@ def producing_table(service_mapping, clusterd_tms, TM_input):
     input_m_id=TM_input["id"]
     table={"demands":{}}
     for did in TM["demands"].keys():
-        table["demands"].update({did:{"end_to_ends":[],"splitted_sections":[]}})
+        table["demands"].update({did:{"source":TM["demands"][did]["source"], "destination":TM["demands"][did]["destination"],"end_to_ends":[],"splitted_sections":[]}})
         for num in range(0,len(TM["demands"][did]["services"])):
             mapid=[]
             no = TM["demands"][did]["services"][num]["quantity"]
@@ -20,8 +20,6 @@ def producing_table(service_mapping, clusterd_tms, TM_input):
                     mapid.append(sid)
             if no != 0:        
                 table["demands"][did]["end_to_ends"].append({
-                                                                "source": TM["demands"][did]["source"],
-                                                                "destination": TM["demands"][did]["destination"],
                                                                 "demand_id": did,
                                                                 "traffic": {    "type": TM["demands"][did]["services"][num]["type"],
                                                                                 "count": no}

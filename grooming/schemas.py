@@ -146,9 +146,11 @@ class PanelAddress(BaseModel):
     shelf_id: str
     slot_id_list: List[str]
 
+
 class NodeAddress(BaseModel):
     source: PanelAddress
     destination: PanelAddress
+
 
 class GroomingService(BaseModel):
     """
@@ -427,18 +429,25 @@ class ServiceMapping(BaseModel):
     """
     traffic_matrices: Dict[str, ServiceMappingDemands]
 
+
 class GroomingTableServiceTypeCountPair(BaseModel):
     type: ServiceType
     count: int
 
+
 class GroomingTableDemandEntry(BaseModel):
-    source: str
-    destination: str
     demand_id: str
     traffic: GroomingTableServiceTypeCountPair
-    
+
+
+class GRoomingTableSplittedEntry(GroomingTableDemandEntry):
+    source: str
+    destination: str
+
 
 class GroomingTableRow(BaseModel):
+    source: str
+    destination: str
     end_to_ends: List[GroomingTableDemandEntry]
     splitted_sections: List[GroomingTableDemandEntry]
 
@@ -450,6 +459,7 @@ class GroomingTable(BaseModel):
     """
     demands: Dict[str, GroomingTableRow]
 
+
 class StatisticalGroomingResult(BaseModel):
     lightpath_no: int
     mean_lightpath_cap: float
@@ -457,6 +467,7 @@ class StatisticalGroomingResult(BaseModel):
     mp2x_no: int
     tp1h_no: int
     mp1h_no: int
+
 
 class GroomingDBOut(GroomingInformation):
     """
@@ -491,10 +502,12 @@ class ManualGroomingDB(BaseModel):
     node_structure: NodeStructure
     form: ManualGroomingForm
 
+
 class GroomingDevices(BaseModel):
     MP2X: List[MP2X]
     MP1H: List[MP1H]
     TP1H: List[TP1H]
+
 
 class EndToEndResult(BaseModel):
     """
@@ -505,6 +518,7 @@ class EndToEndResult(BaseModel):
     """
     service_devices: Dict[str, GroomingDevices]
     traffic: Dict[str, GroomingOutput]
+
 
 class AdvGroomingOut(BaseModel):
     """
