@@ -2,7 +2,7 @@
     This module contains grooming algorithm workers
 """
 
-from typing import Tuple
+from typing import Optional, Tuple
 
 from celery.app.task import Task
 from celery_app import celeryapp
@@ -16,11 +16,11 @@ from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
                                            MultiplexThreshold)
 from grooming.adv_grooming.utils import (adv_grooming_result_to_tm,
                                          check_adv_grooming_inputs)
+from grooming.Algorithm.CompletingAdvGrooming import completingadv
 from grooming.Algorithm.end_to_end import end_to_end
 from grooming.Algorithm.grooming_function import grooming_function
 from grooming.schemas import AdvGroomingOut, MP1HThreshold
 from grooming.utils import GroomingRepository
-from grooming.Algorithm.CompletingAdvGrooming import completingadv
 from models import UserModel
 
 
@@ -180,8 +180,9 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         multiplex_threshold: MultiplexThreshold,
                         clusters: ClusterDict,
                         line_rate: LineRate,
-                        check_input_type: bool = False) \
-        -> Tuple[AdvGroomingResult, AdvGroomingOut]:
+                        check_input_type: bool = False,
+                        return_original_result: bool = False) \
+        -> Tuple[AdvGroomingOut, Optional[AdvGroomingResult]]:
     """
         Advanced Grooming worker
 
@@ -219,5 +220,7 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                               pt=pt,
                               input_tm=tm,
                               mp1h_threshold=int(multiplex_threshold))
-
-    return groom_res
+    if return_original_result:
+        return groom_res, adv_grooming_result
+    else:
+        return groom_res

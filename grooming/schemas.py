@@ -511,6 +511,6 @@ class AdvGroomingOut(BaseModel):
         This schema represents adv grooming algorithm result (for main planner procedure)
         There is another schema for this algorithms that demonstrates original results of this algorithm
     """
-    end_to_end_result: EndToEndResult
+    end_to_end_result: Optional[EndToEndResult]
     output: TrafficMatrixSchema
     service_mapping: ServiceMapping

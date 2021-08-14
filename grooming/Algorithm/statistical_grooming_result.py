@@ -13,7 +13,8 @@ def statistical_result(finalres,devicee):
         for lpid in finalres["traffic"][sbtmid]["lightpaths"].keys():
             sum = sum + finalres["traffic"][sbtmid]["lightpaths"][lpid]["capacity"]
         num = num + len(finalres["traffic"][sbtmid]["lightpaths"])
-    sum = sum / num
+    if num != 0:
+        sum = sum / num
     groomout_no = 0
     for sbtmid in finalres["traffic"].keys():
         for did in finalres["traffic"][sbtmid]["low_rate_grooming_result"]["demands"].keys():
