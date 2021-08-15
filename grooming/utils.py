@@ -146,11 +146,22 @@ class GroomingRepository:
         return grooming_result
 
     @staticmethod
-    def get_all_grooming(project_id: str, db: Session, is_deleted: bool = False) \
+    def get_all_grooming(project_id: str, db: Session, algorithm: GroomingAlgorithm = None,
+                         is_deleted: bool = False) \
             -> List[GroomingModel]:
 
-        grooming_results = db.query(GroomingModel).filter_by(
-            project_id=project_id, is_deleted=is_deleted).all()
+        grooming_results = []
+        if algorithm is None:
+            grooming_results.extend(db.query(GroomingModel).filter_by(
+                project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.end_to_end.value).all())
+            grooming_results.extend(db.query(GroomingModel).filter_by(
+                project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.advanced.value).all())
+        elif algorithm == GroomingAlgorithm.advanced:
+            grooming_results.extend(db.query(GroomingModel).filter_by(
+                project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.advanced.value).all())
+        else:
+            grooming_results.extend(db.query(GroomingModel).filter_by(
+                project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.end_to_end.value).all())
         return grooming_results
 
     @staticmethod
