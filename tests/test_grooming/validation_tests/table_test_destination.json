@@ -626,21 +626,18 @@
             "demands": {
                 "1": {
                     "source": "K2",
-                    "destination": "BFT",
+                    "destination": "y",
                     "end_to_ends": [
                         {
-                            
                             "demand_id": "1",
                             "traffic": {
                                 "type": "100GE",
-                                "count": 3
+                                "count": 1
                             }
                         }
                     ],
                     "splitted_sections": [
                         {
-                            "source": "K2",
-                            "destination": "K1",
                             "demand_id": "3001",
                             "traffic": {
                                 "type": "10GE",
@@ -648,8 +645,6 @@
                             }
                         },
                         {
-                            "source": "K1",
-                            "destination": "BFT",
                             "demand_id": "3003",
                             "traffic": {
                                 "type": "10GE",

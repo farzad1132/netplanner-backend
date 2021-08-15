@@ -625,10 +625,11 @@
         "grooming_table": {
             "demands": {
                 "1": {
+                    "source": "K2",
+                    "destination": "BFT",
                     "end_to_ends": [
                         {
-                            "source": "K2",
-                            "destination": "BFT",
+                            
                             "demand_id": "1",
                             "traffic": {
                                 "type": "100GE",
