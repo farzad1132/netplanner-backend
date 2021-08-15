@@ -213,7 +213,7 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                                                 tm=after_end_to_end_network.traffic_matrix.export())
 
     adv_grooming_out = AdvGroomingOut(end_to_end_result=end_to_end_result,
-                                      output=new_tm,
+                                      main=new_tm,
                                       service_mapping=mapping).dict()
 
     groom_res = completingadv(adv_result_t=adv_grooming_out,
