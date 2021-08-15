@@ -51,7 +51,7 @@ def completingadv(adv_result_t: AdvGroomingOut,
             for did in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"].keys():
                 for gid in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"][did]:
                     delete(gid)
-    new_result = grooming_fun(TM=adv_result["output"],
+    new_result = grooming_fun(TM=adv_result["main"],
                               MP1H_Threshold=mp1h_threshold,
                               tmId="main",
                               state=None,
@@ -97,7 +97,7 @@ def completingadv(adv_result_t: AdvGroomingOut,
     (node_structure, device_final, finalres) = Nodestructureservices(
         devicee, pt, finalres, state=None, percentage=[60, 90])
     statres = statistical_result(finalres, devicee)
-    clusteerdtm = {"sub_tms": {"main": {"tm": adv_result["output"]}}}
+    clusteerdtm = {"sub_tms": {"main": {"tm": adv_result["main"]}}}
     input_tm["id"] = 'input'
     table = producing_table(
         service_mapping=adv_result["service_mapping"], clusterd_tms=clusteerdtm, TM_input=input_tm)
