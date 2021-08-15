@@ -306,12 +306,15 @@ def manual_grooming_validation(groomingresult, Trafficmatrix, cluster):
             if did not in groomingresult['grooming_table']['demands']:
                 raise Exception("demand:", did, "does not exist in tables")
             else:
-                
+                if Trafficmatrix['data']['demands'][did]['source'] != groomingresult['grooming_table']['demands'][did]['source']:
+                    raise Exception("source of demand:", did, "in tables is not correct")
+                if Trafficmatrix['data']['demands'][did]['destination'] != groomingresult['grooming_table']['demands'][did]['destination']:
+                    raise Exception("destination of demand:", did, "in tables is not correct")
                 for item in groomingresult['grooming_table']['demands'][did]['end_to_ends']:
                     if item['traffic']['type'] == servs['type']  and item['traffic']['count'] != end_count:
                         raise Exception("demand:", did, "service type:", servs['type'],  "end to end service counter is not correct")
-                src = groomingresult['grooming_table']['demands'][did]['end_to_ends'][0]['source']
-                des = groomingresult['grooming_table']['demands'][did]['end_to_ends'][0]['destination']
+                src = groomingresult['grooming_table']['demands'][did]['source']
+                des = groomingresult['grooming_table']['demands'][did]['destination']
                 for item in groomingresult['grooming_table']['demands'][did]['splitted_sections']:
                     servs2=[]
                     if item['traffic']['type'] == servs['type']  and item['traffic']['count'] != end_count:
