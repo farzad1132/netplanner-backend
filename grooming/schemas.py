@@ -449,7 +449,7 @@ class GroomingTableRow(BaseModel):
     source: str
     destination: str
     end_to_ends: List[GroomingTableDemandEntry]
-    splitted_sections: List[GroomingTableDemandEntry]
+    splitted_sections: List[GRoomingTableSplittedEntry]
 
 
 class GroomingTable(BaseModel):
