@@ -219,7 +219,7 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
     groom_res = completingadv(adv_result_t=adv_grooming_out,
                               pt=pt,
                               input_tm=tm,
-                              mp1h_threshold=int(multiplex_threshold))
+                              mp1h_threshold=0)
     if return_original_result:
         return groom_res, adv_grooming_result
     else:
