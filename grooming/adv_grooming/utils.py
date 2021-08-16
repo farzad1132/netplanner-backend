@@ -39,7 +39,7 @@ def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB) \
         -> Tuple[TrafficMatrixSchema, ServiceMapping]:
 
     INPUT_TM = "input"
-    OUTPUT_TM = "output"
+    OUTPUT_TM = "main"
 
     def generate_new_demand_id(src: str, dst: str, tm: TrafficMatrixDB) -> str:
         if (demand_id := find_demand_by_src_and_dst(src, dst, tm)) is None:
@@ -146,7 +146,7 @@ def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB) \
     mapping = {
         "traffic_matrices": {
             "input": {"demands": {}},
-            "output": {"demands": {}}
+            "main": {"demands": {}}
         }
     }
 
