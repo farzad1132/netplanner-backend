@@ -73,7 +73,7 @@ class RWAHandle(RWAHandleFailure):
                                   tm_version=register.tm_version,
                                   manager_id=register.manager_id,
                                   form=register.form,
-                                  lightpaths=retval["result"]["lightpaths"],
+                                  result=retval["result"],
                                   start_date=register.start_date,
                                   is_finished=True,
                                   db=db)
@@ -715,7 +715,7 @@ def rwa_finilize_results(self, result_dict_list, physical_topology):  # group_co
             lightpath_output = Lightpath(**lightpath_dict)
             output_lightpath_dict[lightpath.demand.previous_id] = lightpath_output
     result_dict = {'lightpaths': output_lightpath_dict}
-    rwa_lightpaths = RWALightpathsOutput(**result_dict)
+    rwa_lightpaths = RWALightpathsOutput(**result_dict).dict()
     general_info = generate_RWA_general_info(physical_topology=physical_topology, rwa_lightpaths=rwa_lightpaths) 
     result_dict["general_info"] = general_info.dict()
     rwa_result = RWAResult(**result_dict)

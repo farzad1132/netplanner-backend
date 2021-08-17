@@ -201,25 +201,6 @@ class RWALightpathsOutput(BaseModel):
     lightpaths: Dict[str, Lightpath]
 
 
-class RWADBOut(BaseModel):
-    """
-        This schema represent a rwa result in database
-    """
-
-    id: str
-    project_id: str
-    grooming_id: str
-    pt_id: str
-    tm_id: str
-    pt_version: str
-    tm_version: str
-    form: RWAForm
-    lightpaths: Dict[str, Lightpath]
-
-    class Config:
-        orm_mode = True
-
-
 class RWAInformation(BaseModel):
     """
         This schema represent summary of rwa run instance in database (if rwa was successful)
@@ -295,3 +276,22 @@ class RWAResult(BaseModel):
     """
     lightpaths: Dict[str, Lightpath]
     general_info: RWAGeneralInfo
+
+
+class RWADBOut(BaseModel):
+    """
+        This schema represent a rwa result in database
+    """
+
+    id: str
+    project_id: str
+    grooming_id: str
+    pt_id: str
+    tm_id: str
+    pt_version: str
+    tm_version: str
+    form: RWAForm
+    rwa_result: RWAResult
+
+    class Config:
+        orm_mode = True
