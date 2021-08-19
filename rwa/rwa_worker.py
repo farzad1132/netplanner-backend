@@ -716,7 +716,7 @@ def rwa_finilize_results(self, result_dict_list, physical_topology):  # group_co
             output_lightpath_dict[lightpath.demand.previous_id] = lightpath_output
     result_dict = {'lightpaths': output_lightpath_dict}
     rwa_lightpaths = RWALightpathsOutput(**result_dict)
-    general_info = generate_RWA_general_info(physical_topology=physical_topology, rwa_lightpaths=rwa_lightpaths) 
+    general_info = generate_RWA_general_info(physical_topology=physical_topology, rwa_lightpaths=rwa_lightpaths.dict()) 
     result_dict["general_info"] = general_info.dict()
     rwa_result = RWAResult(**result_dict)
     # import json
