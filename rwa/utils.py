@@ -28,7 +28,7 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
     :rtype: RWAGeneralInfo
     """
 
-    def extract_path_general_info(routing_path, node_state, link_state, wavelength_state, lightpath_state,
+    def extract_path_general_info(lightpath, routing_path, node_state, link_state, wavelength_state, lightpath_state,
                                   total_lambda_link, average_lambda_capacity_usage):
         if routing_path is not None:
             lightpath_links = len(routing_path["path"])-1
@@ -102,7 +102,7 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
     for lightpath in rwa_lightpaths["lightpaths"].values():
         routing_path = lightpath["routing_info"]["working"]
         node_state, link_state, wavelength_state, lightpath_state, \
-            total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(routing_path, node_state, link_state, wavelength_state, lightpath_state,
+            total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(lightpath, routing_path, node_state, link_state, wavelength_state, lightpath_state,
                                                                                          total_lambda_link, average_lambda_capacity_usage)
 
     average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
@@ -111,7 +111,6 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
         'link_state': link_state,
         'node_state': node_state,
         'wavelength_state': wavelength_state,
-        'lightpath_state': lightpath_state,
         'total_lambda_link': total_lambda_link,
         'average_lambda_capacity_usage': average_lambda_capacity_usage
     }
@@ -148,7 +147,6 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
         'link_state': link_state,
         'node_state': node_state,
         'wavelength_state': wavelength_state,
-        'lightpath_state': lightpath_state,
         'total_lambda_link': total_lambda_link,
         'average_lambda_capacity_usage': average_lambda_capacity_usage
     }
@@ -188,7 +186,6 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
         'link_state': link_state,
         'node_state': node_state,
         'wavelength_state': wavelength_state,
-        'lightpath_state': lightpath_state,
         'total_lambda_link': total_lambda_link,
         'average_lambda_capacity_usage': average_lambda_capacity_usage
     }

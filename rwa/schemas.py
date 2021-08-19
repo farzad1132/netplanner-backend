@@ -128,6 +128,7 @@ class Path(BaseModel):
     path: List[str]
     regenerators: List[str]
     snr: List[float]
+    lambda_link: int
 
 
 class Working(Path):
@@ -268,15 +269,11 @@ class WavelengthState(BaseModel):
     pass_nodes: List[str]
 
 
-class LightpathState(BaseModel):
-    lambda_link: int
-
 
 class RWAGeneralInfoBase(BaseModel):
     link_state: Dict[str, RWALinkState]
     node_state: Dict[str, RWANodeState]
     wavelength_state: Dict[int, WavelengthState]
-    lightpath_state: Dict[str, LightpathState]
     total_lambda_link: int
     average_lambda_capacity_usage: float
 

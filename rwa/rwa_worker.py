@@ -654,6 +654,7 @@ def rwa_finilize_results(self, result_dict_list, physical_topology):  # group_co
                 'path': lightpath.selected_regen_option.main_option.path,
                 'regenerators': lightpath.selected_regen_option.main_option.regen_nodes_index,
                 'snr': lightpath.main_osnr,
+                'lambda_link': len(lightpath.selected_regen_option.main_option.path)-1,
             }
             if lightpath.selected_regen_option.protection_option.path:
                 routing_info_dict['protection'] = {
@@ -661,6 +662,7 @@ def rwa_finilize_results(self, result_dict_list, physical_topology):  # group_co
                     'path': lightpath.selected_regen_option.protection_option.path,
                     'regenerators': lightpath.selected_regen_option.protection_option.regen_nodes_index,
                     'snr': lightpath.protection_osnr,
+                    'lambda_link': len(lightpath.selected_regen_option.protection_option.path)-1,
                 }
             # filling the restoration output
             restorationPathList = []
@@ -692,6 +694,7 @@ def rwa_finilize_results(self, result_dict_list, physical_topology):  # group_co
                                         'path': restorationPathList[restoration_index][second_restoration_index],
                                         'regenerators': restorationPathRegenerators[restoration_index][second_restoration_index],
                                         'snr': snr,
+                                        'lambda_link': len(restorationPathList[restoration_index][second_restoration_index])-1,
                                     }
                                 })
                     elif restorationPathList[restoration_index] is not None:
@@ -706,6 +709,7 @@ def rwa_finilize_results(self, result_dict_list, physical_topology):  # group_co
                                 'path': restorationPathList[restoration_index],
                                 'regenerators': restorationPathRegenerators[restoration_index],
                                 'snr': snr,
+                                'lambda_link': len(restorationPathList[restoration_index])-1,
                             }
                         })
                 if restoration_info:
