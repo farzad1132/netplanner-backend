@@ -405,7 +405,8 @@ class OldNetwork(object):
                                     cluster_id = cluster_id,
                                     has_restoration = has_restoration,
                                     restoration_type= restoration_type,
-                                    protection_restoration=protection_restoration)
+                                    protection_restoration=protection_restoration,
+                                    capacity=req_capacity)
                         self.demand_list.append(d)
         elif demand_type == '200G':
                 self.demand_index_list.append(len(self.demand_list))        
@@ -414,7 +415,8 @@ class OldNetwork(object):
                            modulation = '8QAM', demand_type = demand_type, protection_type=protection_type,
                            cluster_id = cluster_id, has_restoration=has_restoration,
                            restoration_type= restoration_type,
-                           protection_restoration=protection_restoration)
+                           protection_restoration=protection_restoration,
+                           capacity=req_capacity)
                 self.demand_list.append(d)
 
         
@@ -443,7 +445,8 @@ class OldNetwork(object):
                     modulation, demand_type, protection_type, cluster_id, previous_id,
                     has_restoration=has_restoration,
                     restoration_type= restoration_type,
-                    protection_restoration=protection_restoration)
+                    protection_restoration=protection_restoration,
+                    capacity=req_capacity)
         self.demand_list.append(d)
         
     def add_link(self, edge, distance, loss_db, config, special=False):

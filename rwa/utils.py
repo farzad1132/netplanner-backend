@@ -139,7 +139,7 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
     for lightpath in rwa_lightpaths["lightpaths"].values():
         routing_path = lightpath["routing_info"]["protection"]
         node_state, link_state, wavelength_state, lightpath_state, \
-            total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(routing_path, node_state, link_state, wavelength_state, lightpath_state,
+            total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(lightpath, routing_path, node_state, link_state, wavelength_state, lightpath_state,
                                                                                          total_lambda_link, average_lambda_capacity_usage)
 
     average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
@@ -178,7 +178,7 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
             for restoration_path in lightpath["routing_info"]["restoration"]:
                 routing_path = restoration_path["info"]
                 node_state, link_state, wavelength_state, lightpath_state, \
-                    total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(routing_path, node_state, link_state, wavelength_state, lightpath_state,
+                    total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(lightpath, routing_path, node_state, link_state, wavelength_state, lightpath_state,
                                                                                                  total_lambda_link, average_lambda_capacity_usage)
 
     average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
