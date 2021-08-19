@@ -36,8 +36,10 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
                 'lambda_link': lightpath_links
             }
             total_lambda_link += lightpath_links
+
+            # NOTE: lightpath["capacity"] is already normalized capacity
             average_lambda_capacity_usage += lightpath_links * \
-                lightpath["capacity"]/100
+                lightpath["capacity"]
 
             path_segment = 0
 
