@@ -140,9 +140,14 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
         routing_path = lightpath["routing_info"]["protection"]
         node_state, link_state, wavelength_state, lightpath_state, \
             total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(lightpath, routing_path, node_state, link_state, wavelength_state, lightpath_state,
-                                                                                         total_lambda_link, average_lambda_capacity_usage)
+                                                                                       total_lambda_link, average_lambda_capacity_usage)
 
-    average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
+    # preventing divide by zero exception
+    if total_lambda_link == 0:
+        average_lambda_capacity_usage = 0
+    else:
+        average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
+
     general_info_dict['protection'] = {
         'link_state': link_state,
         'node_state': node_state,
@@ -181,7 +186,12 @@ def generate_RWA_general_info(physical_topology: PhysicalTopologySchema, rwa_lig
                     total_lambda_link, average_lambda_capacity_usage = extract_path_general_info(lightpath, routing_path, node_state, link_state, wavelength_state, lightpath_state,
                                                                                                  total_lambda_link, average_lambda_capacity_usage)
 
-    average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
+    # preventing divide by zero exception                                                                                             
+    if total_lambda_link == 0:
+        average_lambda_capacity_usage = 0
+    else:
+        average_lambda_capacity_usage = average_lambda_capacity_usage / total_lambda_link
+
     general_info_dict['restoration'] = {
         'link_state': link_state,
         'node_state': node_state,
