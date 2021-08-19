@@ -73,7 +73,7 @@ class RWAHandle(RWAHandleFailure):
                                   tm_version=register.tm_version,
                                   manager_id=register.manager_id,
                                   form=register.form,
-                                  lightpaths=retval["result"]["lightpaths"],
+                                  result=retval["result"],
                                   start_date=register.start_date,
                                   is_finished=True,
                                   db=db)

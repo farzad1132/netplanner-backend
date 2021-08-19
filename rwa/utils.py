@@ -244,7 +244,7 @@ class RWARepository:
 
     @staticmethod
     def add_rwa(rwa_id: str, project_id: str, grooming_id: str, pt_id: str, tm_id: str, pt_version: int,
-                tm_version: int, manager_id: str, form: dict, lightpaths: dict, start_date: datetime,
+                tm_version: int, manager_id: str, form: dict, result: dict, start_date: datetime,
                 db: Session, is_finished: bool = True):
         rwa_res = RWAModel(id=rwa_id,
                            project_id=project_id,
@@ -255,7 +255,7 @@ class RWARepository:
                            tm_version=tm_version,
                            manager_id=manager_id,
                            form=form,
-                           lightpaths=lightpaths,
+                           result=result,
                            start_date=start_date,
                            is_finished=is_finished)
         db.add(rwa_res)

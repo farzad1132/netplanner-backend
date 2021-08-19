@@ -67,7 +67,7 @@ class RWAModel(base):
     is_deleted = Column("is_deleted", Boolean, nullable=False, default=False)
 
     # actual result
-    lightpaths = Column("lightpaths", JSON, nullable=False)
+    result = Column("result", JSON, nullable=False)
 
     def __repr__(self):
         return f"RWA(id={self.id}, grooming_id={self.grooming_id}, pt_id={self.pt_id}, tm_id={self.tm_id},"\
