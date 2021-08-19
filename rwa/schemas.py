@@ -288,7 +288,7 @@ class RWADBOut(BaseModel):
     pt_version: str
     tm_version: str
     form: RWAForm
-    rwa_result: RWAResult
+    result: RWAResult
 
     class Config:
         orm_mode = True
