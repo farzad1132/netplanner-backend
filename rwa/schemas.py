@@ -128,6 +128,7 @@ class Path(BaseModel):
     path: List[str]
     regenerators: List[str]
     snr: List[float]
+    lambda_link: int
 
 
 class Working(Path):
@@ -192,32 +193,13 @@ class RWAId(BaseModel):
     rwa_id: str
 
 
-class RWAResult(BaseModel):
+class RWALightpathsOutput(BaseModel):
     """
-        RWA result schema
+        RWA output lightpaths schema
 
         **lightpaths** keys are **lightpath_id**
     """
     lightpaths: Dict[str, Lightpath]
-
-
-class RWADBOut(BaseModel):
-    """
-        This schema represent a rwa result in database
-    """
-
-    id: str
-    project_id: str
-    grooming_id: str
-    pt_id: str
-    tm_id: str
-    pt_version: str
-    tm_version: str
-    form: RWAForm
-    lightpaths: Dict[str, Lightpath]
-
-    class Config:
-        orm_mode = True
 
 
 class RWAInformation(BaseModel):
@@ -268,15 +250,11 @@ class WavelengthState(BaseModel):
     pass_nodes: List[str]
 
 
-class LightpathState(BaseModel):
-    lambda_link: int
-
 
 class RWAGeneralInfoBase(BaseModel):
     link_state: Dict[str, RWALinkState]
     node_state: Dict[str, RWANodeState]
     wavelength_state: Dict[int, WavelengthState]
-    lightpath_state: Dict[str, LightpathState]
     total_lambda_link: int
     average_lambda_capacity_usage: float
 
@@ -285,3 +263,32 @@ class RWAGeneralInfo(BaseModel):
     working: RWAGeneralInfoBase
     protection: Optional[RWAGeneralInfoBase]
     restoration: Optional[RWAGeneralInfoBase]
+
+
+class RWAResult(BaseModel):
+    """
+        RWA result schema
+
+        **lightpaths** keys are **lightpath_id**
+    """
+    lightpaths: Dict[str, Lightpath]
+    general_info: RWAGeneralInfo
+
+
+class RWADBOut(BaseModel):
+    """
+        This schema represent a rwa result in database
+    """
+
+    id: str
+    project_id: str
+    grooming_id: str
+    pt_id: str
+    tm_id: str
+    pt_version: str
+    tm_version: str
+    form: RWAForm
+    result: RWAResult
+
+    class Config:
+        orm_mode = True
