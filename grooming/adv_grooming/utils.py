@@ -126,7 +126,7 @@ def adv_grooming_result_to_tm(result: AdvGroomingResult, tm: TrafficMatrixDB) \
                          restoration_type: str) -> None:
 
         for service in new_service_list:
-            if demand_id not in new_tm:
+            if demand_id not in new_tm["demands"]:
                 new_tm["demands"][demand_id] = {
                     "id": new_demand_id,
                     "source": connection["source"],
