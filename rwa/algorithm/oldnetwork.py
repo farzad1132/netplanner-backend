@@ -1716,7 +1716,6 @@ class NetModule(OldNetwork):
         for d in range(len(self.parent_net_module.demand_list)):
             ingress_node = self.parent_net_module.demand_list[d].ingress_node
             egress_node = self.parent_net_module.demand_list[d].egress_node
-            req_capacity = self.parent_net_module.demand_list[d].capacity
             demand_type = self.parent_net_module.demand_list[d].demand_type
             modulation = self.parent_net_module.demand_list[d].modulation
             protection_type = self.parent_net_module.demand_list[d].protection_type
@@ -1725,8 +1724,9 @@ class NetModule(OldNetwork):
             has_restoration = self.parent_net_module.demand_list[d].has_restoration
             restoration_type = self.parent_net_module.demand_list[d].restoration_type
             protection_restoration = self.parent_net_module.demand_list[d].protection_restoration
+            capacity = self.parent_net_module.demand_list[d].capacity
             self.add_demand(ingress_node.index, egress_node.index, modulation, demand_type, protection_type, cluster_id, previous_id,
-                            has_restoration, restoration_type, protection_restoration)
+                            has_restoration, restoration_type, protection_restoration, capacity)
             #print(self.parent_net_module.demand_list[d].forbidden_path_list)
             self.demand_list[d].forbidden_path_list = [forbid_path for forbid_path in self.parent_net_module.demand_list[d].forbidden_path_list]
             if d == self.branch_demand_id:
