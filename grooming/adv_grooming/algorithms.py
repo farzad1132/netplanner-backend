@@ -268,7 +268,7 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
     res_network = deepcopy(network)
     user_clusters = deepcopy(clusters['clusters'])
 
-    demands_for_multiplex = list(filter(lambda x: x.rate >= multiplex_threshold*int(line_rate),
+    demands_for_multiplex = list(filter(lambda x: x.rate >= multiplex_threshold*int(line_rate)/100,
                                         network.traffic_matrix.demands.values()))
 
     lightpaths = {}
