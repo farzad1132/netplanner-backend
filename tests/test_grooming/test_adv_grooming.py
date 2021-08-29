@@ -1,3 +1,9 @@
+from traffic_matrix.schemas import TrafficMatrixSchema
+from grooming.adv_grooming.utils import adv_grooming_result_to_tm
+from grooming.adv_grooming.schemas import LineRate, MultiplexThreshold, Network
+from grooming.Algorithm.end_to_end import end_to_end
+from grooming.adv_grooming.algorithms import adv_grooming
+import json
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -120,3 +126,53 @@ def test_if_connections_src_dst_are_right_or_not_with_clustering():
                     break
         
         assert mid_node == dst, "all end points are processed and destination didn't found"
+
+def test_new_tm():
+    """
+        new_tm is traffic matrix which is used in the process of calculating lightpaths from connections
+    """
+
+    def actual_testing(after_end_to_end_network: Network, adv_grooming_result, new_tm: TrafficMatrixSchema):
+        service_dist = {}
+        for connection in adv_grooming_result["connections"]:
+            src = connection["source"]
+            dst = connection["destination"]
+
+            service_dist[(src, dst)] = {}
+            service_dist[(dst, src)] = {}
+
+            for demand_id in connection["demands_id_list"]:
+                for service in after_end_to_end_network.traffic_matrix.demands[demand_id].services.values():
+                    type = service.type
+                    if not type in service_dist[(src, dst)]:
+                        service_dist[(src, dst)][type] = 1
+                        service_dist[(dst, src)][type] = 1
+                    else:
+                        service_dist[(src, dst)][type] += 1
+                        service_dist[(dst, src)][type] += 1
+        
+        for demand in new_tm["demands"].values():
+            src = demand["source"]
+            dst = demand["destination"]
+
+            for service in demand["services"]:
+                type = service["type"]
+                assert service["quantity"] == service_dist[(dst, src)][type]
+
+    with open("tests/test_grooming/input.json", "rb") as jfile:
+        input = json.loads(jfile.read())
+        
+    
+    adv_grooming_result, _, after_end_to_end_network = adv_grooming(
+        end_to_end_fun=end_to_end,
+        pt=input["PT"],
+        tm=input["tm"],
+        multiplex_threshold=MultiplexThreshold.t70,
+        clusters={"clusters": {}},
+        line_rate=LineRate.t40
+    )
+
+    new_tm, _ = adv_grooming_result_to_tm(result=adv_grooming_result,
+                                                tm=after_end_to_end_network.traffic_matrix.export())
+    
+    actual_testing(after_end_to_end_network, adv_grooming_result, new_tm)
