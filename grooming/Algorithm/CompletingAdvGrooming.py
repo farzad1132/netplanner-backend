@@ -45,6 +45,8 @@ def completingadv(adv_result_t: AdvGroomingOut,
                     if i in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num] and adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num][i] != None and gid == adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num][i]["groomout_id"]:
                         adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num].pop(
                             i)
+                        if "line1" not in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num] and "line2" in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num]:
+                            adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num]['line1']=adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"][num].pop('line2')
                         return
     if adv_result["end_to_end_result"]:
         for stmid in adv_result["end_to_end_result"]["traffic"].keys():
@@ -52,8 +54,9 @@ def completingadv(adv_result_t: AdvGroomingOut,
                 for gid in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"]['demands'][did]:
                     delete(gid)
     for noden in adv_result["end_to_end_result"]["service_devices"].keys():
-            for num in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"]:
-                if "line1" not in num and "line2" not in num:
+            for num in list(adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"]):
+
+                if ("line1" not in num and "line2" not in num) or ("line2" not in num and num["line1"] == None):
                     adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"].remove(num)
     new_result = grooming_fun(TM=adv_result["main"],
                               MP1H_Threshold=mp1h_threshold,
