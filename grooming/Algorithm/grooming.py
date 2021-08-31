@@ -708,7 +708,20 @@ def grooming_fun( TM, MP1H_Threshold,  tmId, percentage, uuid, MP2X_Threshold = 
                         sdict[i].update({k:TM["demands"][i]["services"][j]["type"]})
             if y:
                 service_lower10_SDH.append((i,y))
-                output_10.append((i,MP2X(y)))
+                if len(y)>100:
+                    yy=[]
+                    res10=[]
+                    for iii in range(0,math.ceil(len(y)/50)):
+                        yy.append(y[iii*50:(iii+1)*50])
+                    for y2 in yy:
+                        res10.append(MP2X(y2))
+                    finalres10=[]
+                    for y2 in res10:
+                        for y3 in y2:
+                           finalres10.append(y3)
+                    output_10.append((i,finalres10))
+                else:
+                    output_10.append((i,MP2X(y)))
                 listofs=[]
                 cap=0
                 hhhh=[]
