@@ -48,9 +48,13 @@ def completingadv(adv_result_t: AdvGroomingOut,
                         return
     if adv_result["end_to_end_result"]:
         for stmid in adv_result["end_to_end_result"]["traffic"].keys():
-            for did in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"].keys():
-                for gid in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"][did]:
+            for did in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"]['demands'].keys():
+                for gid in adv_result["end_to_end_result"]["traffic"][stmid]["remaining_groomouts"]['demands'][did]:
                     delete(gid)
+    for noden in adv_result["end_to_end_result"]["service_devices"].keys():
+            for num in adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"]:
+                if "line1" not in num and "line2" not in num:
+                    adv_result["end_to_end_result"]["service_devices"][noden]["MP2X"].remove(num)
     new_result = grooming_fun(TM=adv_result["main"],
                               MP1H_Threshold=mp1h_threshold,
                               tmId="main",
