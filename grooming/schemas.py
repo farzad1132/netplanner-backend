@@ -468,7 +468,11 @@ class StatisticalGroomingResult(BaseModel):
     tp1h_no: int
     mp1h_no: int
 
-
+class GroomingDevices(BaseModel):
+    MP2X: List[MP2X]
+    MP1H: List[MP1H]
+    TP1H: List[TP1H]
+    
 class GroomingDBOut(GroomingInformation):
     """
         This schema represents grooming algorithm result in database
@@ -483,6 +487,7 @@ class GroomingDBOut(GroomingInformation):
     grooming_table: GroomingTable
     clusters: ClusterDict
     statistical_result: StatisticalGroomingResult
+    LOM_outputs: Dict[str, GroomingDevices]
     form: GroomingForm
 
     class Config:
@@ -503,10 +508,7 @@ class ManualGroomingDB(BaseModel):
     form: ManualGroomingForm
 
 
-class GroomingDevices(BaseModel):
-    MP2X: List[MP2X]
-    MP1H: List[MP1H]
-    TP1H: List[TP1H]
+
 
 
 class EndToEndResult(BaseModel):
