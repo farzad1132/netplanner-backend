@@ -91,7 +91,7 @@ def grooming_function(
         result = {"grooming_result": GroomingResult(**finalres).dict(), "serviceMapping": ServiceMapping(
             **service_mapping).dict(), "clustered_tms": ClusteredTMs(**clusteerdtm).dict(), 
             "grooming_table": GroomingTable(**table).dict(), "statistical_result": StatisticalGroomingResult(**statres).dict(),
-            "lom_outputs": GroomingDevices(**devicee).dict()}
+            "lom_outputs": devicee}
     else:
         res, dev = grooming_fun(TM=traffic_matrix['data'], MP1H_Threshold=mp1h_threshold_grooming,
                                 tmId=traffic_matrix['id'], state=state, percentage=[0, 60], uuid=uuid)
