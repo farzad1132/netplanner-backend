@@ -14,7 +14,7 @@ from grooming.Algorithm.statistical_grooming_result import statistical_result
 from grooming.Algorithm.table_producer import producing_table
 from grooming.schemas import (AdvGroomingOut, ClusteredTMs, GroomingResult,
                               GroomingTable, MP1HThreshold, ServiceMapping,
-                              StatisticalGroomingResult)
+                              StatisticalGroomingResult, GroomingDevices)
 
 
 def completingadv(adv_result_t: AdvGroomingOut,
@@ -113,5 +113,6 @@ def completingadv(adv_result_t: AdvGroomingOut,
     result = {"grooming_result": GroomingResult(**finalres).dict(),
               "serviceMapping": ServiceMapping(**adv_result["service_mapping"]).dict(),
               "clustered_tms": None, "grooming_table": GroomingTable(**table).dict(),
-              "statistical_result": StatisticalGroomingResult(**statres).dict()}
+              "statistical_result": StatisticalGroomingResult(**statres).dict(),
+              "lom_outputs": devicee}
     return result

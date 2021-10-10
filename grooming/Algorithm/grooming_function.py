@@ -16,7 +16,7 @@ from grooming.Algorithm.NodeStructure import Nodestructureservices
 from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
 from grooming.schemas import (ClusteredTMs, GroomingResult, MP1HThreshold,
-                              ServiceMapping, GroomingTable, StatisticalGroomingResult)
+                              ServiceMapping, GroomingTable, StatisticalGroomingResult, GroomingDevices)
 from grooming.Algorithm.statistical_grooming_result import statistical_result
 from grooming.Algorithm.table_producer import producing_table
 import copy
@@ -90,7 +90,8 @@ def grooming_function(
                    "serviceMapping": service_mapping, "clustered_tms": clusteerdtm}
         result = {"grooming_result": GroomingResult(**finalres).dict(), "serviceMapping": ServiceMapping(
             **service_mapping).dict(), "clustered_tms": ClusteredTMs(**clusteerdtm).dict(), 
-            "grooming_table": GroomingTable(**table).dict(), "statistical_result": StatisticalGroomingResult(**statres).dict()}
+            "grooming_table": GroomingTable(**table).dict(), "statistical_result": StatisticalGroomingResult(**statres).dict(),
+            "lom_outputs": GroomingDevices(**devicee).dict()}
     else:
         res, dev = grooming_fun(TM=traffic_matrix['data'], MP1H_Threshold=mp1h_threshold_grooming,
                                 tmId=traffic_matrix['id'], state=state, percentage=[0, 60], uuid=uuid)
@@ -113,7 +114,8 @@ def grooming_function(
         finalres.update({"node_structure": node_structure})
         result = {"grooming_result": GroomingResult(
             **finalres).dict(), "serviceMapping": None, "clustered_tms": None, "grooming_table": None,
-            "statistical_result": StatisticalGroomingResult(**statres).dict()}
+            "statistical_result": StatisticalGroomingResult(**statres).dict(),
+            "lom_outputs": devicee}
     print("\n Data received on the server for Grooming!")
     return result
     if state is not None:
