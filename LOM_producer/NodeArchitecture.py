@@ -2562,6 +2562,110 @@ def NodeArch(Node_Structure, device_dict_in, Physical_topology, LightPath, state
                         device_dict.update({ddd['id']:[ddd,{"node": i, "rack": r, "shelf": sh, "slot": s}]})
                     NodeStructure2['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s] = ddd['id']
 
+    LOM = {'network':{  'MP2X':0, 
+                        'MP1H':0, 
+                        'TP1H':0, 
+                        'IFC':0, 
+                        'SC':0, 
+                        'OS5':0, 
+                        'FIM':0, 
+                        'Amplifier':0, 
+                        'HKP':0, 
+                        'MPBD':0, 
+                        'WS9':0, 
+                        'WS4':0, 
+                        'SM2':0, 
+                        'TPAX':0, 
+                        'TP2X':0, 
+                        'MD48':0, 
+                        'PWR':0, 
+                        'OCM':0, 
+                        'MD8':0, 
+                        'DCM':0}}
+    vis=[]
+    for i in NodeStructure['nodes'].keys():
+        LOM.update({i:{'MP2X':0, 
+                        'MP1H':0, 
+                        'TP1H':0, 
+                        'IFC':0, 
+                        'SC':0, 
+                        'OS5':0, 
+                        'FIM':0, 
+                        'Amplifier':0, 
+                        'HKP':0, 
+                        'MPBD':0, 
+                        'WS9':0, 
+                        'WS4':0, 
+                        'SM2':0, 
+                        'TPAX':0, 
+                        'TP2X':0, 
+                        'MD48':0, 
+                        'PWR':0, 
+                        'OCM':0, 
+                        'MD8':0, 
+                        'DCM':0}})
+        for r in NodeStructure['nodes'][i]['racks'].keys():
+            for sh in NodeStructure['nodes'][i]['racks'][r]['shelves'].keys():            
+                for s in NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots']:
+                    if NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['id'] not in vis:
+                        vis.append(NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['id'])
+                        if NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'MP2X':
+                            LOM[i]['MP2X'] = LOM[i]['MP2X'] + 1
+                            LOM['network']['MP2X'] = LOM['network']['MP2X'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'MP1H':
+                            LOM[i]['MP1H'] = LOM[i]['MP1H'] + 1
+                            LOM['network']['MP1H'] = LOM['network']['MP1H'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'TP1H':
+                            LOM[i]['TP1H'] = LOM[i]['TP1H'] + 1
+                            LOM['network']['TP1H'] = LOM['network']['TP1H'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'IFC':
+                            LOM[i]['IFC'] = LOM[i]['IFC'] + 1
+                            LOM['network']['IFC'] = LOM['network']['IFC'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'SC':
+                            LOM[i]['SC'] = LOM[i]['SC'] + 1
+                            LOM['network']['SC'] = LOM['network']['SC'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'OS5':
+                            LOM[i]['OS5'] = LOM[i]['OS5'] + 1
+                            LOM['network']['OS5'] = LOM['network']['OS5'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'FIM':
+                            LOM[i]['FIM'] = LOM[i]['FIM'] + 1
+                            LOM['network']['FIM'] = LOM['network']['FIM'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] in ["Raman", "EDFA"]:
+                            LOM[i]['Amplifier'] = LOM[i]['Amplifier'] + 1
+                            LOM['network']['Amplifier'] = LOM['network']['Amplifier'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'HKP':
+                            LOM[i]['HKP'] = LOM[i]['HKP'] + 1
+                            LOM['network']['HKP'] = LOM['network']['HKP'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'MPBD':
+                            LOM[i]['MPBD'] = LOM[i]['MPBD'] + 1
+                            LOM['network']['MPBD'] = LOM['network']['MPBD'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'WS9':
+                            LOM[i]['WS9'] = LOM[i]['WS9'] + 1
+                            LOM['network']['WS9'] = LOM['network']['WS9'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'WS4':
+                            LOM[i]['WS4'] = LOM[i]['WS4'] + 1
+                            LOM['network']['WS4'] = LOM['network']['WS4'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'SM2':
+                            LOM[i]['SM2'] = LOM[i]['SM2'] + 1
+                            LOM['network']['SM2'] = LOM['network']['SM2'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'TPAX':
+                            LOM[i]['TPAX'] = LOM[i]['TPAX'] + 1
+                            LOM['network']['TPAX'] = LOM['network']['TPAX'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'TP2X':
+                            LOM[i]['TP2X'] = LOM[i]['TP2X'] + 1
+                            LOM['network']['TP2X'] = LOM['network']['TP2X'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'PWR':
+                            LOM[i]['PWR'] = LOM[i]['PWR'] + 1
+                            LOM['network']['PWR'] = LOM['network']['PWR'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'OCM':
+                            LOM[i]['OCM'] = LOM[i]['OCM'] + 1
+                            LOM['network']['OCM'] = LOM['network']['OCM'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'MD8':
+                            LOM[i]['MD8'] = LOM[i]['MD8'] + 1
+                            LOM['network']['MD8'] = LOM['network']['MD8'] + 1
+                        elif NodeStructure['nodes'][i]['racks'][r]['shelves'][sh]['slots'][s]['panel'] == 'DCM':
+                            LOM[i]['DCM'] = LOM[i]['DCM'] + 1
+                            LOM['network']['DCM'] = LOM['network']['DCM'] + 1
 
     
-    return NodeStructure, NodeStructure2, device_dict
+    return NodeStructure, NodeStructure2, device_dict, LOM

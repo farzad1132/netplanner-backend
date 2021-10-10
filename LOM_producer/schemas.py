@@ -280,6 +280,7 @@ class MP2X(BaseModel):
     line1: MP2XLine
     line2: Optional[MP2XLine]
     id: str
+    panel: "MP2X"
 
 
 class SlotStructure(BaseModel):
@@ -318,3 +319,29 @@ class AmplifiersDict(BaseModel):
         keys are node name
     """
     nodes: Dict[str, Degreename]
+class LOMofDevice(BaseModel):
+    MP2X : int
+    MP1H : int 
+    TP1H : int 
+    IFC : int 
+    SC : int 
+    OS5 : int 
+    FIM : int 
+    Amplifier : int 
+    HKP : int 
+    MPBD : int 
+    WS9 : int 
+    WS4 : int 
+    SM2 : int 
+    TPAX : int 
+    TP2X : int 
+    MD48 : int 
+    PWR : int 
+    OCM : int 
+    MD8 : int 
+    DCM : int
+class LOM(BaseModel):
+    """
+        keys are node name
+    """
+    degreename: Dict[str, LOMofDevice]
