@@ -79,6 +79,7 @@ class GroomingModel(base):
     grooming_table = Column("grooming_table", JSON, nullable=False)
     clustered_tms = Column("clustered_tms", JSON)
     service_mapping = Column("service_mapping", JSON)
+    lom_outputs = Column("lom_outputs", JSON)
 
     def __repr__(self):
         return f"Grooming(id={self.id}, pt_id={self.pt_id}, tm_id={self.tm_id},"\

@@ -2,6 +2,8 @@ from datetime import datetime
 from enum import Flag
 from typing import List, Optional, Union
 from uuid import uuid4
+from LOM_producer.product import LOM_productioon
+from LOM_producer.schemas import LOM
 
 from algorithms.utils import status_check
 from clusters.schemas import ClusterDict
@@ -9,9 +11,11 @@ from clusters.utils import cluster_list_to_cluster_dict, get_clusters
 from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException, Query
 from physical_topology.schemas import PhysicalTopologyDB, methods
+from physical_topology.utils import PTRepository
 from projects.schemas import ProjectSchema
 from projects.utils import ProjectRepository
 from sqlalchemy.orm import Session
+from rwa.utils import RWARepository
 from traffic_matrix.schemas import TrafficMatrixDB
 from users.schemas import User
 
@@ -21,7 +25,7 @@ from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
 from grooming.schemas import (FailedGroomingInfo, GroomingAlgorithm,
                               GroomingCheck, GroomingDBOut, GroomingForm,
-                              GroomingId, GroomingIdList, GroomingInformation,
+                              GroomingId, GroomingIdList, GroomingInformation, GroomingResult,
                               ManualGroomingDB)
 from grooming.utils import GroomingRepository, check_one_gateway_clusters
 from models import ClusterModel
@@ -284,7 +288,7 @@ def get_all_v2_0_1(project_id: str, algorithm: GroomingAlgorithm = Query(None),
                    db: Session = Depends(get_db)):
     """
         getting all available grooming id's for user\n
-        ***Whats New***: 
+        ***Whats New***:
          - this path now returns both end to end grooming and adv grooming records
          - you can filter result with algorithm query parameter
     """
@@ -311,3 +315,35 @@ def get_faileds(project_id: str, user: User = Depends(get_current_user),
     # getting information from database
     return GroomingRepository.get_all_grooming_registers(project_id=project_id,
                                                          db=db, is_failed=True)
+
+
+@grooming_router.get("/v2.0.0/algorithms/grooming/lom", status_code=200, response_model=LOM)
+def get_lom(rwa_id: str, user: User = Depends(get_current_user),
+            db: Session = Depends(get_db)):
+    """
+        Getting LOM in JSON
+    """
+    rwa_result = RWARepository.get_rwa(rwa_id=rwa_id, db=db)
+
+    # authorization check
+    _ = get_project_mode_get(id=rwa_result.project_id, user=user, db=db)
+
+    grooming_result = GroomingRepository.get_grooming(rwa_result.grooming_id, db)
+    
+    lom = LOM_productioon(
+        device=grooming_result.lom_outputs,
+        RWAres=rwa_result.lightpaths,
+        Physical_topology=PTRepository(
+            id=rwa_result.pt_id,
+            version=rwa_result.pt_version,
+            user=user,
+            db=db
+        )[0],
+        grooming_res=GroomingResult(**{
+            "traffic": grooming_result.traffic,
+            "service_devices": grooming_result.service_devices,
+            "node_structure": grooming_result.node_structure
+        }).dict()
+    )
+
+    return lom
