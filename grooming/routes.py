@@ -29,6 +29,7 @@ from grooming.schemas import (FailedGroomingInfo, GroomingAlgorithm,
                               ManualGroomingDB)
 from grooming.utils import GroomingRepository, check_one_gateway_clusters
 from models import ClusterModel
+from fastapi.responses import StreamingResponse
 
 grooming_router = APIRouter(
     tags=["Algorithms", "Grooming"]
@@ -326,19 +327,18 @@ def get_lom(rwa_id: str, user: User = Depends(get_current_user),
     rwa_result = RWARepository.get_rwa(rwa_id=rwa_id, db=db)
 
     # authorization check
-    _ = get_project_mode_get(id=rwa_result.project_id, user=user, db=db)
+    project = ProjectSchema.from_orm(
+        get_project_mode_share(id=rwa_result.project_id, user=user, db=db)).dict()
 
-    grooming_result = GroomingRepository.get_grooming(rwa_result.grooming_id, db)
-    
+    physical_topology = project["physical_topology"]
+
+    grooming_result = GroomingRepository.get_grooming(
+        rwa_result.grooming_id, db)
+
     lom = LOM_productioon(
         device=grooming_result.lom_outputs,
-        RWAres=rwa_result.lightpaths,
-        Physical_topology=PTRepository(
-            id=rwa_result.pt_id,
-            version=rwa_result.pt_version,
-            user=user,
-            db=db
-        )[0],
+        RWAres=rwa_result.result['lightpaths'],
+        Physical_topology=physical_topology,
         grooming_res=GroomingResult(**{
             "traffic": grooming_result.traffic,
             "service_devices": grooming_result.service_devices,
@@ -347,3 +347,25 @@ def get_lom(rwa_id: str, user: User = Depends(get_current_user),
     )
 
     return lom
+
+
+@grooming_router.get("test", status_code=200, )
+def test():
+    import io
+    from io import BytesIO
+    import xlsxwriter
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    worksheet.write(0, 0, 'ISBN')
+    worksheet.write(0, 1, 'Name')
+    worksheet.write(0, 2, 'Takedown date')
+    worksheet.write(0, 3, 'Last updated')
+    workbook.close()
+    output.seek(0)
+
+    headers = {
+        'Content-Disposition': 'attachment; filename="test.xlsx"',
+        'ContentType': '"application/octet-stream"'
+    }
+    return StreamingResponse(output, headers=headers)
