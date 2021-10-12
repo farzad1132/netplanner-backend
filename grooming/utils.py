@@ -9,10 +9,15 @@ from typing import Dict, List, Optional, Union
 import xlsxwriter
 from clusters.schemas import ClusterDict
 from fastapi import HTTPException
+from LOM_producer.product import LOM_productioon
 from LOM_producer.schemas import LOMofDevice
+from projects.schemas import ProjectSchema
+from projects.utils import ProjectRepository
+from rwa.utils import RWARepository
 from sqlalchemy.orm.session import Session
 from starlette import exceptions
 from traffic_matrix.schemas import ServiceType
+from users.schemas import User
 from xlsxwriter.workbook import Workbook
 from xlsxwriter.worksheet import Worksheet
 
@@ -217,6 +222,38 @@ def check_manual_grooming_result(manual_grooming: ManualGroomingDB,
     # TODO: This function must check manual grooming result and if there is a problem
     #       in data raise an HTTPException with appropriate detail
     pass
+
+
+def lom_json_generate(rwa_id: str, db: Session, user: User,
+                      get_project_mode_share: ProjectRepository) -> dict:
+
+    rwa_res = RWARepository.get_rwa(rwa_id=rwa_id, db=db)
+
+    # authorization check
+    project = ProjectSchema.from_orm(
+        get_project_mode_share(id=rwa_res.project_id, user=user, db=db)).dict()
+
+    pt = project["physical_topology"]
+
+    groom_res = GroomingRepository.get_grooming(
+        rwa_res.grooming_id, db)
+
+    # NOTE: dirty code (it's not mine)
+    import copy
+    for cln in groom_res['traffic']:
+        for lpid in groom_res['traffic'][cln]['lightpaths']:
+            rwa_res['result']['lightpaths'][lpid].update({'service_id_list': copy.deepcopy(
+                groom_res['traffic'][cln]['lightpaths'][lpid]['service_id_list'])})
+
+    # generate lom json
+    lom = LOM_productioon(
+        device=groom_res['lom_outputs'],
+        RWAres=rwa_res['result']['lightpaths'],
+        Physical_topology=pt,
+        grooming_res=groom_res
+    )
+
+    return lom, pt, project["name"], groom_res["algorithm"]
 
 
 def lom_excel_generator(lom_object: dict, pt: dict, project_name: str,
