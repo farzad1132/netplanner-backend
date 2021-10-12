@@ -214,7 +214,7 @@ def NodeArch(Node_Structure, device_dict_in, Physical_topology, LightPath, state
                                             for slotn2 in list(NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'].keys()):
                                                 if NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2]['panel'] == 'MP2X':
                                                     for mpl in range(1,3):
-                                                        if 'line'+str(mpl) in NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2] and NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2]['line'+str(mpl)]['groomout_id'] == LightPath[LpId]["service_id_list"][nu]['id']:
+                                                        if 'line'+str(mpl) in NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2] and NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2]['line'+str(mpl)] != None and NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2]['line'+str(mpl)]['groomout_id'] == LightPath[LpId]["service_id_list"][nu]['id']:
                                                             NodeStructure['nodes'][noden]['racks'][rackn2]['shelves'][shelfn2]['slots'][slotn2]['line'+str(mpl)]['line']={"rack":rackn, "shelf":shelfn, "slot":slotn, "port":"client"}
                         if LpId in LPsetknown:
                             continue
