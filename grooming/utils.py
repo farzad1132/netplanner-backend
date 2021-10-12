@@ -80,7 +80,7 @@ class GroomingRepository:
                      node_structure: dict, statistical_result: dict, grooming_table: dict,
                      db: Session, start_date: datetime, is_finished: bool = True,
                      with_clustering: bool = False, clustered_tms: Optional[dict] = None,
-                     service_mapping: Optional[dict] = None) -> None:
+                     service_mapping: Optional[dict] = None, lom_outputs: Optional[dict] = None) -> None:
 
         grooming_result = GroomingModel(
             id=grooming_id,
@@ -102,7 +102,8 @@ class GroomingRepository:
             clustered_tms=clustered_tms,
             service_mapping=service_mapping,
             statistical_result=statistical_result,
-            grooming_table=grooming_table
+            grooming_table=grooming_table,
+            lom_outputs=lom_outputs
         )
 
         db.add(grooming_result)
