@@ -86,6 +86,7 @@ class GroomingHandle(GroomingBaseHandle):
                 service_mapping=retval["serviceMapping"],
                 grooming_table=retval["grooming_table"],
                 statistical_result=retval["statistical_result"],
+                lom_outputs=retval["lom_outputs"],
                 db=db
             )
             db.close()
