@@ -487,7 +487,7 @@ class GroomingDBOut(GroomingInformation):
     grooming_table: GroomingTable
     clusters: ClusterDict
     statistical_result: StatisticalGroomingResult
-    lom_outputs: Dict[str, GroomingDevices]
+    lom_outputs: Dict[str, Dict[str, GroomingDevices]]
     form: GroomingForm
 
     class Config:
