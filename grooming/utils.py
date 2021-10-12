@@ -236,24 +236,36 @@ def lom_excel_generator(lom: dict, pt: dict) -> BytesIO:
     lom: Workbook = xlsxwriter.Workbook(file)
     sheet: Worksheet = lom.add_worksheet("LOM")
 
+    # create headers format
+    headers_format = lom.add_format()
+    headers_format.set_bold()
+    headers_format.set_bg_color("yellow")
+    headers_format.set_font_size(14)
+    headers_format.set_center_across()
+
+    # normal format
+    normal_format = lom.add_format()
+    normal_format.set_center_across()
+    normal_format.set_font_size(12)
+
     # writing column's title
-    sheet.write(0, 0, "Item")
-    sheet.write(0, 1, "Total")
+    sheet.write(0, 0, "Item", headers_format)
+    sheet.write(0, 1, "Total Count", headers_format)
     nodes_index = {}
     for index, node in enumerate(pt["data"]["nodes"]):
         nodename = node["name"]
         nodes_index[nodename] = index+2
-        sheet.write(0, index+2, nodename)
+        sheet.write(0, index+2, nodename, headers_format)
     nodes_index["network"] = 1
 
     # writing item's name
     for index, item in enumerate(items_list):
-        sheet.write(index+1, 0, item)
+        sheet.write(index+1, 0, item, lom.add_format({"bold": True, "font_size": 14}))
 
     # writing excel
     for degree, value in lom["degreename"].items():
         for item, count in value.items():
-            sheet.write(items_index[item], nodes_index[degree], count)
+            sheet.write(items_index[item], nodes_index[degree], count, normal_format)
 
     lom.close()
     file.seek(0)
