@@ -18,7 +18,7 @@ for cln in groom_res['traffic']:
         rwa_res['result']['lightpaths'][lpid].update({'service_id_list': copy.deepcopy(
             groom_res['traffic'][cln]['lightpaths'][lpid]['service_id_list'])})
 
-groom_res = GroomingDBOut.parse_obj(groom_res).dic()
+#groom_res = GroomingDBOut.parse_obj(groom_res).dic()
 
 print("5")
 lom = LOM_productioon(
