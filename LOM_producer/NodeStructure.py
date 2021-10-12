@@ -310,7 +310,7 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, state, p
                                                         nodess[nodename]['racks'].update({str (rackn):{'shelves':{str (shelfn):{'slots':slots}}}})
                                                 else:
                                                         slotn = int (list(nodess[nodename]['racks'][str (rackn)]['shelves'][str (shelfn)]['slots'].keys())[-1]) + 1
-                                        if (slotn == 13 or slotn == 12) and shelfn < 3: 
+                                        elif (slotn == 13 or slotn == 12) and shelfn < 3: 
                                                 shelfn = shelfn + 1
                                                 if rackn == last_rack and shelfn > last_shelf:
                                                         slotn = 0
@@ -332,7 +332,26 @@ def Nodestructureservices(device_dict, Physical_topology, grooming_res, state, p
                                                         slotn = slotn + 1  
                                                         nodess[nodename]['racks'][str (rackn)]['shelves'].update({str (shelfn):{'slots':slots}})
                                                 else:
-                                                        slotn = int (list(nodess[nodename]['racks'][str (rackn)]['shelves'][str (shelfn)]['slots'].keys())[-1]) + 1
+                                                        slotn = 0
+                                                        slots={}
+                                                        SC1={"panel": "SC", 'id':uuid()}
+                                                        SC2={"panel": "SC", 'id':uuid()}
+                                                        IFC={   'id': uuid(),
+                                                                'cns': "None",
+                                                                'eth1': "None",
+                                                                'eth2': "None",
+                                                                'eth3': "None",
+                                                                'eth4': "None",
+                                                                'panel':"IFC"}
+                                                        slots.update({str (slotn): SC1})
+                                                        slotn = slotn + 1
+                                                        slots.update({str (slotn): SC2})
+                                                        slotn = slotn + 1
+                                                        slots.update({str (slotn): IFC})
+                                                        slotn = slotn + 1  
+                                                        nodess[nodename]['racks'][str (rackn)]['shelves'].update({str (shelfn):{'slots':slots}})
+                                        else:
+                                                slotn = int (list(nodess[nodename]['racks'][str (rackn)]['shelves'][str (shelfn)]['slots'].keys())[-1]) + 1                
                                                         
                                         return nodess, slotn, shelfn, rackn
                                 while(slotn == 13 or (slotn == 12 and j != "TP2X")):
