@@ -46,7 +46,6 @@ osqp==0.6.2.post0
 packaging==20.9
 pandas==1.2.0
 passlib==1.7.4
-pkg-resources==0.0.0
 pluggy==0.13.1
 prompt-toolkit==3.0.10
 psycopg2-binary==2.8.6
