@@ -5,7 +5,7 @@ from grooming.schemas import GroomingDBOut, GroomingResult
 from physical_topology.schemas import PhysicalTopologyDB
 from rwa.schemas import RWALightpathsOutput
 
-def LOM_productioon(    device:GroomingDBOut['lom_outputs'], 
+def LOM_productioon(    device:GroomingDBOut, 
                         RWAres:RWALightpathsOutput, 
                         Physical_topology:PhysicalTopologyDB, 
                         grooming_res:GroomingResult, 
