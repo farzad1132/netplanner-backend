@@ -4,7 +4,7 @@
 
 from datetime import datetime
 from io import BytesIO
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 import xlsxwriter
 from clusters.schemas import ClusterDict
@@ -219,7 +219,7 @@ def check_manual_grooming_result(manual_grooming: ManualGroomingDB,
     pass
 
 
-def lom_excel_generator(lom: dict, pt: dict) -> BytesIO:
+def lom_excel_generator(lom_object: dict, pt: dict, filename: Optional[str] = None) -> Union[BytesIO, None]:
     """
         This function generates an in memory excel file
     """
@@ -232,7 +232,10 @@ def lom_excel_generator(lom: dict, pt: dict) -> BytesIO:
         items_index[item] = index+1
 
     # preparing binary io and excel workbook
-    file = BytesIO()
+    if filename is None:
+        file = BytesIO()
+    else:
+        file = filename
     lom: Workbook = xlsxwriter.Workbook(file)
     sheet: Worksheet = lom.add_worksheet("LOM")
 
@@ -248,6 +251,12 @@ def lom_excel_generator(lom: dict, pt: dict) -> BytesIO:
     normal_format.set_center_across()
     normal_format.set_font_size(12)
 
+    # items format
+    items_format = lom.add_format()
+    items_format.set_bold()
+    items_format.set_font_size(14)
+    items_format.set_center_across()
+
     # writing column's title
     sheet.write(0, 0, "Item", headers_format)
     sheet.write(0, 1, "Total Count", headers_format)
@@ -260,13 +269,17 @@ def lom_excel_generator(lom: dict, pt: dict) -> BytesIO:
 
     # writing item's name
     for index, item in enumerate(items_list):
-        sheet.write(index+1, 0, item, lom.add_format({"bold": True, "font_size": 14}))
+        sheet.write(index+1, 0, item, items_format)
 
     # writing excel
-    for degree, value in lom["degreename"].items():
+    for degree, value in lom_object.items():
         for item, count in value.items():
-            sheet.write(items_index[item], nodes_index[degree], count, normal_format)
+            sheet.write(items_index[item],
+                        nodes_index[degree], count, normal_format)
+
+    sheet.set_column(0, 1, 20)
 
     lom.close()
-    file.seek(0)
-    return file
+    if filename is None:
+        file.seek(0)
+        return file
