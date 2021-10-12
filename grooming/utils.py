@@ -23,7 +23,7 @@ from xlsxwriter.worksheet import Worksheet
 
 from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
-from grooming.schemas import GroomingAlgorithm, GroomingForm, ManualGroomingDB
+from grooming.schemas import GroomingAlgorithm, GroomingDBOut, GroomingForm, ManualGroomingDB
 
 
 class GroomingRepository:
@@ -228,15 +228,19 @@ def lom_json_generate(rwa_id: str, db: Session, user: User,
                       get_project_mode_share: ProjectRepository) -> dict:
 
     rwa_res = RWARepository.get_rwa(rwa_id=rwa_id, db=db)
+    from rwa.schemas import RWADBOut
+    rwa_res = RWADBOut.from_orm(rwa_res).dict()
 
     # authorization check
     project = ProjectSchema.from_orm(
-        get_project_mode_share(id=rwa_res.project_id, user=user, db=db)).dict()
+        get_project_mode_share(id=rwa_res['project_id'], user=user, db=db)).dict()
 
     pt = project["physical_topology"]
 
     groom_res = GroomingRepository.get_grooming(
-        rwa_res.grooming_id, db)
+        rwa_res['grooming_id'], db)
+    # groom_res.lom_outputs = groom_res.lom_outputs["main"]
+    groom_res = GroomingDBOut.from_orm(groom_res).dict()
 
     # NOTE: dirty code (it's not mine)
     import copy
