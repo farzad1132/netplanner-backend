@@ -325,7 +325,7 @@ def lom_excel_generator(lom_object: dict, pt: dict, project_name: str,
         sheet.write(index, 0, item, items_format)
 
     # writing excel
-    for degree, value in lom_object.items():
+    for degree, value in lom_object["degreename"].items():
         for item, count in value.items():
             sheet.write(items_index[item],
                         nodes_index[degree], count, normal_format)
