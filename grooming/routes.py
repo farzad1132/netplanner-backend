@@ -352,6 +352,6 @@ def lom_excel(rwa_id: str, user: User = Depends(get_current_user),
     )
 
     headers = {
-        'Content-Disposition': 'attachment; filename="test.xlsx"'
+        'Content-Disposition': f'attachment; filename="{project_name}_{grooming_algorithm}.xlsx"'
     }
     return StreamingResponse(excel, headers=headers)
