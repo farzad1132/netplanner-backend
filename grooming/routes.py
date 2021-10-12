@@ -2,20 +2,21 @@ from datetime import datetime
 from enum import Flag
 from typing import List, Optional, Union
 from uuid import uuid4
-from LOM_producer.product import LOM_productioon
-from LOM_producer.schemas import LOM
 
 from algorithms.utils import status_check
 from clusters.schemas import ClusterDict
 from clusters.utils import cluster_list_to_cluster_dict, get_clusters
 from dependencies import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
+from LOM_producer.product import LOM_productioon
+from LOM_producer.schemas import LOM
 from physical_topology.schemas import PhysicalTopologyDB, methods
 from physical_topology.utils import PTRepository
 from projects.schemas import ProjectSchema
 from projects.utils import ProjectRepository
-from sqlalchemy.orm import Session
 from rwa.utils import RWARepository
+from sqlalchemy.orm import Session
 from traffic_matrix.schemas import TrafficMatrixDB
 from users.schemas import User
 
@@ -25,11 +26,11 @@ from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
 from grooming.schemas import (FailedGroomingInfo, GroomingAlgorithm,
                               GroomingCheck, GroomingDBOut, GroomingForm,
-                              GroomingId, GroomingIdList, GroomingInformation, GroomingResult,
-                              ManualGroomingDB)
-from grooming.utils import GroomingRepository, check_one_gateway_clusters
+                              GroomingId, GroomingIdList, GroomingInformation,
+                              GroomingResult, ManualGroomingDB)
+from grooming.utils import (GroomingRepository, check_one_gateway_clusters,
+                            lom_excel_generator, lom_json_generate)
 from models import ClusterModel
-from fastapi.responses import StreamingResponse
 
 grooming_router = APIRouter(
     tags=["Algorithms", "Grooming"]
@@ -324,48 +325,33 @@ def get_lom(rwa_id: str, user: User = Depends(get_current_user),
     """
         Getting LOM in JSON
     """
-    rwa_result = RWARepository.get_rwa(rwa_id=rwa_id, db=db)
+    return lom_json_generate(
+        rwa_id=rwa_id,
+        db=db,
+        user=user,
+        get_project_mode_share=get_project_mode_share
+    )[0]
 
-    # authorization check
-    project = ProjectSchema.from_orm(
-        get_project_mode_share(id=rwa_result.project_id, user=user, db=db)).dict()
 
-    physical_topology = project["physical_topology"]
+@grooming_router.get("/v2.0.0/algorithms/grooming/lom_excel", status_code=200)
+def lom_excel(rwa_id: str, user: User = Depends(get_current_user),
+         db: Session = Depends(get_db)):
 
-    grooming_result = GroomingRepository.get_grooming(
-        rwa_result.grooming_id, db)
-
-    lom = LOM_productioon(
-        device=grooming_result.lom_outputs,
-        RWAres=rwa_result.result['lightpaths'],
-        Physical_topology=physical_topology,
-        grooming_res=GroomingResult(**{
-            "traffic": grooming_result.traffic,
-            "service_devices": grooming_result.service_devices,
-            "node_structure": grooming_result.node_structure
-        }).dict()
+    lom_object, pt, project_name, grooming_algorithm = lom_json_generate(
+        rwa_id=rwa_id,
+        db=db,
+        user=user,
+        get_project_mode_share=get_project_mode_share
     )
 
-    return lom
-
-
-@grooming_router.get("test", status_code=200, )
-def test():
-    import io
-    from io import BytesIO
-    import xlsxwriter
-    output = BytesIO()
-    workbook = xlsxwriter.Workbook(output)
-    worksheet = workbook.add_worksheet()
-    worksheet.write(0, 0, 'ISBN')
-    worksheet.write(0, 1, 'Name')
-    worksheet.write(0, 2, 'Takedown date')
-    worksheet.write(0, 3, 'Last updated')
-    workbook.close()
-    output.seek(0)
+    excel = lom_excel_generator(
+        lom_object=lom_object,
+        pt=pt,
+        project_name=project_name,
+        grooming_algorithm=grooming_algorithm
+    )
 
     headers = {
-        'Content-Disposition': 'attachment; filename="test.xlsx"',
-        'ContentType': '"application/octet-stream"'
+        'Content-Disposition': 'attachment; filename="test.xlsx"'
     }
-    return StreamingResponse(output, headers=headers)
+    return StreamingResponse(excel, headers=headers)
