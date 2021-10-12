@@ -2667,5 +2667,5 @@ def NodeArch(Node_Structure, device_dict_in, Physical_topology, LightPath, state
                             LOM[i]['DCM'] = LOM[i]['DCM'] + 1
                             LOM['network']['DCM'] = LOM['network']['DCM'] + 1
 
-    
-    return NodeStructure, NodeStructure2, device_dict, LOM
+    LOM2={'degreename':LOM}
+    return NodeStructure, NodeStructure2, device_dict, LOM2
