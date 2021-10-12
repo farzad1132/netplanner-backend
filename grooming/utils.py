@@ -219,7 +219,9 @@ def check_manual_grooming_result(manual_grooming: ManualGroomingDB,
     pass
 
 
-def lom_excel_generator(lom_object: dict, pt: dict, filename: Optional[str] = None) -> Union[BytesIO, None]:
+def lom_excel_generator(lom_object: dict, pt: dict, project_name: str,
+                        grooming_algorithm: str, filename: Optional[str] = None) \
+        -> Union[BytesIO, None]:
     """
         This function generates an in memory excel file
     """
@@ -229,7 +231,7 @@ def lom_excel_generator(lom_object: dict, pt: dict, filename: Optional[str] = No
     items_list = list(LOMofDevice.__annotations__)
     items_index = {}
     for index, item in enumerate(items_list):
-        items_index[item] = index+1
+        items_index[item] = index+2
 
     # preparing binary io and excel workbook
     if filename is None:
@@ -257,19 +259,29 @@ def lom_excel_generator(lom_object: dict, pt: dict, filename: Optional[str] = No
     items_format.set_font_size(14)
     items_format.set_center_across()
 
+    # title format
+    title_format = lom.add_format()
+    title_format.set_bold()
+    title_format.set_font_size(20)
+    title_format.set_bg_color("green")
+
+    title = f"Project name: {project_name}, Grooming algorithm: {grooming_algorithm}"
+    sheet.merge_range(0, 0, 0, 50, title, title_format)
+    sheet.set_row(0, 25)
+
     # writing column's title
-    sheet.write(0, 0, "Item", headers_format)
-    sheet.write(0, 1, "Total Count", headers_format)
+    sheet.write(1, 0, "Item", headers_format)
+    sheet.write(1, 1, "Total Count", headers_format)
     nodes_index = {}
     for index, node in enumerate(pt["data"]["nodes"]):
         nodename = node["name"]
         nodes_index[nodename] = index+2
-        sheet.write(0, index+2, nodename, headers_format)
+        sheet.write(1, nodes_index[nodename], nodename, headers_format)
     nodes_index["network"] = 1
 
     # writing item's name
-    for index, item in enumerate(items_list):
-        sheet.write(index+1, 0, item, items_format)
+    for item, index in items_index.items():
+        sheet.write(index, 0, item, items_format)
 
     # writing excel
     for degree, value in lom_object.items():
