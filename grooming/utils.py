@@ -21,9 +21,13 @@ from users.schemas import User
 from xlsxwriter.workbook import Workbook
 from xlsxwriter.worksheet import Worksheet
 
+from grooming.adv_grooming.schemas import AdvGroomingResult, Network
+from grooming.adv_grooming.utils import adv_grooming_result_to_tm
+from grooming.Algorithm.CompletingAdvGrooming import completingadv
 from grooming.models import (AdvGroomingModel, GroomingModel,
                              GroomingRegisterModel)
-from grooming.schemas import GroomingAlgorithm, GroomingDBOut, GroomingForm, ManualGroomingDB
+from grooming.schemas import (AdvGroomingOut, GroomingAlgorithm, GroomingDBOut,
+                              GroomingForm, ManualGroomingDB)
 
 
 class GroomingRepository:
@@ -336,3 +340,25 @@ def lom_excel_generator(lom_object: dict, pt: dict, project_name: str,
     if filename is None:
         file.seek(0)
         return file
+
+
+def complete_adv_grooming(adv_grooming_result: dict, after_e2e_result: Network,
+                          e2e_result: Optional[dict], pt: dict, tm: dict) -> dict:
+
+    new_tm, mapping = adv_grooming_result_to_tm(
+        result=adv_grooming_result,
+        tm=after_e2e_result.traffic_matrix.export()
+    )
+
+    adv_grooming_out = AdvGroomingOut(
+        end_to_end_result=e2e_result,
+        main=new_tm,
+        service_mapping=mapping
+    ).dict()
+
+    groom_res = completingadv(adv_result_t=adv_grooming_out,
+                              pt=pt,
+                              input_tm=tm,
+                              mp1h_threshold=0)
+
+    return groom_res

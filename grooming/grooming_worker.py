@@ -20,7 +20,7 @@ from grooming.Algorithm.CompletingAdvGrooming import completingadv
 from grooming.Algorithm.end_to_end import end_to_end
 from grooming.Algorithm.grooming_function import grooming_function
 from grooming.schemas import AdvGroomingOut, MP1HThreshold
-from grooming.utils import GroomingRepository
+from grooming.utils import GroomingRepository, complete_adv_grooming
 from models import UserModel
 
 
@@ -210,18 +210,15 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         line_rate=line_rate
     )
 
-    new_tm, mapping = adv_grooming_result_to_tm(result=adv_grooming_result,
-                                                tm=after_end_to_end_network.traffic_matrix.export())
+    result = complete_adv_grooming(
+        adv_grooming_result=adv_grooming_result,
+        after_e2e_result=after_end_to_end_network,
+        e2e_result=end_to_end_result,
+        pt=pt,
+        tm=tm
+    )
 
-    adv_grooming_out = AdvGroomingOut(end_to_end_result=end_to_end_result,
-                                      main=new_tm,
-                                      service_mapping=mapping).dict()
-
-    groom_res = completingadv(adv_result_t=adv_grooming_out,
-                              pt=pt,
-                              input_tm=tm,
-                              mp1h_threshold=0)
     if return_original_result:
-        return groom_res, adv_grooming_result
+        return result, adv_grooming_result
     else:
-        return groom_res
+        return result
