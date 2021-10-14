@@ -55,6 +55,7 @@ class GroomingAlgorithm(str, Enum):
     """
     advanced = "Advanced"
     end_to_end = "End to end"
+    intermediate = "Intermediate"
 
 
 class GroomingForm(BaseModel):
