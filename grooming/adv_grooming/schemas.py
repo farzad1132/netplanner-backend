@@ -53,6 +53,13 @@ class AdvGroomingForm(BaseModel):
     line_rate: LineRate = LineRate.t100
     comment: str
 
+class IntermediateGroomingForm(BaseModel):
+    """
+        Intermediate Grooming Form
+    """
+    line_rate: LineRate = LineRate.t100
+    comment: str
+
 
 class GroomingConnection(BaseModel):
     """
