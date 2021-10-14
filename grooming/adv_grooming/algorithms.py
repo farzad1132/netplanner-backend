@@ -440,3 +440,17 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
     result['lightpaths'] = lightpaths
 
     return result, end_to_end_result, after_end_to_end_network
+
+
+def intermediate_grooming(pt: PhysicalTopologyDB, tm: TrafficMatrixDB, line_rate: LineRate) \
+        -> Tuple[AdvGroomingResult, Network]:
+
+    network = Network(pt=pt, tm=tm)
+
+    result = adv_grooming_phase_2(
+        network=network,
+        line_rate=line_rate,
+        after_end_to_end_network=network
+    )
+
+    return result, network
