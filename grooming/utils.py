@@ -168,9 +168,7 @@ class GroomingRepository:
         grooming_results = []
         if algorithm is None:
             grooming_results.extend(db.query(GroomingModel).filter_by(
-                project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.end_to_end.value).all())
-            grooming_results.extend(db.query(GroomingModel).filter_by(
-                project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.advanced.value).all())
+                project_id=project_id, is_deleted=is_deleted).all())
         elif algorithm == GroomingAlgorithm.advanced:
             grooming_results.extend(db.query(GroomingModel).filter_by(
                 project_id=project_id, is_deleted=is_deleted, algorithm=GroomingAlgorithm.advanced.value).all())
@@ -343,7 +341,7 @@ def lom_excel_generator(lom_object: dict, pt: dict, project_name: str,
 
 
 def complete_adv_grooming(adv_grooming_result: dict, after_e2e_result: Network,
-                          e2e_result: Optional[dict], pt: dict, tm: dict) -> dict:
+                          pt: dict, tm: dict, e2e_result: Optional[dict] = None) -> dict:
 
     new_tm, mapping = adv_grooming_result_to_tm(
         result=adv_grooming_result,
