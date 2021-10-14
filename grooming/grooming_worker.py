@@ -11,9 +11,10 @@ from database import session
 from physical_topology.schemas import PhysicalTopologyDB
 from traffic_matrix.schemas import TrafficMatrixDB
 
-from grooming.adv_grooming.algorithms import adv_grooming, intermediate_grooming
-from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
-                                           MultiplexThreshold)
+from grooming.adv_grooming.algorithms import (adv_grooming,
+                                              intermediate_grooming)
+from grooming.adv_grooming.schemas import (AdvGroomingMode, AdvGroomingResult,
+                                           LineRate, MultiplexThreshold)
 from grooming.adv_grooming.utils import (adv_grooming_result_to_tm,
                                          check_adv_grooming_inputs)
 from grooming.Algorithm.CompletingAdvGrooming import completingadv
@@ -135,11 +136,12 @@ def grooming_task(self, traffic_matrix: TrafficMatrixDB,
 @celeryapp.task(bind=True, base=GroomingHandle)
 def adv_grooming_worker(self, pt: PhysicalTopologyDB,
                         tm: TrafficMatrixDB,
-                        multiplex_threshold: MultiplexThreshold,
-                        clusters: ClusterDict,
                         line_rate: LineRate,
+                        multiplex_threshold: MultiplexThreshold = None,
+                        clusters: ClusterDict = None,
                         check_input_type: bool = False,
-                        return_original_result: bool = False) \
+                        return_original_result: bool = False,
+                        mode: AdvGroomingMode = AdvGroomingMode.complete) \
         -> Tuple[AdvGroomingOut, Optional[AdvGroomingResult]]:
     """
         Advanced Grooming worker
@@ -164,7 +166,8 @@ def adv_grooming_worker(self, pt: PhysicalTopologyDB,
         tm=tm,
         multiplex_threshold=multiplex_threshold,
         clusters=clusters,
-        line_rate=line_rate
+        line_rate=line_rate,
+        mode=mode
     )
 
     result = complete_adv_grooming(

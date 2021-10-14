@@ -53,10 +53,29 @@ class AdvGroomingForm(BaseModel):
     line_rate: LineRate = LineRate.t100
     comment: str
 
+
 class IntermediateGroomingForm(BaseModel):
     """
         Intermediate Grooming Form
     """
+    line_rate: LineRate = LineRate.t100
+    comment: str
+
+
+class ClusteringIntermediateGroomingForm(BaseModel):
+    """
+        Clustering Intermediate Grooming Form
+    """
+    clusters_id: List[str] = []
+    line_rate: LineRate = LineRate.t100
+    comment: str
+
+
+class EndToEndIntermediateGroomingForm(BaseModel):
+    """
+        End-to-end Intermediate Grooming Form
+    """
+    multiplex_threshold: MultiplexThreshold = MultiplexThreshold.t70
     line_rate: LineRate = LineRate.t100
     comment: str
 
@@ -100,6 +119,12 @@ class AdvGroomingDBOut(gschema.GroomingInformation):
 
     class Config:
         orm_mode = True
+
+
+class AdvGroomingMode(str, Enum):
+    complete = "Complete"
+    clustering_intermediate = "clustering_intermediate"
+    e2e_intermediate = "e2e_intermediate"
 
 
 class Network:

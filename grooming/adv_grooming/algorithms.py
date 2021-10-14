@@ -6,8 +6,10 @@ from copy import copy, deepcopy
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from clusters.schemas import ClusterDict
-from grooming.adv_grooming.schemas import (AdvGroomingResult, LineRate,
-                                           MultiplexThreshold, Network)
+from grooming.adv_grooming.schemas import (AdvGroomingMode, AdvGroomingResult,
+                                           LineRate, MultiplexThreshold,
+                                           Network)
+from grooming.models import AdvGroomingModel
 from grooming.schemas import EndToEndResult, GroomingLightPath
 from physical_topology.schemas import PhysicalTopologyDB
 from traffic_matrix.schemas import TrafficMatrixDB
@@ -239,8 +241,9 @@ def degree_1_operation(network: Network, node: str) -> Network:
 
 
 def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
-                         multiplex_threshold: int, clusters: ClusterDict,
-                         line_rate: LineRate) \
+                         line_rate: LineRate, clusters: ClusterDict = None,
+                         multiplex_threshold: int = None,
+                         mode: AdvGroomingMode = AdvGroomingMode.complete) \
         -> Tuple[Dict[str, GroomingLightPath], Network, EndToEndResult, Network]:
     """
         In this phase we are performing hierarchial clustering and end-to-end multiplexing.
@@ -266,70 +269,79 @@ def adv_grooming_phase_1(network: Network, end_to_end_fun: Callable,
 
     # we are making a copy of network because we don't want to modify original network object
     res_network = deepcopy(network)
-    user_clusters = deepcopy(clusters['clusters'])
-
-    demands_for_multiplex = list(filter(lambda x: x.rate >= multiplex_threshold*int(line_rate)/100,
-                                        network.traffic_matrix.demands.values()))
 
     lightpaths = {}
     end_to_end_result = None
     after_end_to_end_network = res_network
-    if len(demands_for_multiplex) != 0:
-        demands_for_multiplex = list(
-            map(lambda x: x.id, demands_for_multiplex))
 
-        # performing end to end multiplexing with specific threshold
-        end_to_end_result = end_to_end_fun(traffic_matrix=network.traffic_matrix
-                                           .export(demands=demands_for_multiplex),
+    if not mode == AdvGroomingMode.clustering_intermediate:
+        print("START: End-to_end Multiplexing")
+        demands_for_multiplex = list(filter(lambda x: x.rate >= multiplex_threshold*int(line_rate)/100,
+                                            network.traffic_matrix.demands.values()))
 
-                                           mp1h_threshold_grooming=multiplex_threshold)
+        if len(demands_for_multiplex) != 0:
+            demands_for_multiplex = list(
+                map(lambda x: x.id, demands_for_multiplex))
 
-        # removing services that construct lightpaths
-        res_network.remove_service(
-            end_to_end_result['traffic'][get_tm_name(end_to_end_result)])
-        after_end_to_end_network = copy(res_network)
-        lightpaths.update(
-            end_to_end_result['traffic'][get_tm_name(end_to_end_result)]['lightpaths'])
+            # performing end to end multiplexing with specific threshold
+            end_to_end_result = end_to_end_fun(traffic_matrix=network.traffic_matrix
+                                               .export(demands=demands_for_multiplex),
 
-    # checking if we are done with clustering or not
-    while len(res_network.physical_topology.get_degree_n_nodes(1)) != 0 \
-            or len(find_corner_cycles(res_network.physical_topology)) != 0 \
-            or len(user_clusters) != 0:
+                                               mp1h_threshold_grooming=multiplex_threshold)
 
-        # performing degree 1 node operation
-        while (d1_nodes := res_network.physical_topology.get_degree_n_nodes(1)):
-            for d1_node in d1_nodes:
-                if len(res_network.physical_topology.nodes) != 1:
-                    print(f"START: degree one operation, node = '{d1_node}'")
-                    res_network = degree_1_operation(network=res_network,
-                                                     node=d1_node)
-                    print(f"END: degree one operation, node = '{d1_node}'")
+            # removing services that construct lightpaths
+            res_network.remove_service(
+                end_to_end_result['traffic'][get_tm_name(end_to_end_result)])
+            after_end_to_end_network = copy(res_network)
+            lightpaths.update(
+                end_to_end_result['traffic'][get_tm_name(end_to_end_result)]['lightpaths'])
 
-        # user defined clusters
-        if len(user_clusters) != 0:
-            for id, cluster in list(user_clusters.items()):
-                # NOTE: corner loop operation function can handle any class with one gateway
-                print(f"START: user cluster operation, node = '{cluster}'")
-                res_network = corner_loop_operation(
-                    network=res_network,
-                    nodes=cluster['data']['subnodes'],
-                    gateway=cluster['data']['gateways'][0],
-                    cluster=[*cluster['data']['subnodes'],
-                             *cluster['data']['gateways']]
-                )
-                user_clusters.pop(id)
-                print(f"END: user cluster operation, node = '{cluster}'")
+        print("END: End-to_end Multiplexing")
 
-        # performing corner cycles operation
-        while (loops := find_corner_cycles(res_network.physical_topology)):
-            for loop in loops:
-                print(
-                    f"START: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
-                res_network = corner_loop_operation(network=res_network,
-                                                    nodes=loop[1:],
-                                                    gateway=loop[0])
-                print(
-                    f"END: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
+    if not mode == AdvGroomingMode.e2e_intermediate:
+        # checking if we are done with clustering or not
+        print("START: Clustering")
+        user_clusters = deepcopy(clusters['clusters'])
+        while len(res_network.physical_topology.get_degree_n_nodes(1)) != 0 \
+                or len(find_corner_cycles(res_network.physical_topology)) != 0 \
+                or len(user_clusters) != 0:
+
+            # performing degree 1 node operation
+            while (d1_nodes := res_network.physical_topology.get_degree_n_nodes(1)):
+                for d1_node in d1_nodes:
+                    if len(res_network.physical_topology.nodes) != 1:
+                        print(
+                            f"START: degree one operation, node = '{d1_node}'")
+                        res_network = degree_1_operation(network=res_network,
+                                                         node=d1_node)
+                        print(f"END: degree one operation, node = '{d1_node}'")
+
+            # user defined clusters
+            if len(user_clusters) != 0:
+                for id, cluster in list(user_clusters.items()):
+                    # NOTE: corner loop operation function can handle any class with one gateway
+                    print(f"START: user cluster operation, node = '{cluster}'")
+                    res_network = corner_loop_operation(
+                        network=res_network,
+                        nodes=cluster['data']['subnodes'],
+                        gateway=cluster['data']['gateways'][0],
+                        cluster=[*cluster['data']['subnodes'],
+                                 *cluster['data']['gateways']]
+                    )
+                    user_clusters.pop(id)
+                    print(f"END: user cluster operation, node = '{cluster}'")
+
+            # performing corner cycles operation
+            while (loops := find_corner_cycles(res_network.physical_topology)):
+                for loop in loops:
+                    print(
+                        f"START: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
+                    res_network = corner_loop_operation(network=res_network,
+                                                        nodes=loop[1:],
+                                                        gateway=loop[0])
+                    print(
+                        f"END: corner cycle operation, gateway = '{loop[0]}', subnodes = '{loop[1:]}'")
+        print("END: Clustering")
 
     return lightpaths, res_network, end_to_end_result, after_end_to_end_network
 
@@ -407,8 +419,11 @@ def adv_grooming_phase_2(network: Network, line_rate: LineRate, after_end_to_end
     return network.export_result(line_rate, after_end_to_end_network)
 
 
-def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: ClusterDict,
-                 tm: TrafficMatrixDB, multiplex_threshold: MultiplexThreshold, line_rate: LineRate) \
+def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB,
+                 tm: TrafficMatrixDB, line_rate: LineRate,
+                 multiplex_threshold: MultiplexThreshold = None,
+                 clusters: ClusterDict = None,
+                 mode: AdvGroomingMode = AdvGroomingMode.complete) \
         -> Tuple[AdvGroomingResult, EndToEndResult, Network]:
     """
         This function executes 2 phase of advanced grooming functions and returns a set of\n
@@ -424,13 +439,16 @@ def adv_grooming(end_to_end_fun: Callable, pt: PhysicalTopologyDB, clusters: Clu
 
     network = Network(pt=pt, tm=tm)
 
+    if not mode == AdvGroomingMode.clustering_intermediate:
+        multiplex_threshold=int(multiplex_threshold)
+
     lightpaths, res_network, end_to_end_result, after_end_to_end_network = adv_grooming_phase_1(
         network=network,
         end_to_end_fun=end_to_end_fun,
-        multiplex_threshold=int(
-            multiplex_threshold),
+        multiplex_threshold=multiplex_threshold,
         clusters=clusters,
-        line_rate=line_rate
+        line_rate=line_rate,
+        mode=mode
     )
 
     result = adv_grooming_phase_2(network=res_network,

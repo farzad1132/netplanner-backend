@@ -56,6 +56,8 @@ class GroomingAlgorithm(str, Enum):
     advanced = "Advanced"
     end_to_end = "End to end"
     intermediate = "Intermediate"
+    clustering_intermediate = "Clustering Intermediate"
+    end_to_end_intermediate = "End-to-end Intermediate"
 
 
 class GroomingForm(BaseModel):
@@ -469,10 +471,12 @@ class StatisticalGroomingResult(BaseModel):
     tp1h_no: int
     mp1h_no: int
 
+
 class GroomingDevices(BaseModel):
     MP2X: List[MP2X]
     MP1H: List[MP1H]
     TP1H: List[TP1H]
+
 
 class GroomingDBOut(GroomingInformation):
     """
@@ -507,9 +511,6 @@ class ManualGroomingDB(BaseModel):
     service_devices: Dict[str, Union[MP2X, MP1H, TP1H]]
     node_structure: NodeStructure
     form: ManualGroomingForm
-
-
-
 
 
 class EndToEndResult(BaseModel):
